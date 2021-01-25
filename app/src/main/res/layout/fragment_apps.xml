@@ -9,11 +9,25 @@
             android:id="@+id/arrowImageView"
             style="@style/Theme.JustAnotherMinimalLauncher.ImageView"
             android:layout_width="match_parent"
+            android:layout_gravity="top|center_horizontal"
             android:layout_height="56dp"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_up_dark" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:theme="@style/Theme.JustAnotherMinimalLauncher.BottomSheet"
+            android:layout_width="match_parent"
+            android:layout_height="56dp">
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/appsSearchView"
+                app:divider="@null"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                app:queryHint="Search app"/>
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            android:paddingTop="8dp"
             android:theme="@style/Theme.JustAnotherMinimalLauncher.BottomSheet"
             android:id="@+id/appsRecyclerView"
             android:layout_width="match_parent"

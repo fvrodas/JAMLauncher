@@ -8,8 +8,11 @@ import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.model.AppInfo
 
-class AppInfoRecyclerAdapter(private val dataSet: ArrayList<AppInfo> = ArrayList()) :
+class AppInfoRecyclerAdapter() :
     RecyclerView.Adapter<AppInfoRecyclerAdapter.AppInfoViewHolder>() {
+
+    private val resultDataSet: ArrayList<AppInfo> = ArrayList()
+    private val dataSet: ArrayList<AppInfo> = ArrayList()
 
     var onItemPressed: (appInfo: AppInfo) -> Unit = {}
     var onItemLongPressed: (appInfo: AppInfo) -> Unit = {}
@@ -28,7 +31,7 @@ class AppInfoRecyclerAdapter(private val dataSet: ArrayList<AppInfo> = ArrayList
     }
 
     override fun onBindViewHolder(holder: AppInfoRecyclerAdapter.AppInfoViewHolder, position: Int) {
-        val item = dataSet[holder.adapterPosition]
+        val item = resultDataSet[holder.adapterPosition]
         holder.binding.label = item.label
         holder.itemView.setOnClickListener {
             onItemPressed(item)
@@ -43,10 +46,18 @@ class AppInfoRecyclerAdapter(private val dataSet: ArrayList<AppInfo> = ArrayList
     fun updateDataSet(newList: ArrayList<AppInfo> ) {
         dataSet.clear()
         dataSet.addAll(newList)
+        resultDataSet.clear()
+        resultDataSet.addAll(newList)
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = dataSet.size
+    fun filterDataset(query: String) {
+        resultDataSet.clear()
+        resultDataSet.addAll(dataSet.filter { it.label.contains(query, ignoreCase = true) })
+        notifyDataSetChanged()
+    }
+
+    override fun getItemCount(): Int = resultDataSet.size
 
     inner class AppInfoViewHolder(val binding: ItemActivityInfoBinding) :
         RecyclerView.ViewHolder(binding.root)
