@@ -7,16 +7,14 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SearchView
-import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.PagerSnapHelper
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.model.AppInfo
+import io.github.fvrodas.jaml.ui.MainActivity
 import io.github.fvrodas.jaml.ui.commons.CenterScaledLayoutManager
 import io.github.fvrodas.jaml.ui.fragments.adapters.AppInfoRecyclerAdapter
 import io.github.fvrodas.jaml.viewmodel.AppsViewModel
@@ -29,8 +27,6 @@ class AppsFragment : Fragment() {
     private lateinit var viewModel: AppsViewModel
     private lateinit var viewModelFactory: JAMLViewModelFactory
     private lateinit var adapter: AppInfoRecyclerAdapter
-
-    var onSearchOpened: () -> Unit = {}
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -60,7 +56,7 @@ class AppsFragment : Fragment() {
 
         binding.appsSearchView.setOnClickListener {
             binding.appsSearchView.isIconified = false
-            onSearchOpened()
+            (activity as MainActivity?)?.openBottomSheet()
         }
 
         binding.appsSearchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -76,6 +72,12 @@ class AppsFragment : Fragment() {
             }
 
         })
+
+        binding.appsSearchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                (activity as MainActivity?)?.openBottomSheet()
+            }
+        }
     }
 
     override fun onResume() {
@@ -89,14 +91,14 @@ class AppsFragment : Fragment() {
         }
         if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
             binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
-            binding.appsRecyclerView.scrollToPosition(0)
+            adapter.filterDataset("")
             binding.appsSearchView.isIconified = true
         }
     }
 
     private fun openApp(appInfo: AppInfo) {
+        adapter.filterDataset("")
         activity?.packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
-            adapter.filterDataset("")
             binding.appsSearchView.isIconified = true
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
@@ -106,8 +108,8 @@ class AppsFragment : Fragment() {
     }
 
     private fun openAppInfo(appInfo: AppInfo) {
+        adapter.filterDataset("")
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            adapter.filterDataset("")
             binding.appsSearchView.isIconified = true
             addCategory(Intent.CATEGORY_DEFAULT)
             data = Uri.parse("package:${appInfo.packageName}")

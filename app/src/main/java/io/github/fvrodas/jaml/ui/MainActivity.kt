@@ -2,7 +2,6 @@ package io.github.fvrodas.jaml.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
@@ -24,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.inflate(layoutInflater, R.layout.activity_main, null, false)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root
-        ) { v, insets ->
+        ) { _, insets ->
             val statusBar = insets?.stableInsetTop ?: 0
             val navBar = insets?.stableInsetBottom ?: 0
 
@@ -46,11 +45,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initBottomSheet() {
-        fragment.onSearchOpened = {
-            if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
 
         supportFragmentManager
                 .beginTransaction()
@@ -70,6 +64,12 @@ class MainActivity : AppCompatActivity() {
 
                 }
             })
+        }
+    }
+
+    fun openBottomSheet() {
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 
