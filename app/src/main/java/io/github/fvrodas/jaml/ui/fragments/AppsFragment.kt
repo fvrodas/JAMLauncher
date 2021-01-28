@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.model.AppInfo
 import io.github.fvrodas.jaml.ui.MainActivity
+import io.github.fvrodas.jaml.ui.SettingsActivity
 import io.github.fvrodas.jaml.ui.commons.CenterScaledLayoutManager
 import io.github.fvrodas.jaml.ui.fragments.adapters.AppInfoRecyclerAdapter
 import io.github.fvrodas.jaml.viewmodel.AppsViewModel
@@ -29,11 +31,12 @@ class AppsFragment : Fragment() {
     private lateinit var adapter: AppInfoRecyclerAdapter
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_apps, null, false)
-        viewModelFactory = JAMLViewModelFactory(activity!!.application, activity!!.packageManager)
+        viewModelFactory =
+            JAMLViewModelFactory(requireActivity().application, requireActivity().packageManager)
         adapter = AppInfoRecyclerAdapter()
         adapter.onItemPressed = this::openApp
         adapter.onItemLongPressed = this::openAppInfo
@@ -45,9 +48,9 @@ class AppsFragment : Fragment() {
         viewModel = viewModelFactory.create(AppsViewModel::class.java)
         binding.lifecycleOwner = this
         binding.appsRecyclerView.layoutManager = CenterScaledLayoutManager(
-                context,
-                LinearLayoutManager.VERTICAL,
-                false
+            context,
+            LinearLayoutManager.VERTICAL,
+            false
         )
         binding.appsRecyclerView.adapter = adapter
         viewModel.applicationsList.observe(viewLifecycleOwner, {
@@ -59,7 +62,8 @@ class AppsFragment : Fragment() {
             (activity as MainActivity?)?.openBottomSheet()
         }
 
-        binding.appsSearchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.appsSearchView.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -73,7 +77,7 @@ class AppsFragment : Fragment() {
 
         })
 
-        binding.appsSearchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
+        binding.appsSearchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 (activity as MainActivity?)?.openBottomSheet()
             }
@@ -97,13 +101,24 @@ class AppsFragment : Fragment() {
     }
 
     private fun openApp(appInfo: AppInfo) {
+        Log.d("AppInfo", appInfo.packageName)
         adapter.filterDataset("")
-        activity?.packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
-            binding.appsSearchView.isIconified = true
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-            activity?.onBackPressed()
-            activity?.startActivity(this)
+        if (appInfo.packageName == SettingsActivity::class.java.name) {
+            Intent(context, SettingsActivity::class.java).apply {
+                binding.appsSearchView.isIconified = true
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                activity?.onBackPressed()
+                activity?.startActivity(this)
+            }
+        } else {
+            activity?.packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
+                binding.appsSearchView.isIconified = true
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                activity?.onBackPressed()
+                activity?.startActivity(this)
+            }
         }
     }
 

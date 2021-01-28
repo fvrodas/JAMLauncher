@@ -23,7 +23,7 @@
                 app:divider="@null"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                app:queryHint="Search app"/>
+                app:queryHint="@string/apps_sv_hint"/>
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

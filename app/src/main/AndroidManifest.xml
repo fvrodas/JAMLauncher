@@ -33,6 +33,18 @@
                 <category android:name="android.intent.category.LAUNCHER_APP" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/settings_activity"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true"
+            android:screenOrientation="nosensor"
+            android:autoRemoveFromRecents="true"
+            android:theme="@style/Theme.JustAnotherMinimalLauncher.Settings">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

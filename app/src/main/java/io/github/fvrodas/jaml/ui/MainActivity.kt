@@ -10,6 +10,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
 import io.github.fvrodas.jaml.ui.fragments.AppsFragment
+import io.github.fvrodas.jaml.ui.fragments.SettingsFragment
 import java.text.SimpleDateFormat
 import java.util.*
 

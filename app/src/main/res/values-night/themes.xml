@@ -21,6 +21,22 @@
         <item name="android:windowShowWallpaper">true</item>
     </style>
 
+    <style name="Theme.JustAnotherMinimalLauncher.Settings" parent="Theme.MaterialComponents.DayNight">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/translucent_black</item>
+        <!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
+        <!-- Customize your theme here. -->
+        <item name="android:textColor">@color/white</item>
+    </style>
+
     <style name="Theme.JustAnotherMinimalLauncher.BottomSheet" parent="Theme.JustAnotherMinimalLauncher">
         <item name="android:background">@android:color/background_dark</item>
     </style>
