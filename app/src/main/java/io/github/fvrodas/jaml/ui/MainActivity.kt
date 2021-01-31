@@ -1,68 +1,81 @@
 package io.github.fvrodas.jaml.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
-import androidx.core.view.OnApplyWindowInsetsListener
+import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
 import io.github.fvrodas.jaml.ui.fragments.AppsFragment
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private val fragment = AppsFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.inflate(layoutInflater, R.layout.activity_main, null, false)
-
         ViewCompat.setOnApplyWindowInsetsListener(binding.root
-        ) { v, insets ->
-            val statusBar = insets?.systemWindowInsetTop ?: 0
-            val navBar = insets?.systemWindowInsetBottom ?: 0
-            binding.root.setPadding(0, statusBar, 0, 0)
-            ViewCompat.onApplyWindowInsets(v!!, insets!!)
+        ) { _, insets ->
+            val statusBar = insets?.stableInsetTop ?: 0
+            val navBar = insets?.stableInsetBottom ?: 0
+
+            binding.root.setPadding(0, statusBar, 0, navBar)
+
             insets
         }
 
         setContentView(binding.root)
 
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+        initBottomSheet()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val calendar = Calendar.getInstance()
+        val dateFormatter = SimpleDateFormat("E, MMMM dd yyyy", Locale.getDefault())
+        binding.dateTextView.text = dateFormatter.format(calendar.time)
+    }
+
+    private fun initBottomSheet() {
 
         supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.bottomSheet, fragment)
-            .commit()
+                .beginTransaction()
+                .replace(R.id.bottomSheet, fragment)
+                .commit()
 
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet).apply {
+            peekHeight = resources.getDimensionPixelSize(R.dimen.peekHeight)
 
-        bottomSheetBehavior.peekHeight =
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48.0f, resources.displayMetrics)
-                .toInt()
+            addBottomSheetCallback(object :
+                    BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    fragment.changeArrowState(newState)
+                }
 
-        bottomSheetBehavior.addBottomSheetCallback(object :
-            BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                fragment.changeArrowState(newState)
-            }
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                }
+            })
+        }
+    }
 
-            }
-
-        })
-
+    fun showBottomSheet(show: Boolean = true) {
+        if (show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else if (!show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
     }
 
     override fun onBackPressed() {
-        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        showBottomSheet(show = false)
     }
 }
