@@ -8,7 +8,7 @@ import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.model.AppInfo
 
-class AppInfoRecyclerAdapter() :
+class AppInfoRecyclerAdapter :
     RecyclerView.Adapter<AppInfoRecyclerAdapter.AppInfoViewHolder>() {
 
     private val resultDataSet: ArrayList<AppInfo> = ArrayList()
@@ -51,7 +51,7 @@ class AppInfoRecyclerAdapter() :
         notifyDataSetChanged()
     }
 
-    fun filterDataset(query: String) {
+    fun filterDataSet(query: String) {
         resultDataSet.clear()
         resultDataSet.addAll(dataSet.filter { it.label.contains(query, ignoreCase = true) })
         notifyDataSetChanged()

@@ -1,16 +1,15 @@
 package io.github.fvrodas.jaml.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
 import io.github.fvrodas.jaml.ui.fragments.AppsFragment
-import io.github.fvrodas.jaml.ui.fragments.SettingsFragment
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -68,15 +67,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun openBottomSheet() {
-        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+    fun showBottomSheet(show: Boolean = true) {
+        if (show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else if (!show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
     }
 
     override fun onBackPressed() {
-        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        showBottomSheet(show = false)
     }
 }

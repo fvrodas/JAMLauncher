@@ -59,7 +59,7 @@ class AppsFragment : Fragment() {
 
         binding.appsSearchView.setOnClickListener {
             binding.appsSearchView.isIconified = false
-            (activity as MainActivity?)?.openBottomSheet()
+            (activity as MainActivity?)?.showBottomSheet()
         }
 
         binding.appsSearchView.setOnQueryTextListener(object :
@@ -70,7 +70,7 @@ class AppsFragment : Fragment() {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 newText?.let {
-                    adapter.filterDataset(it)
+                    adapter.filterDataSet(it)
                 }
                 return true
             }
@@ -79,7 +79,7 @@ class AppsFragment : Fragment() {
 
         binding.appsSearchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                (activity as MainActivity?)?.openBottomSheet()
+                (activity as MainActivity?)?.showBottomSheet()
             }
         }
     }
@@ -95,20 +95,20 @@ class AppsFragment : Fragment() {
         }
         if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
             binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
-            adapter.filterDataset("")
+            adapter.filterDataSet("")
             binding.appsSearchView.isIconified = true
         }
     }
 
     private fun openApp(appInfo: AppInfo) {
         Log.d("AppInfo", appInfo.packageName)
-        adapter.filterDataset("")
+        adapter.filterDataSet("")
+        (activity as MainActivity?)?.showBottomSheet(show = false)
         if (appInfo.packageName == SettingsActivity::class.java.name) {
             Intent(context, SettingsActivity::class.java).apply {
                 binding.appsSearchView.isIconified = true
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-                activity?.onBackPressed()
                 activity?.startActivity(this)
             }
         } else {
@@ -116,19 +116,18 @@ class AppsFragment : Fragment() {
                 binding.appsSearchView.isIconified = true
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-                activity?.onBackPressed()
                 activity?.startActivity(this)
             }
         }
     }
 
     private fun openAppInfo(appInfo: AppInfo) {
-        adapter.filterDataset("")
+        adapter.filterDataSet("")
+        (activity as MainActivity?)?.showBottomSheet(show = false)
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             binding.appsSearchView.isIconified = true
             addCategory(Intent.CATEGORY_DEFAULT)
             data = Uri.parse("package:${appInfo.packageName}")
-            activity?.onBackPressed()
             activity?.startActivity(this)
         }
     }

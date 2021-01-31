@@ -12,7 +12,7 @@ class CenterScaledLayoutManager(context: Context?, orientation: Int, reverseLayo
 
     override fun checkLayoutParams(lp: RecyclerView.LayoutParams?): Boolean {
         lp?.let {
-            it.height = height / 7
+            it.height = height / 9
         }
         return true
     }

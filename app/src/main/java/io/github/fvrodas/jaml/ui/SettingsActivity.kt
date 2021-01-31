@@ -5,7 +5,6 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.fragments.SettingsFragment
-import java.util.*
 
 class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
