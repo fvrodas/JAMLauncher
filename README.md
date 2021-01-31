@@ -6,11 +6,11 @@ It doesn't require any special permission.
 
 ## Screenshots
 
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/master/screenshots/001.png" alt="" />
+<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/001.png" alt="" />
 
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/master/screenshots/002.png" alt="" />
+<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/002.png" alt="" />
 
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/master/screenshots/003.png" alt="" />
+<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/003.png" alt="" />
 
 ## Download
 
