@@ -76,6 +76,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        showBottomSheet(show = false)
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else {
+            showBottomSheet(show = false)
+        }
     }
 }

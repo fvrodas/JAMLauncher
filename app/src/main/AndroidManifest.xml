@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="io.github.fvrodas.jaml" android:versionName="@string/app_version_name">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
@@ -19,6 +20,7 @@
         android:resumeWhilePausing="true"
         android:taskAffinity=""
         android:enabled="true"
+        android:hardwareAccelerated="true"
         android:screenOrientation="nosensor"
         android:windowSoftInputMode="stateHidden"
         android:theme="@style/Theme.JustAnotherMinimalLauncher.Main"
