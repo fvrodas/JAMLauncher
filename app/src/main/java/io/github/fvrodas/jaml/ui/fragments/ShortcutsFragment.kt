@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.FragmentShortcutsBinding
-import io.github.fvrodas.jaml.model.AppInfo
 import io.github.fvrodas.jaml.model.AppShortcutInfo
 import io.github.fvrodas.jaml.ui.MainActivity
 import io.github.fvrodas.jaml.ui.fragments.adapters.AppShortcutInfoRecyclerAdapter
@@ -34,12 +33,12 @@ class ShortcutsFragment : Fragment() {
     private lateinit var viewModelFactory: JAMLViewModelFactory
     private lateinit var adapter: AppShortcutInfoRecyclerAdapter
     private lateinit var launcherApps: LauncherApps
-    private lateinit var appInfo: AppInfo
+    private lateinit var packageName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.apply {
-            appInfo = getSerializable(ARG_PKG) as AppInfo
+            packageName = getString(ARG_PKG_NAME, "")
         }
     }
 
@@ -54,7 +53,7 @@ class ShortcutsFragment : Fragment() {
             JAMLViewModelFactory(
                 requireActivity().application,
                 launcherApps,
-                appInfo.packageName,
+                packageName,
                 -1,
                 requireActivity().packageManager
             )
@@ -81,7 +80,7 @@ class ShortcutsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.retrieveShortcuts(appInfo.packageName)
+        viewModel.retrieveShortcuts(packageName)
     }
 
     private fun deviceAccentColor(context: Context): Int {
@@ -101,31 +100,30 @@ class ShortcutsFragment : Fragment() {
     private fun openApp(appShortcutInfo: AppShortcutInfo) {
         requireActivity().onBackPressed()
         if (appShortcutInfo.packageName == "none") {
-            openAppInfo(appInfo)
+            openAppInfo()
         } else {
             Log.d("AppInfo", appShortcutInfo.packageName)
             viewModel.startShortcut(appShortcutInfo)
         }
     }
 
-    private fun openAppInfo(appInfo: AppInfo) {
+    private fun openAppInfo() {
         adapter.filterDataSet("")
         (activity as MainActivity?)?.showBottomSheet(show = false)
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             addCategory(Intent.CATEGORY_DEFAULT)
-            data = Uri.parse("package:${appInfo.packageName}")
+            data = Uri.parse("package:${packageName}")
             activity?.startActivity(this)
         }
     }
 
     companion object {
-        private const val ARG_PKG: String = "argument_package"
+        private const val ARG_PKG_NAME: String = "argument_package_name"
 
         @JvmStatic
-        fun newInstance(appInfo: AppInfo) = ShortcutsFragment().apply {
+        fun newInstance(packageName: String) = ShortcutsFragment().apply {
             arguments = Bundle().apply {
-                appInfo.icon = null
-                putSerializable(ARG_PKG, appInfo)
+                putString(ARG_PKG_NAME, packageName)
             }
         }
     }

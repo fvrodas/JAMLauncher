@@ -150,7 +150,7 @@ class AppsFragment : Fragment() {
         }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
             parentFragmentManager.beginTransaction()
-                    .add(R.id.bottomSheet, ShortcutsFragment.newInstance(appInfo))
+                    .add(R.id.bottomSheet, ShortcutsFragment.newInstance(appInfo.packageName))
                     .addToBackStack(null)
                     .commit()
         }
