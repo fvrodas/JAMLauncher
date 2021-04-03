@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
 import kotlin.math.min
 
+@Deprecated("Better readability without size changes")
 class CenterScaledLayoutManager(context: Context?, orientation: Int, reverseLayout: Boolean) :
     LinearLayoutManager(context, orientation, reverseLayout) {
 
@@ -43,10 +44,13 @@ class CenterScaledLayoutManager(context: Context?, orientation: Int, reverseLayo
             child?.let {
                 val childMid = (getDecoratedTop(it) + getDecoratedBottom(it)) / 2f
                 val d = min(d1, abs(screenMid - childMid))
-                val scale =  1-0.3f * d/d1
+                val scale =  1-0.4f * d/d1
                 it.getChildAt(0).scaleX = scale
+                it.getChildAt(1).scaleX = scale
                 it.getChildAt(0).scaleY = scale
-                it.getChildAt(0).alpha = scale
+                it.getChildAt(1).scaleY = scale
+                it.getChildAt(0).alpha = scale * 0.9f
+                it.getChildAt(1).alpha = scale
             }
         }
 

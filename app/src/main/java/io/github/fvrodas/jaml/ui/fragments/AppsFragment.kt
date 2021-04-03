@@ -1,13 +1,16 @@
 package io.github.fvrodas.jaml.ui.fragments
 
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +20,6 @@ import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.model.AppInfo
 import io.github.fvrodas.jaml.ui.MainActivity
 import io.github.fvrodas.jaml.ui.SettingsActivity
-import io.github.fvrodas.jaml.ui.commons.CenterScaledLayoutManager
 import io.github.fvrodas.jaml.ui.fragments.adapters.AppInfoRecyclerAdapter
 import io.github.fvrodas.jaml.viewmodel.AppsViewModel
 import io.github.fvrodas.jaml.viewmodel.JAMLViewModelFactory
@@ -29,17 +31,26 @@ class AppsFragment : Fragment() {
     private lateinit var viewModel: AppsViewModel
     private lateinit var viewModelFactory: JAMLViewModelFactory
     private lateinit var adapter: AppInfoRecyclerAdapter
+    private lateinit var vibrator: Vibrator
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_apps, null, false)
         viewModelFactory =
-            JAMLViewModelFactory(requireActivity().application, requireActivity().packageManager)
-        adapter = AppInfoRecyclerAdapter()
+                JAMLViewModelFactory(
+                        requireActivity().application,
+                        null,
+                        null,
+                        -1,
+                        requireActivity().packageManager
+                )
+        vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator;
+        val color = deviceAccentColor(requireContext())
+        adapter = AppInfoRecyclerAdapter(color = color)
         adapter.onItemPressed = this::openApp
-        adapter.onItemLongPressed = this::openAppInfo
+        adapter.onItemLongPressed = this::openShortcutsList
         return binding.root
     }
 
@@ -47,13 +58,9 @@ class AppsFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = viewModelFactory.create(AppsViewModel::class.java)
         binding.lifecycleOwner = this
-        binding.appsRecyclerView.layoutManager = CenterScaledLayoutManager(
-            context,
-            LinearLayoutManager.VERTICAL,
-            false
-        )
+        binding.appsRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.appsRecyclerView.adapter = adapter
-        viewModel.applicationsList.observe(viewLifecycleOwner, {
+        viewModel.filteredApplicationsList.observe(viewLifecycleOwner, {
             adapter.updateDataSet(it)
         })
 
@@ -63,14 +70,14 @@ class AppsFragment : Fragment() {
         }
 
         binding.appsSearchView.setOnQueryTextListener(object :
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
+                androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 newText?.let {
-                    adapter.filterDataSet(it)
+                    viewModel.filterApplicationsList(it)
                 }
                 return true
             }
@@ -89,20 +96,33 @@ class AppsFragment : Fragment() {
         viewModel.retrieveApplicationsList()
     }
 
+    private fun deviceAccentColor(context: Context): Int {
+        val typedValue = TypedValue()
+        val contextThemeWrapper = ContextThemeWrapper(
+                context,
+                android.R.style.Theme_DeviceDefault
+        )
+        contextThemeWrapper.theme.resolveAttribute(
+                android.R.attr.colorAccent,
+                typedValue, true
+        )
+        return typedValue.data
+    }
+
     fun changeArrowState(bottomSheetState: Int) {
         if (bottomSheetState == BottomSheetBehavior.STATE_DRAGGING) {
             binding.arrowImageView.animate().rotation(-180f).setDuration(350).start()
         }
         if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
             binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
-            adapter.filterDataSet("")
+            viewModel.filterApplicationsList("")
             binding.appsSearchView.isIconified = true
         }
     }
 
     private fun openApp(appInfo: AppInfo) {
         Log.d("AppInfo", appInfo.packageName)
-        adapter.filterDataSet("")
+        viewModel.filterApplicationsList("")
         (activity as MainActivity?)?.showBottomSheet(show = false)
         if (appInfo.packageName == SettingsActivity::class.java.name) {
             Intent(context, SettingsActivity::class.java).apply {
@@ -121,14 +141,18 @@ class AppsFragment : Fragment() {
         }
     }
 
-    private fun openAppInfo(appInfo: AppInfo) {
-        adapter.filterDataSet("")
-        (activity as MainActivity?)?.showBottomSheet(show = false)
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            binding.appsSearchView.isIconified = true
-            addCategory(Intent.CATEGORY_DEFAULT)
-            data = Uri.parse("package:${appInfo.packageName}")
-            activity?.startActivity(this)
+    private fun openShortcutsList(appInfo: AppInfo) {
+        viewModel.filterApplicationsList("")
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createOneShot(48, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            vibrator.vibrate(48)
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+            parentFragmentManager.beginTransaction()
+                    .add(R.id.bottomSheet, ShortcutsFragment.newInstance(appInfo))
+                    .addToBackStack(null)
+                    .commit()
         }
     }
 

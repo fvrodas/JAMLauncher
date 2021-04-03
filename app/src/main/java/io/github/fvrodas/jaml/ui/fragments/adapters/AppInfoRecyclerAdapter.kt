@@ -3,16 +3,16 @@ package io.github.fvrodas.jaml.ui.fragments.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.model.AppInfo
 
-class AppInfoRecyclerAdapter :
+class AppInfoRecyclerAdapter(val color: Int?) :
     RecyclerView.Adapter<AppInfoRecyclerAdapter.AppInfoViewHolder>() {
 
-    private val resultDataSet: ArrayList<AppInfo> = ArrayList()
-    private val dataSet: ArrayList<AppInfo> = ArrayList()
+    private var dataSet: ArrayList<AppInfo> = ArrayList()
 
     var onItemPressed: (appInfo: AppInfo) -> Unit = {}
     var onItemLongPressed: (appInfo: AppInfo) -> Unit = {}
@@ -31,8 +31,10 @@ class AppInfoRecyclerAdapter :
     }
 
     override fun onBindViewHolder(holder: AppInfoRecyclerAdapter.AppInfoViewHolder, position: Int) {
-        val item = resultDataSet[holder.adapterPosition]
+        val item = dataSet[holder.adapterPosition]
         holder.binding.label = item.label
+        holder.binding.icon = item.icon
+        holder.binding.color = color
         holder.itemView.setOnClickListener {
             onItemPressed(item)
         }
@@ -44,20 +46,30 @@ class AppInfoRecyclerAdapter :
     }
 
     fun updateDataSet(newList: ArrayList<AppInfo> ) {
-        dataSet.clear()
-        dataSet.addAll(newList)
-        resultDataSet.clear()
-        resultDataSet.addAll(newList)
-        notifyDataSetChanged()
+        val oldList = dataSet
+        dataSet = newList
+        notifyChanges(newList, oldList)
     }
 
-    fun filterDataSet(query: String) {
-        resultDataSet.clear()
-        resultDataSet.addAll(dataSet.filter { it.label.contains(query, ignoreCase = true) })
-        notifyDataSetChanged()
+    private fun notifyChanges(newList: ArrayList<AppInfo>, oldList: ArrayList<AppInfo>) {
+        val diffUtil = DiffUtil.calculateDiff(object : DiffUtil.Callback(){
+            override fun getOldListSize(): Int = oldList.count()
+
+            override fun getNewListSize(): Int = newList.count()
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldList[oldItemPosition] == newList[newItemPosition]
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+               return oldList[oldItemPosition].packageName == newList[newItemPosition].packageName
+            }
+
+        })
+        diffUtil.dispatchUpdatesTo(this)
     }
 
-    override fun getItemCount(): Int = resultDataSet.size
+    override fun getItemCount(): Int = dataSet.size
 
     inner class AppInfoViewHolder(val binding: ItemActivityInfoBinding) :
         RecyclerView.ViewHolder(binding.root)
