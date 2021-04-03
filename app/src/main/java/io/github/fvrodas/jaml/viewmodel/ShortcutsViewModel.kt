@@ -20,7 +20,7 @@ import kotlin.collections.ArrayList
 @RequiresApi(Build.VERSION_CODES.N_MR1)
 class ShortcutsViewModel(
     application: Application,
-    private val packageName: String,
+    packageName: String,
     private val launcherApps: LauncherApps,
     private val densityDpi: Int
 ) : AndroidViewModel(application) {
@@ -53,7 +53,7 @@ class ShortcutsViewModel(
                         null
                 ))
                 shortcutsList.postValue(shortcuts)
-            } catch (e: Exception) {
+            } catch (e: SecurityException) {
                 Collections.emptyList<AppInfo>()
             }
         }

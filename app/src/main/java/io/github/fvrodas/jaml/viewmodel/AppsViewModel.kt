@@ -4,9 +4,7 @@ import android.app.Application
 import android.content.Intent
 import android.content.pm.*
 import android.graphics.*
-import android.graphics.drawable.AdaptiveIconDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.*
 import android.os.Build
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.*
@@ -84,36 +82,12 @@ class AppsViewModel(application: Application, private val packageManager: Packag
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val drawable = packageManager.getApplicationIcon(item.activityInfo.packageName)
                 if (drawable is AdaptiveIconDrawable) {
-                    val backgroundDr = drawable.background
-                    val foregroundDr = drawable.foreground
-
-                    val drr = arrayOfNulls<Drawable>(2)
-                    drr[0] = backgroundDr
-                    drr[1] = foregroundDr
-
-                    val layerDrawable = LayerDrawable(drr)
-
-                    val width = layerDrawable.intrinsicWidth
-                    val height = layerDrawable.intrinsicHeight
-
-                    val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-                    val canvas = Canvas(output)
-
-                    val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-                    paint.color = 0xFF00000
-
-                    canvas.drawPath(drawable.iconMask, paint)
-
-                    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-
-                    layerDrawable.setBounds(0, 0, canvas.width, canvas.height)
-                    layerDrawable.draw(canvas)
-                    iconCache[item.activityInfo.packageName] = output
-                    output
-                } else {
                     iconCache[item.activityInfo.packageName] = drawable.toBitmap()
                     drawable.toBitmap()
+                } else {
+                    val scaled = InsetDrawable(drawable, 0.28f)
+                    scaled.bounds = drawable.bounds
+                    AdaptiveIconDrawable(ColorDrawable(Color.WHITE), scaled).toBitmap()
                 }
             } else {
                 iconCache[item.activityInfo.packageName] =
