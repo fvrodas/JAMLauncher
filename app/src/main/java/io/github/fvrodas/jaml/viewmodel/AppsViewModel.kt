@@ -71,7 +71,8 @@ class AppsViewModel(application: Application, private val packageManager: Packag
     }
 
     fun filterApplicationsList(query: String) {
-        val filtered = ArrayList(cachedApplicationsList.value?.filter { it.label.contains(query, ignoreCase = true) }?.toList())
+        val filtered = ArrayList(cachedApplicationsList.value?.filter { it.label.contains(query, ignoreCase = true) }?.toList()
+                ?: emptyList())
         filteredApplicationsList.value = filtered
     }
 
