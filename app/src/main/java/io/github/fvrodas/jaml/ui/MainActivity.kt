@@ -1,14 +1,21 @@
 package io.github.fvrodas.jaml.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
+import io.github.fvrodas.jaml.services.JAMLNotificationService
 import io.github.fvrodas.jaml.ui.fragments.AppsFragment
 import java.text.SimpleDateFormat
 import java.util.*
@@ -17,12 +24,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+    private lateinit var notificationReceiver: NotificationReceiver
     private val fragment = AppsFragment.newInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.inflate(layoutInflater, R.layout.activity_main, null, false)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root
+        ViewCompat.setOnApplyWindowInsetsListener(
+            binding.root
         ) { _, insets ->
             val statusBar = insets?.stableInsetTop ?: 0
             val navBar = insets?.stableInsetBottom ?: 0
@@ -31,10 +40,11 @@ class MainActivity : AppCompatActivity() {
 
             insets
         }
-
         setContentView(binding.root)
-
         initBottomSheet()
+        notificationReceiver = NotificationReceiver(fragment)
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
     }
 
     override fun onResume() {
@@ -47,15 +57,15 @@ class MainActivity : AppCompatActivity() {
     private fun initBottomSheet() {
 
         supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.bottomSheet, fragment)
-                .commit()
+            .beginTransaction()
+            .replace(R.id.bottomSheet, fragment)
+            .commit()
 
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet).apply {
             peekHeight = resources.getDimensionPixelSize(R.dimen.peekHeight)
 
             addBottomSheetCallback(object :
-                    BottomSheetBehavior.BottomSheetCallback() {
+                BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     fragment.changeArrowState(newState)
                 }
@@ -80,6 +90,35 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.popBackStack()
         } else {
             showBottomSheet(show = false)
+        }
+    }
+
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(notificationReceiver)
+        super.onDestroy()
+    }
+
+    companion object {
+        interface INotificationEventListener {
+            fun onNotificationEvent(packageName: String?, hasNotification: Boolean = false)
+        }
+
+        class NotificationReceiver(private val listener: INotificationEventListener? = null) :
+            BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent?.let {
+                    Log.d("NOTIFICATION_EVENT", "${it.getStringExtra("package_name")}")
+                    listener?.onNotificationEvent(
+                        packageName = it.getStringExtra("package_name"),
+                        hasNotification = intent.getBooleanExtra("has_notification", false)
+                    )
+                }
+            }
+
+            companion object {
+                fun provideIntentFilter(): IntentFilter =
+                    IntentFilter(JAMLNotificationService.NOTIFICATION_ACTION)
+            }
         }
     }
 }

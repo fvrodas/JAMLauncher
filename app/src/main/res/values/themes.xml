@@ -43,4 +43,9 @@
         <item name="android:tint">@android:color/white</item>
         <item name="android:tintMode">src_atop</item>
     </style>
+
+    <style name="Theme.JustAnotherMinimalLauncher.NotificationIndicator" parent="Theme.JustAnotherMinimalLauncher">
+        <item name="android:tint">@android:color/black</item>
+        <item name="android:tintMode">src_atop</item>
+    </style>
 </resources>

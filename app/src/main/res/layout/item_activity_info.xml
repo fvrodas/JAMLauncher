@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
         <variable
             name="label"
             type="String" />
@@ -24,7 +24,7 @@
         android:theme="@style/Theme.JustAnotherMinimalLauncher">
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/appCompatImageView"
+            android:id="@+id/applicationIcon"
             imageDrawable="@{icon}"
             android:layout_width="36dp"
             android:layout_height="36dp"
@@ -34,23 +34,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/notificationIndicator"
+            style="@style/Theme.JustAnotherMinimalLauncher.NotificationIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="16dp"
+            android:background="@null"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/activityLabel"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/circle_drawable" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/activityLabel"
             intColor="@{color}"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="0dp"
             android:background="@null"
             android:gravity="start|center_vertical"
             android:text="@{label}"
             android:textAlignment="gravity"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/appCompatImageView"
+            app:layout_constraintStart_toEndOf="@+id/applicationIcon"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

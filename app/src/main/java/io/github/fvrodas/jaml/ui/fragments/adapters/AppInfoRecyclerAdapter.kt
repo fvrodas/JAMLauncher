@@ -1,6 +1,12 @@
 package io.github.fvrodas.jaml.ui.fragments.adapters
 
+import android.content.res.ColorStateList
+import android.graphics.BlendMode
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
@@ -35,6 +41,14 @@ class AppInfoRecyclerAdapter(val color: Int?) :
         holder.binding.label = item.label
         holder.binding.icon = item.icon
         holder.binding.color = color
+        holder.binding.notificationIndicator.visibility = View.GONE
+        if (item.hasNotification) {
+            holder.binding.notificationIndicator.imageTintList = ColorStateList.valueOf(
+                color ?: Color.WHITE
+            )
+            holder.binding.notificationIndicator.visibility = View.VISIBLE
+        }
+
         holder.itemView.setOnClickListener {
             onItemPressed(item)
         }
@@ -45,14 +59,14 @@ class AppInfoRecyclerAdapter(val color: Int?) :
         }
     }
 
-    fun updateDataSet(newList: ArrayList<AppInfo> ) {
+    fun updateDataSet(newList: ArrayList<AppInfo>) {
         val oldList = dataSet
         dataSet = newList
         notifyChanges(newList, oldList)
     }
 
     private fun notifyChanges(newList: ArrayList<AppInfo>, oldList: ArrayList<AppInfo>) {
-        val diffUtil = DiffUtil.calculateDiff(object : DiffUtil.Callback(){
+        val diffUtil = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int = oldList.count()
 
             override fun getNewListSize(): Int = newList.count()
@@ -62,7 +76,7 @@ class AppInfoRecyclerAdapter(val color: Int?) :
             }
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-               return oldList[oldItemPosition].packageName == newList[newItemPosition].packageName
+                return oldList[oldItemPosition].packageName == newList[newItemPosition].packageName
             }
 
         })

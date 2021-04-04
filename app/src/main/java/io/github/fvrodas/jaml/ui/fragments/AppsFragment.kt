@@ -25,7 +25,7 @@ import io.github.fvrodas.jaml.viewmodel.AppsViewModel
 import io.github.fvrodas.jaml.viewmodel.JAMLViewModelFactory
 
 
-class AppsFragment : Fragment() {
+class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment() {
 
     private lateinit var binding: FragmentAppsBinding
     private lateinit var viewModel: AppsViewModel
@@ -159,5 +159,9 @@ class AppsFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance() = AppsFragment()
+    }
+
+    override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
+        viewModel.markNotification(packageName, hasNotification)
     }
 }
