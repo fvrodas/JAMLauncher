@@ -1,12 +1,6 @@
 package io.github.fvrodas.jaml.ui.fragments.adapters
 
-import android.content.res.ColorStateList
-import android.graphics.BlendMode
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
@@ -14,19 +8,19 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.model.AppInfo
+import io.github.fvrodas.jaml.model.AppShortcutInfo
 
-class AppInfoRecyclerAdapter(val color: Int?) :
-    RecyclerView.Adapter<AppInfoRecyclerAdapter.AppInfoViewHolder>() {
+class AppShortcutInfoRecyclerAdapter(val color: Int?) :
+    RecyclerView.Adapter<AppShortcutInfoRecyclerAdapter.AppInfoViewHolder>() {
 
-    private var dataSet: ArrayList<AppInfo> = ArrayList()
+    private var dataSet: ArrayList<AppShortcutInfo> = ArrayList()
 
-    var onItemPressed: (appInfo: AppInfo) -> Unit = {}
-    var onItemLongPressed: (appInfo: AppInfo) -> Unit = {}
+    var onItemPressed: (appShortcutInfo: AppShortcutInfo) -> Unit = {}
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): AppInfoRecyclerAdapter.AppInfoViewHolder {
+    ): AppShortcutInfoRecyclerAdapter.AppInfoViewHolder {
         val binding = DataBindingUtil.inflate<ItemActivityInfoBinding>(
             LayoutInflater.from(parent.context),
             R.layout.item_activity_info,
@@ -36,36 +30,23 @@ class AppInfoRecyclerAdapter(val color: Int?) :
         return AppInfoViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: AppInfoRecyclerAdapter.AppInfoViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: AppShortcutInfoRecyclerAdapter.AppInfoViewHolder, position: Int) {
         val item = dataSet[holder.adapterPosition]
         holder.binding.label = item.label
         holder.binding.icon = item.icon
         holder.binding.color = color
-        holder.binding.notificationIndicator.visibility = View.GONE
-        if (item.hasNotification) {
-            holder.binding.notificationIndicator.imageTintList = ColorStateList.valueOf(
-                color ?: Color.WHITE
-            )
-            holder.binding.notificationIndicator.visibility = View.VISIBLE
-        }
-
         holder.itemView.setOnClickListener {
             onItemPressed(item)
         }
-
-        holder.itemView.setOnLongClickListener {
-            onItemLongPressed(item)
-            true
-        }
     }
 
-    fun updateDataSet(newList: ArrayList<AppInfo>) {
+    fun updateDataSet(newList: ArrayList<AppShortcutInfo>) {
         val oldList = dataSet
         dataSet = newList
         notifyChanges(newList, oldList)
     }
 
-    private fun notifyChanges(newList: ArrayList<AppInfo>, oldList: ArrayList<AppInfo>) {
+    private fun notifyChanges(newList: ArrayList<AppShortcutInfo>, oldList: ArrayList<AppShortcutInfo>) {
         val diffUtil = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int = oldList.count()
 
