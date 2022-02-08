@@ -106,12 +106,16 @@ class MainActivity : AppCompatActivity() {
         class NotificationReceiver(private val listener: INotificationEventListener? = null) :
             BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                intent?.let {
-                    Log.d("NOTIFICATION_EVENT", "${it.getStringExtra("package_name")}")
-                    listener?.onNotificationEvent(
-                        packageName = it.getStringExtra("package_name"),
-                        hasNotification = intent.getBooleanExtra("has_notification", false)
-                    )
+                try {
+                    intent?.let {
+                        Log.d("NOTIFICATION_EVENT", "${it.getStringExtra("package_name")}")
+                        listener?.onNotificationEvent(
+                                packageName = it.getStringExtra("package_name"),
+                                hasNotification = intent.getBooleanExtra("has_notification", false)
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.d(MainActivity::class.java.name, "${e.message}")
                 }
             }
 

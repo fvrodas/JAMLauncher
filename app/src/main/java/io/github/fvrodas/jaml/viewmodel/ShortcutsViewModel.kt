@@ -1,6 +1,7 @@
 package io.github.fvrodas.jaml.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.drawable.Drawable
@@ -12,6 +13,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.github.fvrodas.jaml.model.AppInfo
 import io.github.fvrodas.jaml.model.AppShortcutInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
@@ -21,9 +24,10 @@ import kotlin.collections.ArrayList
 class ShortcutsViewModel(
     application: Application,
     packageName: String,
-    private val launcherApps: LauncherApps,
     private val densityDpi: Int
 ) : AndroidViewModel(application) {
+
+    private var launcherApps: LauncherApps = application.baseContext.applicationContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
 
     val shortcutsList: MutableLiveData<ArrayList<AppShortcutInfo>> = MutableLiveData()
 

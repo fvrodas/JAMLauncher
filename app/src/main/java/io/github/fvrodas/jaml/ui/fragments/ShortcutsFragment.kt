@@ -43,20 +43,18 @@ class ShortcutsFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_shortcuts, null, false)
         launcherApps =
-            requireContext().getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+                requireContext().getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         viewModelFactory =
-            JAMLViewModelFactory(
-                requireActivity().application,
-                launcherApps,
-                packageName,
-                -1,
-                requireActivity().packageManager
-            )
+                JAMLViewModelFactory(
+                        requireActivity().application,
+                        packageName,
+                        -1,
+                )
         val color = deviceAccentColor(requireContext())
         adapter = AppShortcutInfoRecyclerAdapter(color = color)
         adapter.onItemPressed = this::openApp
@@ -68,14 +66,14 @@ class ShortcutsFragment : Fragment() {
         viewModel = viewModelFactory.create(ShortcutsViewModel::class.java)
         binding.lifecycleOwner = this
         binding.appsRecyclerView.layoutManager = LinearLayoutManager(
-            requireContext(),
-            LinearLayoutManager.VERTICAL,
-            false
+                requireContext(),
+                LinearLayoutManager.VERTICAL,
+                false
         )
         binding.appsRecyclerView.adapter = adapter
-        viewModel.shortcutsList.observe(viewLifecycleOwner, {
+        viewModel.shortcutsList.observe(viewLifecycleOwner) {
             adapter.updateDataSet(it)
-        })
+        }
     }
 
     override fun onResume() {
@@ -86,12 +84,12 @@ class ShortcutsFragment : Fragment() {
     private fun deviceAccentColor(context: Context): Int {
         val typedValue = TypedValue()
         val contextThemeWrapper = ContextThemeWrapper(
-            context,
-            android.R.style.Theme_DeviceDefault
+                context,
+                android.R.style.Theme_DeviceDefault
         )
         contextThemeWrapper.theme.resolveAttribute(
-            android.R.attr.colorAccent,
-            typedValue, true
+                android.R.attr.colorAccent,
+                typedValue, true
         )
         return typedValue.data
     }
@@ -108,7 +106,6 @@ class ShortcutsFragment : Fragment() {
     }
 
     private fun openAppInfo() {
-        adapter.filterDataSet("")
         (activity as MainActivity?)?.showBottomSheet(show = false)
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             addCategory(Intent.CATEGORY_DEFAULT)

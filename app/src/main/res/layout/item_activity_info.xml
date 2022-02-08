@@ -41,7 +41,7 @@
             android:layout_height="8dp"
             android:layout_marginStart="16dp"
             android:background="@null"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/activityLabel"
             app:layout_constraintTop_toTopOf="parent"

@@ -17,10 +17,11 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class AppsViewModel(application: Application, private val packageManager: PackageManager) :
+class AppsViewModel(application: Application) :
     AndroidViewModel(
         application
     ) {
+    private val packageManager: PackageManager = application.packageManager
     private val cachedApplicationsList: MutableLiveData<ArrayList<AppInfo>> = MutableLiveData()
     val filteredApplicationsList: MutableLiveData<ArrayList<AppInfo>> = MutableLiveData()
 
@@ -51,8 +52,8 @@ class AppsViewModel(application: Application, private val packageManager: Packag
                             } while (hasNext())
                         }
                         apps.sortWith { t1, t2 ->
-                            t1.label.toLowerCase(Locale.getDefault())
-                                .compareTo(t2.label.toLowerCase(Locale.getDefault()))
+                            t1.label.lowercase()
+                                .compareTo(t2.label.lowercase())
                         }
 
                         apps.add(

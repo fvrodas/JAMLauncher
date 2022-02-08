@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,11 +43,9 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
                 JAMLViewModelFactory(
                         requireActivity().application,
                         null,
-                        null,
                         -1,
-                        requireActivity().packageManager
                 )
-        vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator;
+        vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         val color = deviceAccentColor(requireContext())
         adapter = AppInfoRecyclerAdapter(color = color)
         adapter.onItemPressed = this::openApp
@@ -60,9 +59,9 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
         binding.lifecycleOwner = this
         binding.appsRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.appsRecyclerView.adapter = adapter
-        viewModel.filteredApplicationsList.observe(viewLifecycleOwner, {
+        viewModel.filteredApplicationsList.observe(viewLifecycleOwner) {
             adapter.updateDataSet(it)
-        })
+        }
 
         binding.appsSearchView.setOnClickListener {
             binding.appsSearchView.isIconified = false
@@ -70,7 +69,7 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
         }
 
         binding.appsSearchView.setOnQueryTextListener(object :
-                androidx.appcompat.widget.SearchView.OnQueryTextListener {
+                OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return false
             }
@@ -110,13 +109,15 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
     }
 
     fun changeArrowState(bottomSheetState: Int) {
+        viewModel.filterApplicationsList("")
+        binding.arrowImageView.requestFocus()
         if (bottomSheetState == BottomSheetBehavior.STATE_DRAGGING) {
             binding.arrowImageView.animate().rotation(-180f).setDuration(350).start()
         }
         if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
             binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
-            viewModel.filterApplicationsList("")
             binding.appsSearchView.isIconified = true
+            binding.appsRecyclerView.layoutManager?.scrollToPosition(0)
         }
     }
 
@@ -146,6 +147,7 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             vibrator.vibrate(VibrationEffect.createOneShot(48, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
+            @Suppress("DEPRECATION")
             vibrator.vibrate(48)
         }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
@@ -163,5 +165,7 @@ class AppsFragment : MainActivity.Companion.INotificationEventListener, Fragment
 
     override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
         viewModel.markNotification(packageName, hasNotification)
+        // Test if works as intended
+        binding.appsRecyclerView.invalidate()
     }
 }

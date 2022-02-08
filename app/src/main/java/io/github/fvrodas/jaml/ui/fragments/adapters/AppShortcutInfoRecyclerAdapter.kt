@@ -3,6 +3,7 @@ package io.github.fvrodas.jaml.ui.fragments.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
@@ -12,8 +13,7 @@ import io.github.fvrodas.jaml.model.AppShortcutInfo
 class AppShortcutInfoRecyclerAdapter(val color: Int?) :
     RecyclerView.Adapter<AppShortcutInfoRecyclerAdapter.AppInfoViewHolder>() {
 
-    private val resultDataSet: ArrayList<AppShortcutInfo> = ArrayList()
-    private val dataSet: ArrayList<AppShortcutInfo> = ArrayList()
+    private var dataSet: ArrayList<AppShortcutInfo> = ArrayList()
 
     var onItemPressed: (appShortcutInfo: AppShortcutInfo) -> Unit = {}
 
@@ -31,7 +31,7 @@ class AppShortcutInfoRecyclerAdapter(val color: Int?) :
     }
 
     override fun onBindViewHolder(holder: AppShortcutInfoRecyclerAdapter.AppInfoViewHolder, position: Int) {
-        val item = resultDataSet[holder.adapterPosition]
+        val item = dataSet[holder.adapterPosition]
         holder.binding.label = item.label
         holder.binding.icon = item.icon
         holder.binding.color = color
@@ -40,21 +40,31 @@ class AppShortcutInfoRecyclerAdapter(val color: Int?) :
         }
     }
 
-    fun updateDataSet(newList: ArrayList<AppShortcutInfo> ) {
-        dataSet.clear()
-        dataSet.addAll(newList)
-        resultDataSet.clear()
-        resultDataSet.addAll(newList)
-        notifyDataSetChanged()
+    fun updateDataSet(newList: ArrayList<AppShortcutInfo>) {
+        val oldList = dataSet
+        dataSet = newList
+        notifyChanges(newList, oldList)
     }
 
-    fun filterDataSet(query: String) {
-        resultDataSet.clear()
-        resultDataSet.addAll(dataSet.filter { it.label.contains(query, ignoreCase = true) })
-        notifyDataSetChanged()
+    private fun notifyChanges(newList: ArrayList<AppShortcutInfo>, oldList: ArrayList<AppShortcutInfo>) {
+        val diffUtil = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldList.count()
+
+            override fun getNewListSize(): Int = newList.count()
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldList[oldItemPosition] == newList[newItemPosition]
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldList[oldItemPosition].packageName == newList[newItemPosition].packageName
+            }
+
+        })
+        diffUtil.dispatchUpdatesTo(this)
     }
 
-    override fun getItemCount(): Int = resultDataSet.size
+    override fun getItemCount(): Int = dataSet.size
 
     inner class AppInfoViewHolder(val binding: ItemActivityInfoBinding) :
         RecyclerView.ViewHolder(binding.root)
