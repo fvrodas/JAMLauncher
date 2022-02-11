@@ -3,20 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-        <variable
-            name="label"
-            type="String" />
-
-        <variable
-            name="icon"
-            type="android.graphics.Bitmap" />
-
-        <variable
-            name="color"
-            type="Integer" />
-    </data>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/listPreferredItemHeight"
@@ -25,7 +11,6 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/applicationIcon"
-            imageDrawable="@{icon}"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginStart="16dp"
@@ -49,13 +34,11 @@
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/activityLabel"
-            intColor="@{color}"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
             android:background="@null"
             android:gravity="start|center_vertical"
-            android:text="@{label}"
             android:textAlignment="gravity"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
