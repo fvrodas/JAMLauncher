@@ -12,11 +12,11 @@
             android:layout_width="48dp"
             android:layout_height="56dp"
             android:layout_gravity="top|center_horizontal"
-            android:scaleType="center"
+            android:scaleType="fitCenter"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@android:drawable/arrow_up_float" />
+            app:srcCompat="@drawable/ic_up_dark" />
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/settingsImageButton"

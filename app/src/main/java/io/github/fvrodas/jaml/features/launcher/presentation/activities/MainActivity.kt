@@ -35,10 +35,7 @@ class MainActivity : AppCompatActivity() {
         ) { _, insets ->
             val barsInsets = insets.getInsets(systemBars())
 
-            val statusBar = barsInsets.top
-            val navBar = barsInsets.bottom
-
-            binding.root.setPadding(0, statusBar, 0, navBar)
+            binding.root.setPadding(0, barsInsets.top, 0, barsInsets.bottom)
 
             insets
         }
@@ -68,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    fragment.changeArrowState(newState)
+                    fragment.onBottomSheetStateChange(newState)
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {

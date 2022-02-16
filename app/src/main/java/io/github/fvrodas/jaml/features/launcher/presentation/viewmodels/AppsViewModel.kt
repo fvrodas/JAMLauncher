@@ -12,10 +12,7 @@ import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
@@ -44,7 +41,7 @@ class AppsViewModel(
                 val result = getApplicationsListUseCase(null).getOrThrow()
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
 
-                result.filterNot { applicationsListCache.contains(it) }
+                result.minus(applicationsListCache)
                     .takeIf { it.isNotEmpty() }?.let {
                         applicationsListCache.clear()
                         applicationsListCache.addAll(result)
@@ -60,35 +57,43 @@ class AppsViewModel(
     }
 
     fun filterApplicationsList(query: String = "") {
-        appsUiState.value = ApplicationsListUiState.Success(applicationsListCache.filter {
-            it.label.contains(
-                query,
-                true
-            )
-        }.toList())
+        CoroutineScope(coroutineDispatcher).launch {
+            try {
+                appsUiState.value = ApplicationsListUiState.Success(applicationsListCache.filter {
+                    it.label.contains(
+                        query,
+                        true
+                    )
+                }.toList())
+            } catch (e: Exception) {
+                appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+            }
+        }
     }
 
     fun markNotification(packageName: String?, hasNotification: Boolean) {
-        val item = applicationsListCache.firstOrNull {
-            it.packageName.contains(packageName ?: "", ignoreCase = true)
-        }
-        item?.let {
-            it.hasNotification = hasNotification
-            appsUiState.value =
-                ApplicationsListUiState.Success(applicationsListCache.toList())
+        CoroutineScope(coroutineDispatcher).launch {
+            try {
+                val item = applicationsListCache.firstOrNull {
+                    it.packageName.contains(packageName ?: "", ignoreCase = true)
+                }
+                item?.let {
+                    it.hasNotification = hasNotification
+                    appsUiState.value =
+                        ApplicationsListUiState.Success(applicationsListCache.toList())
+                }
+            } catch (e: Exception) {
+                appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+            }
         }
     }
 
-
-    @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun retrieveShortcuts(packageName: String) = flow {
-        try {
-            val result = getShortcutsListForApplicationUseCase(packageName)
-            emit(result.getOrThrow())
-        } catch (e: Exception) {
+        emit(getShortcutsListForApplicationUseCase(packageName).getOrThrow())
+    }.flowOn(coroutineDispatcher)
+        .catch { e ->
             appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
         }
-    }.flowOn(coroutineDispatcher)
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun startShortcut(shortcut: AppShortcutInfo) {

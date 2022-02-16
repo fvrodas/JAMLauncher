@@ -13,7 +13,7 @@
         android:name=".JamlApplication"
         android:allowBackup="true"
         android:clearTaskOnLaunch="true"
-        android:configChanges="keyboard|keyboardHidden|navigation"
+        android:configChanges="keyboard|keyboardHidden|navigation|colorMode"
         android:enabled="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"

@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.features.common.extensions.deviceAccentColor
 
-class AppInfoRecyclerAdapter(val color: Int?, private val listener: IAppInfoListener) :
+class AppInfoRecyclerAdapter(private val listener: IAppInfoListener) :
     ListAdapter<AppInfo, AppInfoViewHolder>(AppInfoDiffCallback()) {
 
     override fun onCreateViewHolder(
@@ -23,26 +24,27 @@ class AppInfoRecyclerAdapter(val color: Int?, private val listener: IAppInfoList
 
     override fun onBindViewHolder(holder: AppInfoViewHolder, position: Int) {
         val item = getItem(holder.adapterPosition)
-        with(holder.binding) {
-            activityLabel.text = item.label
-            color?.let {
-                activityLabel.setTextColor(it)
-            }
-            applicationIcon.setImageBitmap(item.icon)
-            notificationIndicator.visibility = View.GONE
-            if (item.hasNotification) {
-                notificationIndicator.imageTintList = ColorStateList.valueOf(
-                    color ?: Color.WHITE
-                )
-                notificationIndicator.visibility = View.VISIBLE
-            }
+        val color = holder.binding.root.context.deviceAccentColor()
+        item?.let {
+            with(holder.binding) {
+                activityLabel.text = item.label
+                activityLabel.setTextColor(color)
+                applicationIcon.setImageBitmap(item.icon)
+                notificationIndicator.visibility = View.GONE
+                if (item.hasNotification) {
+                    notificationIndicator.imageTintList = ColorStateList.valueOf(
+                        color
+                    )
+                    notificationIndicator.visibility = View.VISIBLE
+                }
 
-            root.setOnClickListener {
-                listener.onItemPressed(item)
-            }
+                root.setOnClickListener {
+                    listener.onItemPressed(item)
+                }
 
-            root.setOnLongClickListener {
-                listener.onItemLongPressed(item, it)
+                root.setOnLongClickListener {
+                    listener.onItemLongPressed(item, it)
+                }
             }
         }
     }

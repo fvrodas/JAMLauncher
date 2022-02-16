@@ -68,26 +68,30 @@ class ApplicationRespository(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N_MR1)
     override suspend fun getShortcutsListForApplication(packageName: String): Result<List<AppShortcutInfo>> {
         return withContext(coroutineDispatcher) {
             try {
-                val shortcuts = ArrayList(
-                    shortcutsUtil.launcherApps.getShortcuts(LauncherApps.ShortcutQuery().apply {
-                        setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
-                        setPackage(packageName)
-                    }, Process.myUserHandle())!!.map {
-                        AppShortcutInfo(
-                            it.id,
-                            it.`package`,
-                            it.shortLabel.toString(),
-                            BitmapUtils.loadShortcutIcon(shortcutsUtil.launcherApps, it)?.toBitmap()
-                        )
-                    }.toList()
-                )
+                val shortcuts = ArrayList<AppShortcutInfo>()
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    shortcuts.addAll(
+                        shortcutsUtil.launcherApps.getShortcuts(LauncherApps.ShortcutQuery().apply {
+                            setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
+                            setPackage(packageName)
+                        }, Process.myUserHandle())!!.map {
+                            AppShortcutInfo(
+                                it.id,
+                                it.`package`,
+                                it.shortLabel.toString(),
+                                BitmapUtils.loadShortcutIcon(shortcutsUtil.launcherApps, it)
+                                    ?.toBitmap()
+                            )
+                        }.toList()
+                    )
+                }
                 shortcuts.add(
                     AppShortcutInfo(
-                        "app_info",
+                        "package:${packageName}",
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         "App Info",
                         null

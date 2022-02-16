@@ -3,18 +3,16 @@ package io.github.fvrodas.jaml.features.launcher.presentation.fragments
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -24,11 +22,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
 import io.github.fvrodas.jaml.features.common.FragmentLifecycleObserver
 import io.github.fvrodas.jaml.features.launcher.presentation.activities.MainActivity
 import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 import io.github.fvrodas.jaml.features.launcher.adapters.AppInfoRecyclerAdapter
 import io.github.fvrodas.jaml.features.launcher.adapters.IAppInfoListener
+import io.github.fvrodas.jaml.features.launcher.adapters.IShortcutListener
+import io.github.fvrodas.jaml.features.launcher.adapters.ShortcutsAdapter
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.ApplicationsListUiState
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsViewModel
 import kotlinx.coroutines.flow.collect
@@ -44,6 +45,8 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     private lateinit var vibrator: Vibrator
 
     private val viewModel: AppsViewModel by viewModel()
+    private lateinit var shortcutsPopupWindow: ListPopupWindow
+    private var shortcutsAdapter: ShortcutsAdapter? = null
 
     @SuppressLint("ServiceCast")
     override fun onCreateView(
@@ -52,6 +55,9 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     ): View {
         binding = FragmentAppsBinding.inflate(inflater)
         requireActivity().lifecycle.addObserver(FragmentLifecycleObserver {
+
+            shortcutsPopupWindow = ListPopupWindow(requireContext())
+
             binding.appsSearchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
                     (requireActivity() as MainActivity).showBottomSheet()
@@ -65,9 +71,8 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
                 @Suppress("DEPRECATION")
                 vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             }
-            val color = deviceAccentColor(requireContext())
             appInfoRecyclerAdapter =
-                AppInfoRecyclerAdapter(color = color, listener = object : IAppInfoListener {
+                AppInfoRecyclerAdapter(listener = object : IAppInfoListener {
                     override fun onItemPressed(appInfo: AppInfo) {
                         this@FragmentApps.openApp(appInfo)
                     }
@@ -83,7 +88,7 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
 
             lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.appsUiState.collectLatest { state ->
+                    viewModel.appsUiState.collect { state ->
                         when (state) {
                             is ApplicationsListUiState.Success -> appInfoRecyclerAdapter.submitList(
                                 state.apps
@@ -129,20 +134,8 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
         viewModel.retrieveApplicationsList()
     }
 
-    private fun deviceAccentColor(context: Context): Int {
-        val typedValue = TypedValue()
-        val contextThemeWrapper = ContextThemeWrapper(
-            context,
-            android.R.style.Theme_DeviceDefault
-        )
-        contextThemeWrapper.theme.resolveAttribute(
-            android.R.attr.colorAccent,
-            typedValue, true
-        )
-        return typedValue.data
-    }
 
-    fun changeArrowState(bottomSheetState: Int) {
+    fun onBottomSheetStateChange(bottomSheetState: Int) {
         binding.appsSearchView.clearFocus()
         when (bottomSheetState) {
             BottomSheetBehavior.STATE_DRAGGING -> {
@@ -203,37 +196,39 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
             @Suppress("DEPRECATION")
             vibrator.vibrate(VIBRATION_DURATION_MILLIS)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            lifecycleScope.launchWhenStarted {
-                viewModel.retrieveShortcuts(appInfo.packageName).collect { shortcuts ->
-                    PopupMenu(requireContext(), viewAnchor).apply {
-                        gravity = Gravity.END
-                        for (shortcut in shortcuts) {
-                            menu.add(shortcut.label).apply {
-                                setOnMenuItemClickListener {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                        if (shortcut.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
-                                            openAppDetails(appInfo.packageName)
-                                        } else {
-                                            viewModel.startShortcut(shortcut)
-                                        }
+        lifecycleScope.launch {
+            viewModel.retrieveShortcuts(appInfo.packageName).collect { shortcuts ->
+
+                shortcutsAdapter?.updateAdapter(shortcuts) ?: run {
+                    shortcutsAdapter = ShortcutsAdapter(shortcuts, object : IShortcutListener {
+                        override fun onShortcutPressed(shortcut: AppShortcutInfo) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                if (shortcut.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
+                                    (requireActivity() as MainActivity).showBottomSheet(show = false)
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        addCategory(Intent.CATEGORY_DEFAULT)
+                                        data = Uri.parse(shortcut.id)
+                                        requireActivity().startActivity(this)
                                     }
-                                    true
+                                } else {
+                                    viewModel.startShortcut(shortcut)
                                 }
                             }
+                            shortcutsPopupWindow.dismiss()
                         }
-                    }.show()
+                    })
                 }
-            }
-        }
-    }
 
-    private fun openAppDetails(packageName: String) {
-        (activity as MainActivity?)?.showBottomSheet(show = false)
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            addCategory(Intent.CATEGORY_DEFAULT)
-            data = Uri.parse("package:${packageName}")
-            activity?.startActivity(this)
+                shortcutsPopupWindow.apply {
+                    width = TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        200.0f,
+                        resources.displayMetrics
+                    ).toInt()
+                    setAdapter(shortcutsAdapter)
+                    anchorView = viewAnchor
+                }.show()
+            }
         }
     }
 
@@ -250,3 +245,4 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
         binding.appsRecyclerView.invalidate()
     }
 }
+
