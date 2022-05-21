@@ -2,15 +2,13 @@
 
 Just Another Minimal Launcher, made as simple as possible.
 
-It doesn't require any special permission.
+It doesn't require any special permission to be fully functional.
 
-## Screenshots
+Notification Access is optional; allows the launcher to display notification dots.
 
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/001.png" alt="" />
+## Preview
 
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/002.png" alt="" />
-
-<img width="30%" src="https://github.com/fvrodas/JAMLauncher/raw/main/screenshots/003.png" alt="" />
+<img width="65%" src="https://github.com/fvrodas/JAMLauncher/raw/main/media/demo.gif" alt="" />
 
 ## Download
 
