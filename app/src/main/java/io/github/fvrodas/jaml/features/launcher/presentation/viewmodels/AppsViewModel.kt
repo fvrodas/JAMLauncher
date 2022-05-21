@@ -14,19 +14,17 @@ import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicatio
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.lang.Exception
-import java.util.*
 import kotlin.collections.ArrayList
 
 
 class AppsViewModel(
-    app: Application,
     val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
     private val shortcutsUtil: ShortcutsUtil,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
-) : AndroidViewModel(app) {
+) : ViewModel() {
 
-    private val applicationsListCache: ArrayList<AppInfo> = ArrayList()
+    private var applicationsListCache: Set<AppInfo> = emptySet()
 
     val appsUiState: MutableStateFlow<ApplicationsListUiState> =
         MutableStateFlow(ApplicationsListUiState.Success(applicationsListCache.toList()))
@@ -41,14 +39,14 @@ class AppsViewModel(
                 val result = getApplicationsListUseCase(null).getOrThrow()
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
 
-                result.minus(applicationsListCache)
-                    .takeIf { it.isNotEmpty() }?.let {
-                        applicationsListCache.clear()
-                        applicationsListCache.addAll(result)
-                        appsUiState.value =
-                            ApplicationsListUiState.Success(applicationsListCache.toList())
-                    }
+                val diff = result.minus(applicationsListCache)
+                    .count()
 
+                if (diff > 0) {
+                    applicationsListCache = result.toSet()
+                    appsUiState.value =
+                        ApplicationsListUiState.Success(applicationsListCache.toList())
+                }
 
             } catch (e: Exception) {
                 appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")

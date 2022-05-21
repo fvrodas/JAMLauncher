@@ -25,7 +25,6 @@ class JamlApplication: Application() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N_MR1)
 val appModule = module {
-    viewModel { AppsViewModel(get(), get(), get(), get()) }
+    viewModel { AppsViewModel(get(), get(), get()) }
 }

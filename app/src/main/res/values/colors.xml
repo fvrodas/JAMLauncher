@@ -3,6 +3,4 @@
     <color name="black">#FF000000</color>
     <color name="translucent_black">#45000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="popup_dark_background">#FF424242</color>
-    <color name="popup_light_background">#FFE6E6E6</color>
 </resources>

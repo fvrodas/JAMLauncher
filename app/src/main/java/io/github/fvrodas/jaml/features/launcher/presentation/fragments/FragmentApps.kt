@@ -1,8 +1,10 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.fragments
 
 import android.annotation.SuppressLint
+import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
@@ -11,7 +13,6 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.fragment.app.Fragment
@@ -33,7 +34,6 @@ import io.github.fvrodas.jaml.features.launcher.adapters.ShortcutsAdapter
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.ApplicationsListUiState
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsViewModel
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -86,15 +86,13 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             binding.appsRecyclerView.adapter = appInfoRecyclerAdapter
 
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.appsUiState.collect { state ->
-                        when (state) {
-                            is ApplicationsListUiState.Success -> appInfoRecyclerAdapter.submitList(
-                                state.apps
-                            )
-                            is ApplicationsListUiState.Failure -> Log.d("", state.errorMessage)
-                        }
+            lifecycleScope.launchWhenStarted {
+                viewModel.appsUiState.collect { state ->
+                    when (state) {
+                        is ApplicationsListUiState.Success -> appInfoRecyclerAdapter.submitList(
+                            state.apps
+                        )
+                        is ApplicationsListUiState.Failure -> Log.d("", state.errorMessage)
                     }
                 }
             }
@@ -134,6 +132,11 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
         viewModel.retrieveApplicationsList()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        viewModel.retrieveApplicationsList()
+    }
+
 
     fun onBottomSheetStateChange(bottomSheetState: Int) {
         binding.appsSearchView.clearFocus()
@@ -143,6 +146,7 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
                     .rotation(-180f).setDuration(350).start()
             }
             BottomSheetBehavior.STATE_COLLAPSED -> {
+                shortcutsPopupWindow.dismiss()
                 binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
                 binding.settingsImageButton.isEnabled = false
                 binding.settingsImageButton.animate().apply {

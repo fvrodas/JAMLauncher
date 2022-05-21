@@ -2,7 +2,7 @@
     <string name="app_name" translatable="false">Just Another Minimal Launcher</string>
     <string name="settings_activity">Launcher Settings</string>
     <string name="menu_wallpaper">Wallpaper</string>
-    <string name="menu_notification_access">Notification Access</string>
+    <string name="menu_notification_access">Notification Dots (Experimental)</string>
     <string name="summary_wallpaper">Set wallpaper</string>
     <string name="summary_notification_access">Enable notification access</string>
     <string name="menu_about">About</string>

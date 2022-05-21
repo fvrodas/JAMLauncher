@@ -5,8 +5,7 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="?attr/listPreferredItemHeight"
-    android:background="?attr/selectableItemBackground"
-    android:theme="@style/Theme.JustAnotherMinimalLauncher">
+    android:theme="@style/Theme.JustAnotherMinimalLauncher.ShortcutItem">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/applicationIcon"

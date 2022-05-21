@@ -44,9 +44,8 @@
         <item name="android:tintMode">src_atop</item>
     </style>
 
-    <style name="Theme.JustAnotherMinimalLauncher.PopupWindow" parent="Theme.JustAnotherMinimalLauncher">
-        <item name="android:backgroundTint">@color/popup_light_background</item>
-        <item name="android:backgroundTintMode">src_atop</item>
+    <style name="Theme.JustAnotherMinimalLauncher.ShortcutItem" parent="Theme.JustAnotherMinimalLauncher">
+        <item name="android:background">?attr/selectableItemBackground</item>
     </style>
 
     <style name="Theme.JustAnotherMinimalLauncher.NotificationIndicator" parent="Theme.JustAnotherMinimalLauncher">

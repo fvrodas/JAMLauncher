@@ -29,30 +29,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.inflate(layoutInflater, R.layout.activity_main, null, false)
+        binding = ActivityMainBinding.inflate(layoutInflater, null, false)
         ViewCompat.setOnApplyWindowInsetsListener(
             binding.root
         ) { _, insets ->
-            val barsInsets = insets.getInsets(systemBars())
-
-            binding.root.setPadding(0, barsInsets.top, 0, barsInsets.bottom)
-
+            insets.getInsets(systemBars()).apply {
+                binding.root.setPadding(0, top, 0, bottom)
+            }
             insets
         }
         setContentView(binding.root)
-        initBottomSheet()
-        notificationReceiver = NotificationReceiver(fragment)
-        registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val calendar = Calendar.getInstance()
-        val dateFormatter = SimpleDateFormat("E, MMMM dd yyyy", Locale.getDefault())
-        binding.dateTextView.text = dateFormatter.format(calendar.time)
-    }
-
-    private fun initBottomSheet() {
 
         supportFragmentManager
             .beginTransaction()
@@ -73,6 +59,17 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+
+        notificationReceiver = NotificationReceiver(fragment)
+        registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Calendar.getInstance().apply {
+            val dateFormatter = SimpleDateFormat("E, MMMM dd yyyy", Locale.getDefault())
+            binding.dateTextView.text = dateFormatter.format(time)
+        }
     }
 
     fun showBottomSheet(show: Boolean = true) {
@@ -84,11 +81,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-        } else {
-            showBottomSheet(show = false)
-        }
+        if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
+        else showBottomSheet(show = false)
     }
 
     override fun onDestroy() {
@@ -108,8 +102,8 @@ class MainActivity : AppCompatActivity() {
                     intent?.let {
                         Log.d("NOTIFICATION_EVENT", "${it.getStringExtra("package_name")}")
                         listener?.onNotificationEvent(
-                                packageName = it.getStringExtra("package_name"),
-                                hasNotification = intent.getBooleanExtra("has_notification", false)
+                            packageName = it.getStringExtra("package_name"),
+                            hasNotification = intent.getBooleanExtra("has_notification", false)
                         )
                     }
                 } catch (e: Exception) {

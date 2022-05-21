@@ -11,11 +11,11 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
+import android.util.LruCache
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
@@ -24,10 +24,9 @@ import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.*
 import kotlin.collections.ArrayList
 
-class ApplicationRespository(
+class ApplicationRepository(
     app: Application,
     private val shortcutsUtil: ShortcutsUtil,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -84,7 +83,6 @@ class ApplicationRespository(
                                 it.`package`,
                                 it.shortLabel.toString(),
                                 BitmapUtils.loadShortcutIcon(shortcutsUtil.launcherApps, it)
-                                    ?.toBitmap()
                             )
                         }.toList()
                     )
@@ -106,19 +104,19 @@ class ApplicationRespository(
 }
 
 object BitmapUtils {
-    private val iconCache: HashMap<String, Bitmap> = HashMap()
+    private val iconCache: LruCache<String, Bitmap> = LruCache(1024 * 1024 * 80)
 
     fun loadIcon(
         packageManager: PackageManager,
         item: ResolveInfo
     ): Bitmap {
-        if (iconCache.containsKey(item.activityInfo.packageName)) {
+        if (iconCache[item.activityInfo.packageName] != null) {
             return iconCache[item.activityInfo.packageName]!!
         } else {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val drawable = packageManager.getApplicationIcon(item.activityInfo.packageName)
                 if (drawable is AdaptiveIconDrawable) {
-                    iconCache[item.activityInfo.packageName] = drawable.toBitmap()
+                    iconCache.put(item.activityInfo.packageName, drawable.toBitmap())
                     drawable.toBitmap()
                 } else {
                     val scaled = InsetDrawable(drawable, 0.28f)
@@ -127,7 +125,7 @@ object BitmapUtils {
                 }
             } else {
                 item.activityInfo.loadIcon(packageManager).toBitmap().also {
-                    iconCache[item.activityInfo.packageName] = it
+                    iconCache.put(item.activityInfo.packageName, it)
                 }
             }
         }
@@ -138,10 +136,15 @@ object BitmapUtils {
         launcherApps: LauncherApps,
         shortcutInfo: ShortcutInfo,
         densityDpi: Int = -1
-    ): Drawable? {
+    ): Bitmap? {
         return try {
-            val drawable = launcherApps.getShortcutIconDrawable(shortcutInfo, densityDpi)
-            drawable
+            if (iconCache[shortcutInfo.`package` + shortcutInfo.id] != null) {
+                iconCache[shortcutInfo.`package` + shortcutInfo.id]
+            } else {
+                launcherApps.getShortcutIconDrawable(shortcutInfo, densityDpi)?.toBitmap().also {
+                    iconCache.put(shortcutInfo.`package` + shortcutInfo.id, it)
+                }
+            }
         } catch (e: SecurityException) {
             null
         }

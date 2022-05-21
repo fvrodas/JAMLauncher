@@ -10,10 +10,6 @@ class AppShortcutInfo(
     val icon: Bitmap?
 ) : Serializable {
 
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
-
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + packageName.hashCode()
