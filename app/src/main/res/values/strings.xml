@@ -11,4 +11,12 @@
     <string name="apps_sv_hint">Search an app</string>
     <string name="app_version_name">1.0.0</string>
     <string name="service_name">Show notification dots</string>
+    <string name="summary_dynamic_colors">Enable Material Design 3 Dynamic Colors</string>
+    <string name="menu_dynamic_colors">Dynamic Colors</string>
+    <string name="summary_theme">Select your Launcher Theme</string>
+    <string name="menu_theme">Themes</string>
+    <string-array name="theme_names">
+        <item>Default</item>
+        <item>Gruvbox</item>
+    </string-array>
 </resources>

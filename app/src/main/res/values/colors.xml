@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="dark_background">@color/cardview_dark_background</color>
+    <color name="light_background">@color/cardview_light_background</color>
     <color name="translucent_black">#45000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Gruvbox Colors -->
+    <color name="dark_bg_gruvbox">#282828</color>
+    <color name="light_bg_gruvbox">#fbf1c7</color>
+    <color name="dark_accent_gruvbox">#83a598</color>
+    <color name="light_accent_gruvbox">#076678</color>
+    <color name="dark_text_gruvbox">#ebdbb2</color>
+    <color name="light_text_gruvbox">#3c3836</color>
+    <color name="dark_text_secondary_gruvbox">#bdae93</color>
+    <color name="light_text_secondary_gruvbox">#665c54</color>
 </resources>

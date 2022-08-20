@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.viewmodels
 
+import android.app.Activity
 import android.app.Application
 import android.os.Build
 import android.os.Process
@@ -14,7 +15,6 @@ import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicatio
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.lang.Exception
-import kotlin.collections.ArrayList
 
 
 class AppsViewModel(
@@ -102,6 +102,10 @@ class AppsViewModel(
             null,
             Process.myUserHandle()
         )
+    }
+
+    fun getThemeSetting(app: Application): Flow<Int> = flow {
+        emit(app.getSharedPreferences("userSettings", Activity.MODE_PRIVATE).getInt("THEME", 0))
     }
 }
 

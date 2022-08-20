@@ -1,34 +1,43 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.activities
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
-import androidx.databinding.DataBindingUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
+import io.github.fvrodas.jaml.features.common.ThemedActivity
 import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.features.launcher.presentation.fragments.FragmentApps
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ThemedActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var notificationReceiver: NotificationReceiver
     private val fragment = FragmentApps.newInstance()
 
+    @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        supportActionBar?.hide()
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        window.setBackgroundDrawable(ColorDrawable(android.R.color.transparent))
+
         binding = ActivityMainBinding.inflate(layoutInflater, null, false)
         ViewCompat.setOnApplyWindowInsetsListener(
             binding.root
@@ -72,12 +81,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun showBottomSheet(show: Boolean = true) {
-        if (show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        } else if (!show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+    override fun onPause() {
+        super.onPause()
+        showBottomSheet(false)
     }
 
     override fun onBackPressed() {
@@ -88,6 +94,14 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         unregisterReceiver(notificationReceiver)
         super.onDestroy()
+    }
+
+    fun showBottomSheet(show: Boolean = true) {
+        if (show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        } else if (!show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
     }
 
     companion object {

@@ -7,7 +7,6 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/arrowImageView"
-        style="@style/Theme.JustAnotherMinimalLauncher.ImageView"
         android:layout_width="48dp"
         android:layout_height="56dp"
         android:layout_gravity="top|center_horizontal"
@@ -15,6 +14,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/light_background"
+        app:tintMode="src_atop"
         app:srcCompat="@drawable/ic_up_dark" />
 
     <androidx.appcompat.widget.AppCompatImageButton
@@ -33,7 +34,6 @@
         android:id="@+id/appsSearchView"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:theme="@style/Theme.JustAnotherMinimalLauncher.BottomSheet"
         app:divider="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -45,7 +45,6 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingTop="8dp"
-        android:theme="@style/Theme.JustAnotherMinimalLauncher.BottomSheet"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

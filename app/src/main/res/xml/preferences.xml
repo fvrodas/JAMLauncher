@@ -11,7 +11,12 @@
             android:title="@string/menu_notification_access">
             <intent android:action="android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS" />
         </PreferenceScreen>
-
+        <DropDownPreference
+            android:key="launcher_theme"
+            android:summary="@string/summary_theme"
+            android:title="@string/menu_theme"
+            android:entries="@array/theme_names"
+            android:entryValues="@array/theme_names"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/menu_about">
