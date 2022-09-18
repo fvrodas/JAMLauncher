@@ -36,7 +36,6 @@ import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsView
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-
 class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment() {
 
     private lateinit var binding: FragmentAppsBinding
@@ -154,31 +153,26 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     fun onBottomSheetStateChange(bottomSheetState: Int) {
         binding.appsSearchView.clearFocus()
         when (bottomSheetState) {
-            BottomSheetBehavior.STATE_DRAGGING -> {
-                binding.arrowImageView.animate()
-                    .rotation(-180f).setDuration(350).start()
-            }
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 shortcutsPopupWindow.dismiss()
-                binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
                 binding.settingsImageButton.isEnabled = false
-                binding.settingsImageButton.animate().apply {
-                    alpha(0.0f)
-                    duration = 250
-                    start()
-                }
                 binding.appsSearchView.isIconified = true
                 binding.appsRecyclerView.layoutManager?.scrollToPosition(0)
             }
             BottomSheetBehavior.STATE_EXPANDED -> {
                 binding.settingsImageButton.isEnabled = true
-                binding.settingsImageButton.animate().apply {
-                    alpha(1.0f)
-                    duration = 350
-                    start()
+                if (!binding.appsSearchView.isIconified) {
+                    binding.appsSearchView.requestFocus()
                 }
             }
         }
+    }
+
+    fun onBottomSheetSlides(slideOffset: Float) {
+        binding.settingsImageButton.scaleX = slideOffset
+        binding.settingsImageButton.scaleY = slideOffset
+        binding.settingsImageButton.alpha = slideOffset
+        binding.arrowImageView.rotation = -180 * slideOffset
     }
 
     private fun openApp(appInfo: AppInfo) {

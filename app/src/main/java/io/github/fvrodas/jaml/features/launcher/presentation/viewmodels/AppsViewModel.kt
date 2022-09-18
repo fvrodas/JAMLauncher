@@ -1,7 +1,5 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.viewmodels
 
-import android.app.Activity
-import android.app.Application
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
@@ -102,10 +100,6 @@ class AppsViewModel(
             null,
             Process.myUserHandle()
         )
-    }
-
-    fun getThemeSetting(app: Application): Flow<Int> = flow {
-        emit(app.getSharedPreferences("userSettings", Activity.MODE_PRIVATE).getInt("THEME", 0))
     }
 }
 

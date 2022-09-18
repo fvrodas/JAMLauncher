@@ -51,14 +51,6 @@ class AppInfoRecyclerAdapter(private val listener: IAppInfoListener) :
             }
         }
     }
-
-    private fun getBackgroundDrawable(pressedColor: Int, backgroundDrawable: Drawable?): RippleDrawable {
-        return RippleDrawable(getPressedState(pressedColor), backgroundDrawable, null)
-    }
-
-    private fun getPressedState(pressedColor: Int): ColorStateList {
-        return ColorStateList(arrayOf(intArrayOf()), intArrayOf(pressedColor))
-    }
 }
 
 class AppInfoViewHolder(val binding: ItemActivityInfoBinding) :

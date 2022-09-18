@@ -10,7 +10,8 @@
         <item name="colorSecondaryVariant">@color/dark_background</item>
         <item name="colorOnSecondary">@color/light_background</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/translucent_black</item>
+        <item name="android:statusBarColor">@color/translucent_white</item>
+<!--        <item name="android:windowLightStatusBar">true</item>-->
         <!-- Customize your theme here. -->
         <item name="android:textColor">@color/dark_background</item>
         <item name="searchViewStyle">@style/Theme.Default.SearchView</item>
@@ -47,7 +48,8 @@
         <item name="colorSecondaryVariant">@color/light_accent_gruvbox</item>
         <item name="colorOnSecondary">@color/light_bg_gruvbox</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/translucent_black</item>
+        <item name="android:statusBarColor">@color/translucent_light_gruvbox</item>
+<!--        <item name="android:windowLightStatusBar">true</item>-->
         <!-- Customize your theme here. -->
         <item name="android:textColor">@color/light_text_gruvbox</item>
         <item name="android:textColorPrimary">@color/light_text_gruvbox</item>
@@ -55,6 +57,14 @@
         <item name="bottomSheetStyle">@style/Theme.Gruvbox.BottomSheet</item>
         <item name="searchViewStyle">@style/Theme.Gruvbox.SearchView</item>
         <item name="recyclerViewStyle">@style/Theme.Gruvbox.BottomSheet</item>
+        <item name="actionBarStyle">@style/Theme.Gruvbox.ActionBar</item>
+        <item name="actionBarTheme">@style/Theme.Gruvbox.ThemeOverlay</item>
+    </style>
+
+    <style name="Theme.Gruvbox.ThemeOverlay" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="titleTextColor">@color/light_text_gruvbox</item>
+        <item name="android:textColorPrimary">@color/light_text_gruvbox</item>
+        <item name="android:textColorSecondary">@color/light_text_secondary_gruvbox</item>
     </style>
 
     <style name="Theme.Gruvbox.ActionBar" parent="Widget.AppCompat.ActionBar">
@@ -68,6 +78,54 @@
 
     <style name="Theme.Gruvbox.SearchView" parent="Widget.AppCompat.Light.SearchView">
         <item name="android:background">@color/light_bg_gruvbox</item>
+        <item name="android:textColorHint">@color/light_text_secondary_gruvbox</item>
         <item name="iconTint">@color/light_text_gruvbox</item>
     </style>
+
+    <!-- Nord Theme -->
+    <style name="Theme.Nord" parent="Theme.MaterialComponents.DayNight">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/light_bg_nord</item>
+        <item name="colorPrimaryVariant">@color/light_bg_nord</item>
+        <item name="colorOnPrimary">@color/light_text_nord</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/light_accent_nord</item>
+        <item name="colorSecondaryVariant">@color/light_accent_nord</item>
+        <item name="colorOnSecondary">@color/light_bg_nord</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/translucent_light_nord</item>
+<!--        <item name="android:windowLightStatusBar">true</item>-->
+        <!-- Customize your theme here. -->
+        <item name="android:textColor">@color/light_text_nord</item>
+        <item name="android:textColorPrimary">@color/light_text_nord</item>
+        <item name="android:textColorSecondary">@color/light_text_secondary_nord</item>
+        <item name="bottomSheetStyle">@style/Theme.Nord.BottomSheet</item>
+        <item name="searchViewStyle">@style/Theme.Nord.SearchView</item>
+        <item name="recyclerViewStyle">@style/Theme.Nord.BottomSheet</item>
+        <item name="actionBarStyle">@style/Theme.Nord.ActionBar</item>
+        <item name="actionBarTheme">@style/Theme.Nord.ThemeOverlay</item>
+    </style>
+
+    <style name="Theme.Nord.ThemeOverlay" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="titleTextColor">@color/light_text_nord</item>
+        <item name="android:textColorPrimary">@color/light_text_nord</item>
+        <item name="android:textColorSecondary">@color/light_text_secondary_nord</item>
+    </style>
+
+    <style name="Theme.Nord.ActionBar" parent="Widget.AppCompat.ActionBar">
+        <item name="background">@color/light_bg_nord</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Theme.Nord.BottomSheet" parent="Theme.Default">
+        <item name="android:background">@color/light_bg_nord</item>
+    </style>
+
+    <style name="Theme.Nord.SearchView" parent="Widget.AppCompat.Light.SearchView">
+        <item name="android:background">@color/light_bg_nord</item>
+        <item name="android:textColorHint">@color/light_text_secondary_nord</item>
+        <item name="iconTint">@color/light_text_nord</item>
+    </style>
+
+    <style name="Theme.Dynamic" parent="Theme.Default" />
 </resources>

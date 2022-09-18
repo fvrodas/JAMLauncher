@@ -25,7 +25,7 @@
         android:stateNotNeeded="true"
         android:supportsRtl="true"
         android:taskAffinity=""
-        android:theme="@style/Theme.Gruvbox"
+        android:theme="@style/Theme.Default"
         android:windowSoftInputMode="stateHidden">
         <activity
             android:name=".features.launcher.presentation.activities.MainActivity"
@@ -47,15 +47,7 @@
             android:label="@string/settings_activity"
             android:launchMode="singleTask"
             android:screenOrientation="nosensor"
-            android:stateNotNeeded="true">
-            <intent-filter>
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.MONKEY" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LAUNCHER_APP" />
-            </intent-filter>
-        </activity>
-
+            android:stateNotNeeded="true" />
         <service
             android:name=".framework.services.JAMLNotificationService"
             android:exported="true"

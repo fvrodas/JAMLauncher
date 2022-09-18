@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Dynamic" parent="Theme.Material3.DayNight">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/material_dynamic_neutral20</item>
+        <item name="colorOnPrimary">@color/material_dynamic_primary80</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/material_dynamic_secondary90</item>
+        <item name="colorSecondaryVariant">@color/material_dynamic_secondary70</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/translucent_white</item>
+        <!--        <item name="android:windowLightStatusBar">true</item>-->
+        <!-- Customize your theme here. -->)
+        <item name="android:textColor">@color/material_dynamic_primary80</item>
+        <item name="android:textColorPrimary">@color/material_dynamic_secondary80</item>
+        <item name="android:textColorSecondary">@color/material_dynamic_tertiary60</item>
+        <item name="bottomSheetStyle">@style/Theme.Dynamic.BottomSheet</item>
+        <item name="searchViewStyle">@style/Theme.Dynamic.SearchView</item>
+        <item name="recyclerViewStyle">@style/Theme.Dynamic.BottomSheet</item>
+        <item name="actionBarStyle">@style/Theme.Dynamic.ActionBar</item>)
+        <item name="actionBarTheme">@style/Theme.Dynamic.ThemeOverlay</item>
+    </style>
+
+    <style name="Theme.Dynamic.ThemeOverlay" parent="ThemeOverlay.AppCompat.ActionBar">
+        <item name="titleTextColor">@color/material_dynamic_primary80</item>
+        <item name="android:textColorPrimary">@color/material_dynamic_secondary80</item>
+        <item name="android:textColorSecondary">@color/material_dynamic_tertiary60</item>
+    </style>
+
+    <style name="Theme.Dynamic.ActionBar" parent="Widget.Material3.ActionBar.Solid">
+        <item name="background">@color/material_dynamic_neutral20</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="Theme.Dynamic.BottomSheet" parent="Theme.Dynamic">
+        <item name="android:background">@color/material_dynamic_neutral20</item>
+    </style>
+
+    <style name="Theme.Dynamic.SearchView" parent="Widget.AppCompat.SearchView">
+        <item name="android:background">@color/material_dynamic_neutral20</item>
+    </style>
+
+</resources>

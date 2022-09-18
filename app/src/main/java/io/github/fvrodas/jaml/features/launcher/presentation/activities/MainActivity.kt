@@ -64,7 +64,7 @@ class MainActivity : ThemedActivity() {
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
-
+                    fragment.onBottomSheetSlides(slideOffset)
                 }
             })
         }
