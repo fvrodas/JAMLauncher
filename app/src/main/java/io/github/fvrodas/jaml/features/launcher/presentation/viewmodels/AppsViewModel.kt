@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.viewmodels
 
-import android.app.Application
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
@@ -14,7 +13,6 @@ import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicatio
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.lang.Exception
-import kotlin.collections.ArrayList
 
 
 class AppsViewModel(

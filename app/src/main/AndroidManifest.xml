@@ -25,9 +25,11 @@
         android:stateNotNeeded="true"
         android:supportsRtl="true"
         android:taskAffinity=""
-        android:theme="@style/Theme.JustAnotherMinimalLauncher.Main"
+        android:theme="@style/Theme.Default"
         android:windowSoftInputMode="stateHidden">
-        <activity android:name=".features.launcher.presentation.activities.MainActivity" android:exported="true">
+        <activity
+            android:name=".features.launcher.presentation.activities.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,19 +43,14 @@
         <activity
             android:name=".features.settings.presentation.activities.SettingsActivity"
             android:autoRemoveFromRecents="true"
+            android:exported="true"
             android:label="@string/settings_activity"
             android:launchMode="singleTask"
             android:screenOrientation="nosensor"
-            android:stateNotNeeded="true"
-            android:exported="false"
-            android:theme="@style/Theme.JustAnotherMinimalLauncher.Settings">
-            <intent-filter>
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:stateNotNeeded="true" />
         <service
-            android:exported="true"
             android:name=".framework.services.JAMLNotificationService"
+            android:exported="true"
             android:label="@string/service_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

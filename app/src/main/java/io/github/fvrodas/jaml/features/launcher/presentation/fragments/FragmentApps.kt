@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.fragments
 
 import android.annotation.SuppressLint
-import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -13,12 +12,13 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
@@ -33,10 +33,8 @@ import io.github.fvrodas.jaml.features.launcher.adapters.IShortcutListener
 import io.github.fvrodas.jaml.features.launcher.adapters.ShortcutsAdapter
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.ApplicationsListUiState
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-
 
 class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment() {
 
@@ -44,9 +42,23 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     private lateinit var appInfoRecyclerAdapter: AppInfoRecyclerAdapter
     private lateinit var vibrator: Vibrator
 
-    private val viewModel: AppsViewModel by viewModel()
     private lateinit var shortcutsPopupWindow: ListPopupWindow
     private var shortcutsAdapter: ShortcutsAdapter? = null
+    private val viewModel: AppsViewModel by viewModel()
+
+    private val startForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                result.data?.let {
+                    it.extras?.let { b ->
+                        if (b.getBoolean(SettingsActivity.EXTRA_THEME_CHANGED)) {
+                            requireActivity().recreate()
+                        }
+                    }
+                }
+                // Handle the Intent
+            }
+        }
 
     @SuppressLint("ServiceCast")
     override fun onCreateView(
@@ -141,42 +153,34 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     fun onBottomSheetStateChange(bottomSheetState: Int) {
         binding.appsSearchView.clearFocus()
         when (bottomSheetState) {
-            BottomSheetBehavior.STATE_DRAGGING -> {
-                binding.arrowImageView.animate()
-                    .rotation(-180f).setDuration(350).start()
-            }
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 shortcutsPopupWindow.dismiss()
-                binding.arrowImageView.animate().rotation(0f).setDuration(250).start()
                 binding.settingsImageButton.isEnabled = false
-                binding.settingsImageButton.animate().apply {
-                    alpha(0.0f)
-                    duration = 250
-                    start()
-                }
                 binding.appsSearchView.isIconified = true
                 binding.appsRecyclerView.layoutManager?.scrollToPosition(0)
             }
             BottomSheetBehavior.STATE_EXPANDED -> {
                 binding.settingsImageButton.isEnabled = true
-                binding.settingsImageButton.animate().apply {
-                    alpha(1.0f)
-                    duration = 350
-                    start()
+                if (!binding.appsSearchView.isIconified) {
+                    binding.appsSearchView.requestFocus()
                 }
             }
         }
     }
 
+    fun onBottomSheetSlides(slideOffset: Float) {
+        binding.settingsImageButton.scaleX = slideOffset
+        binding.settingsImageButton.scaleY = slideOffset
+        binding.settingsImageButton.alpha = slideOffset
+        binding.arrowImageView.rotation = -180 * slideOffset
+    }
+
     private fun openApp(appInfo: AppInfo) {
         Log.d("AppInfo", appInfo.packageName)
-        (activity as MainActivity?)?.showBottomSheet(show = false)
         if (appInfo.packageName == SettingsActivity::class.java.name) {
             Intent(context, SettingsActivity::class.java).apply {
                 binding.appsSearchView.isIconified = true
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-                activity?.startActivity(this)
+                startForResult.launch(this)
             }
         } else {
             activity?.packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
@@ -208,7 +212,6 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
                         override fun onShortcutPressed(shortcut: AppShortcutInfo) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                 if (shortcut.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
-                                    (requireActivity() as MainActivity).showBottomSheet(show = false)
                                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                                         addCategory(Intent.CATEGORY_DEFAULT)
                                         data = Uri.parse(shortcut.id)

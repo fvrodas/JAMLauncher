@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="dark_background">@color/cardview_dark_background</color>
+    <color name="light_background">@color/cardview_light_background</color>
     <color name="translucent_black">#45000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="translucent_white">#45FFFFFF</color>
+    <!-- Gruvbox Colors -->
+    <color name="dark_bg_gruvbox">#282828</color>
+    <color name="light_bg_gruvbox">#fbf1c7</color>
+    <color name="dark_accent_gruvbox">#8ec07c</color>
+    <color name="light_accent_gruvbox">#427b58</color>
+    <color name="dark_text_gruvbox">#ebdbb2</color>
+    <color name="light_text_gruvbox">#3c3836</color>
+    <color name="dark_text_secondary_gruvbox">#bdae93</color>
+    <color name="light_text_secondary_gruvbox">#665c54</color>
+    <color name="translucent_dark_bg_gruvbox">#45282828</color>
+    <color name="translucent_light_gruvbox">#45fbf1c7</color>
+    <!-- Nord Colors -->
+    <color name="dark_bg_nord">#2E3440</color>
+    <color name="light_bg_nord">#ECEFF4</color>
+    <color name="dark_accent_nord">#88C0D0</color>
+    <color name="light_accent_nord">#5E81AC</color>
+    <color name="dark_text_nord">#E5E9F0</color>
+    <color name="light_text_nord">#3B4252</color>
+    <color name="dark_text_secondary_nord">#D8DEE9</color>
+    <color name="light_text_secondary_nord">#4C566A</color>
+    <color name="translucent_dark_bg_nord">#452E3440</color>
+    <color name="translucent_light_nord">#45ECEFF4</color>
 </resources>

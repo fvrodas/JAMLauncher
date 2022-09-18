@@ -11,22 +11,37 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/dateTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <DigitalClock
+            android:id="@+id/digitalClock"
             android:layout_marginTop="64dp"
-            android:lines="1"
-            android:shadowColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:shadowColor="?attr/colorPrimary"
             android:shadowDx="2"
             android:shadowDy="2"
             android:shadowRadius="2"
             android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="24sp"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="36sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/dateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lines="1"
+            android:shadowColor="?attr/colorPrimary"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2"
+            android:textAlignment="center"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/digitalClock"
             tools:text="January 1th, 1990" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

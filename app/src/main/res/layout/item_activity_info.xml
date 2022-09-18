@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?attr/listPreferredItemHeight"
-    android:background="?attr/selectableItemBackground"
-    android:theme="@style/Theme.JustAnotherMinimalLauncher">
+    android:background="@drawable/item_activity_selector">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/applicationIcon"
@@ -18,16 +17,16 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/notificationIndicator"
-        style="@style/Theme.JustAnotherMinimalLauncher.NotificationIndicator"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        style="@style/Theme.Default.NotificationIndicator"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
         android:layout_marginStart="16dp"
         android:background="@null"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/activityLabel"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/circle_drawable" />
+        app:srcCompat="@drawable/ic_notification" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/activityLabel"

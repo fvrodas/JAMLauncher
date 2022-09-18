@@ -1,14 +1,18 @@
 package io.github.fvrodas.jaml.features.launcher.adapters
 
 import android.content.res.ColorStateList
+import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.RippleDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.databinding.ItemActivityInfoBinding
 import io.github.fvrodas.jaml.features.common.extensions.deviceAccentColor
 
 class AppInfoRecyclerAdapter(private val listener: IAppInfoListener) :
@@ -27,7 +31,7 @@ class AppInfoRecyclerAdapter(private val listener: IAppInfoListener) :
         item?.let {
             with(holder.binding) {
                 activityLabel.text = item.label
-                activityLabel.setTextColor(color)
+                //activityLabel.setTextColor(color)
                 applicationIcon.setImageBitmap(item.icon)
                 notificationIndicator.visibility = View.GONE
                 if (item.hasNotification) {
