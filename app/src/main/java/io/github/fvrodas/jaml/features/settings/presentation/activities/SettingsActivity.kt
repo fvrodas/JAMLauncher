@@ -3,6 +3,7 @@ package io.github.fvrodas.jaml.features.settings.presentation.activities
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.MenuItem
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.features.common.ThemedActivity
@@ -23,17 +24,23 @@ class SettingsActivity : ThemedActivity() {
             .beginTransaction()
             .replace(R.id.fragment, SettingsFragment.newInstance())
             .commit()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                backPressed()
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            backPressed()
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed() {
+    fun backPressed() {
         setResult(RESULT_OK)
         finish()
     }

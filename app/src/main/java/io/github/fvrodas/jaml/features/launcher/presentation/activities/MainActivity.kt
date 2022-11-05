@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -71,6 +72,13 @@ class MainActivity : ThemedActivity() {
 
         notificationReceiver = NotificationReceiver(fragment)
         registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
+                else showBottomSheet(show = false)
+            }
+        })
     }
 
     override fun onResume() {
@@ -84,11 +92,6 @@ class MainActivity : ThemedActivity() {
     override fun onPause() {
         super.onPause()
         showBottomSheet(false)
-    }
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
-        else showBottomSheet(show = false)
     }
 
     override fun onDestroy() {

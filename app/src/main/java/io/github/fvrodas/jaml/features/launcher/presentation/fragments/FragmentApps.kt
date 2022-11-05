@@ -3,7 +3,6 @@ package io.github.fvrodas.jaml.features.launcher.presentation.fragments
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
@@ -33,6 +32,7 @@ import io.github.fvrodas.jaml.features.launcher.adapters.IShortcutListener
 import io.github.fvrodas.jaml.features.launcher.adapters.ShortcutsAdapter
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.ApplicationsListUiState
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.framework.receivers.CommunicationChannel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -40,7 +40,6 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
 
     private lateinit var binding: FragmentAppsBinding
     private lateinit var appInfoRecyclerAdapter: AppInfoRecyclerAdapter
-    private lateinit var vibrator: Vibrator
 
     private lateinit var shortcutsPopupWindow: ListPopupWindow
     private var shortcutsAdapter: ShortcutsAdapter? = null
@@ -75,14 +74,6 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
                     (requireActivity() as MainActivity).showBottomSheet()
                 }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager =
-                    requireContext().getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vibrator = vibratorManager.defaultVibrator
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            }
             appInfoRecyclerAdapter =
                 AppInfoRecyclerAdapter(listener = object : IAppInfoListener {
                     override fun onItemPressed(appInfo: AppInfo) {
@@ -101,17 +92,21 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
             lifecycleScope.launchWhenStarted {
                 viewModel.appsUiState.collect { state ->
                     when (state) {
-                        is ApplicationsListUiState.Success -> appInfoRecyclerAdapter.submitList(
-                            state.apps
+                        is ApplicationsListUiState.Success -> {
+                            appInfoRecyclerAdapter.submitList(
+                                state.apps
+                            )
+
+                            state.position?.let {
+                                appInfoRecyclerAdapter.notifyItemChanged(it)
+                            }
+                        }
+                        is ApplicationsListUiState.Failure -> Log.d(
+                            FragmentApps::class.java.name,
+                            state.errorMessage
                         )
-                        is ApplicationsListUiState.Failure -> Log.d("", state.errorMessage)
                     }
                 }
-            }
-
-            binding.appsSearchView.setOnClickListener {
-                binding.appsSearchView.isIconified = false
-                (requireActivity() as MainActivity).showBottomSheet()
             }
 
             binding.appsSearchView.setOnQueryTextListener(object :
@@ -133,22 +128,20 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
             binding.settingsImageButton.setOnClickListener {
                 openApp(AppInfo(packageName = SettingsActivity::class.java.name, label = ""))
             }
-
-            viewModel.retrieveApplicationsList()
         })
+
+        CommunicationChannel.onPackageChangedReceived = {
+            Log.d(FragmentApps::class.java.name, "PACKAGE CHANGED")
+            viewModel.retrieveApplicationsList()
+        }
+
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         viewModel.retrieveApplicationsList()
     }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        viewModel.retrieveApplicationsList()
-    }
-
 
     fun onBottomSheetStateChange(bottomSheetState: Int) {
         binding.appsSearchView.clearFocus()
@@ -161,9 +154,6 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
             }
             BottomSheetBehavior.STATE_EXPANDED -> {
                 binding.settingsImageButton.isEnabled = true
-                if (!binding.appsSearchView.isIconified) {
-                    binding.appsSearchView.requestFocus()
-                }
             }
         }
     }
@@ -173,6 +163,7 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
         binding.settingsImageButton.scaleY = slideOffset
         binding.settingsImageButton.alpha = slideOffset
         binding.arrowImageView.rotation = -180 * slideOffset
+        binding.arrowImageView.translationY = -binding.arrowImageView.height * slideOffset
     }
 
     private fun openApp(appInfo: AppInfo) {
@@ -193,17 +184,6 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     }
 
     private fun openShortcutsList(appInfo: AppInfo, viewAnchor: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(
-                VibrationEffect.createOneShot(
-                    VIBRATION_DURATION_MILLIS,
-                    VibrationEffect.DEFAULT_AMPLITUDE
-                )
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(VIBRATION_DURATION_MILLIS)
-        }
         lifecycleScope.launch {
             viewModel.retrieveShortcuts(appInfo.packageName).collect { shortcuts ->
 
@@ -240,16 +220,14 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
     }
 
     companion object {
-        const val VIBRATION_DURATION_MILLIS: Long = 48
 
         @JvmStatic
         fun newInstance() = FragmentApps()
+
     }
 
     override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
         viewModel.markNotification(packageName, hasNotification)
-        // Test if works as intended
-        binding.appsRecyclerView.invalidate()
     }
 }
 

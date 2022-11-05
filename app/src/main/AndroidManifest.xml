@@ -28,11 +28,11 @@
         android:theme="@style/Theme.Default"
         android:windowSoftInputMode="stateHidden">
         <activity
+            android:launchMode="singleTask"
             android:name=".features.launcher.presentation.activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.MONKEY" />
@@ -48,6 +48,16 @@
             android:launchMode="singleTask"
             android:screenOrientation="nosensor"
             android:stateNotNeeded="true" />
+        <receiver
+            android:name=".framework.receivers.PackageChangedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_CHANGED" />
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
         <service
             android:name=".framework.services.JAMLNotificationService"
             android:exported="true"

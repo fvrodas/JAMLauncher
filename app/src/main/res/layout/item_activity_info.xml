@@ -20,13 +20,11 @@
         style="@style/Theme.Default.NotificationIndicator"
         android:layout_width="12dp"
         android:layout_height="12dp"
-        android:layout_marginStart="16dp"
         android:background="@null"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/activityLabel"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_notification" />
+        app:layout_constraintBottom_toBottomOf="@+id/applicationIcon"
+        app:layout_constraintEnd_toEndOf="@+id/applicationIcon"
+        app:srcCompat="@drawable/notification_dot" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/activityLabel"

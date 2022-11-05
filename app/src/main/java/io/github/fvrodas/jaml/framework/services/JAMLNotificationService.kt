@@ -13,8 +13,8 @@ class JAMLNotificationService : NotificationListenerService() {
             val bundle = Bundle().apply {
                 putString("package_name", sbn?.packageName)
                 putBoolean("has_notification", true)
-                putString("notification_title", sbn?.notification?.extras?.get("android:title") as String?)
-                putString("notification_text", sbn?.notification?.extras?.get("android:text") as String?)
+                putString("notification_title", sbn?.notification?.extras?.getString("android:title"))
+                putString("notification_text", sbn?.notification?.extras?.getString("android:text"))
             }
             putExtras(bundle)
             Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
@@ -28,8 +28,8 @@ class JAMLNotificationService : NotificationListenerService() {
             val bundle = Bundle().apply {
                 putString("package_name", sbn?.packageName)
                 putBoolean("has_notification", false)
-                putString("notification_title", sbn?.notification?.extras?.get("android:title") as String?)
-                putString("notification_text", sbn?.notification?.extras?.get("android:text") as String?)
+                putString("notification_title", sbn?.notification?.extras?.getString("android:title"))
+                putString("notification_text", sbn?.notification?.extras?.getString("android:text"))
             }
             putExtras(bundle)
             Log.d("NOTIFICATION_DELETE", "${sbn?.packageName}")

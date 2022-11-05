@@ -2,7 +2,7 @@
     <string name="app_name" translatable="false">Just Another Minimal Launcher</string>
     <string name="settings_activity">Launcher Settings</string>
     <string name="menu_wallpaper">Wallpaper</string>
-    <string name="menu_notification_access">Notification Dots (Experimental)</string>
+    <string name="menu_notification_access">Notification Dots</string>
     <string name="summary_wallpaper">Set wallpaper</string>
     <string name="summary_notification_access">Enable notification access</string>
     <string name="menu_about">About</string>
@@ -16,7 +16,9 @@
     <string name="summary_theme">Select your Launcher Theme</string>
     <string name="menu_theme">Themes</string>
     <string name="menu_appearance">Appearance</string>
-    <string name="menu_other_settings">Other settings</string>
+    <string name="menu_other_settings">General</string>
+    <string name="summary_default_launcher">Select this launcher as your default launcher</string>
+    <string name="menu_default_launcher">Set as Default Launcher</string>
     <string-array name="theme_names">
         <item>Default</item>
         <item>Gruvbox</item>

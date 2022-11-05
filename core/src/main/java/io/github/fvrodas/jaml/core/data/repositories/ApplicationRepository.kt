@@ -11,9 +11,11 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
 import android.os.Process
+import android.os.UserManager
 import android.provider.Settings
 import android.util.LruCache
 import androidx.annotation.RequiresApi
@@ -24,7 +26,7 @@ import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.collections.ArrayList
+
 
 class ApplicationRepository(
     app: Application,
@@ -38,28 +40,30 @@ class ApplicationRepository(
         return withContext(coroutineDispatcher) {
             try {
                 val apps: ArrayList<AppInfo> = ArrayList()
-                packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN, null).apply {
-                    addCategory(Intent.CATEGORY_LAUNCHER)
-                }, 0).apply {
-                    this.iterator().apply {
-                        if (hasNext()) {
-                            do {
-                                val item = next()
-                                apps.add(
-                                    AppInfo(
-                                        item.activityInfo.packageName,
-                                        item.loadLabel(packageManager).toString(),
-                                        BitmapUtils.loadIcon(packageManager, item)
-                                    )
+
+                shortcutsUtil.launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
+                    if (packageManager.getApplicationInfo(
+                            it.applicationInfo.packageName,
+                            PackageManager.MATCH_UNINSTALLED_PACKAGES
+                        ).enabled
+                    ) {
+                        apps.add(
+                            AppInfo(
+                                it.applicationInfo.packageName,
+                                it.label.toString(),
+                                BitmapUtils.loadIcon(
+                                    it.applicationInfo.packageName,
+                                    it.getIcon(-1)
                                 )
-                            } while (hasNext())
-                        }
-                        apps.sortWith { t1, t2 ->
-                            t1.label.lowercase()
-                                .compareTo(t2.label.lowercase())
-                        }
+                            )
+                        )
                     }
                 }
+
+                apps.sortWith { t1, t2 ->
+                    t1.label.lowercase().compareTo(t2.label.lowercase())
+                }
+
                 return@withContext Result.success(apps)
             } catch (e: Exception) {
                 return@withContext Result.failure(e)
@@ -74,10 +78,12 @@ class ApplicationRepository(
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                     shortcuts.addAll(
-                        shortcutsUtil.launcherApps.getShortcuts(LauncherApps.ShortcutQuery().apply {
-                            setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
-                            setPackage(packageName)
-                        }, Process.myUserHandle())!!.map {
+                        shortcutsUtil.launcherApps.getShortcuts(
+                            LauncherApps.ShortcutQuery().apply {
+                                setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
+                                setPackage(packageName)
+                            }, Process.myUserHandle()
+                        )!!.map {
                             AppShortcutInfo(
                                 it.id,
                                 it.`package`,
@@ -106,17 +112,13 @@ class ApplicationRepository(
 object BitmapUtils {
     private val iconCache: LruCache<String, Bitmap> = LruCache(1024 * 1024 * 80)
 
-    fun loadIcon(
-        packageManager: PackageManager,
-        item: ResolveInfo
-    ): Bitmap {
-        if (iconCache[item.activityInfo.packageName] != null) {
-            return iconCache[item.activityInfo.packageName]!!
+    fun loadIcon(packageName: String, drawable: Drawable): Bitmap {
+        if (iconCache[packageName] != null) {
+            return iconCache[packageName]!!
         } else {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val drawable = packageManager.getApplicationIcon(item.activityInfo.packageName)
                 if (drawable is AdaptiveIconDrawable) {
-                    iconCache.put(item.activityInfo.packageName, drawable.toBitmap())
+                    iconCache.put(packageName, drawable.toBitmap())
                     drawable.toBitmap()
                 } else {
                     val scaled = InsetDrawable(drawable, 0.28f)
@@ -124,8 +126,8 @@ object BitmapUtils {
                     AdaptiveIconDrawable(ColorDrawable(Color.WHITE), scaled).toBitmap()
                 }
             } else {
-                item.activityInfo.loadIcon(packageManager).toBitmap().also {
-                    iconCache.put(item.activityInfo.packageName, it)
+                drawable.toBitmap().also {
+                    iconCache.put(packageName, it)
                 }
             }
         }
@@ -133,9 +135,7 @@ object BitmapUtils {
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun loadShortcutIcon(
-        launcherApps: LauncherApps,
-        shortcutInfo: ShortcutInfo,
-        densityDpi: Int = -1
+        launcherApps: LauncherApps, shortcutInfo: ShortcutInfo, densityDpi: Int = -1
     ): Bitmap? {
         return try {
             if (iconCache[shortcutInfo.`package` + shortcutInfo.id] != null) {

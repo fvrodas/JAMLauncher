@@ -25,7 +25,7 @@ class AppsViewModel(
     private var applicationsListCache: Set<AppInfo> = emptySet()
 
     val appsUiState: MutableStateFlow<ApplicationsListUiState> =
-        MutableStateFlow(ApplicationsListUiState.Success(applicationsListCache.toList()))
+        MutableStateFlow(ApplicationsListUiState.Success(applicationsListCache.toList(), null))
 
     init {
         retrieveApplicationsList()
@@ -36,15 +36,9 @@ class AppsViewModel(
             try {
                 val result = getApplicationsListUseCase(null).getOrThrow()
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
-
-                val diff = result.minus(applicationsListCache)
-                    .count()
-
-                if (diff > 0) {
-                    applicationsListCache = result.toSet()
-                    appsUiState.value =
-                        ApplicationsListUiState.Success(applicationsListCache.toList())
-                }
+                applicationsListCache = result.toSet()
+                appsUiState.value =
+                    ApplicationsListUiState.Success(applicationsListCache.toList(), null)
 
             } catch (e: Exception) {
                 appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
@@ -60,7 +54,7 @@ class AppsViewModel(
                         query,
                         true
                     )
-                }.toList())
+                }.toList(), null)
             } catch (e: Exception) {
                 appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
             }
@@ -70,14 +64,12 @@ class AppsViewModel(
     fun markNotification(packageName: String?, hasNotification: Boolean) {
         CoroutineScope(coroutineDispatcher).launch {
             try {
-                val item = applicationsListCache.firstOrNull {
+                val index = applicationsListCache.indexOfFirst {
                     it.packageName.contains(packageName ?: "", ignoreCase = true)
                 }
-                item?.let {
-                    it.hasNotification = hasNotification
-                    appsUiState.value =
-                        ApplicationsListUiState.Success(applicationsListCache.toList())
-                }
+                applicationsListCache.elementAtOrNull(index)?.hasNotification = hasNotification
+                appsUiState.value =
+                    ApplicationsListUiState.Success(applicationsListCache.toList(), index)
             } catch (e: Exception) {
                 appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
             }
@@ -104,7 +96,7 @@ class AppsViewModel(
 }
 
 sealed class ApplicationsListUiState {
-    data class Success(val apps: List<AppInfo>) : ApplicationsListUiState()
+    data class Success(val apps: List<AppInfo>, val position: Int?) : ApplicationsListUiState()
     data class Failure(val errorMessage: String) : ApplicationsListUiState()
 }
 
