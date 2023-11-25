@@ -2,10 +2,8 @@ package io.github.fvrodas.jaml.core.data.repositories
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -15,7 +13,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
 import android.os.Process
-import android.os.UserManager
 import android.provider.Settings
 import android.util.LruCache
 import androidx.annotation.RequiresApi

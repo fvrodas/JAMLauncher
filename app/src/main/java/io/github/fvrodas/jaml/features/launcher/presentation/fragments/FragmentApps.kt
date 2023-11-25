@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.fragments
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.*
@@ -20,18 +19,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
 import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
+import io.github.fvrodas.jaml.databinding.FragmentAppsBinding
 import io.github.fvrodas.jaml.features.common.FragmentLifecycleObserver
-import io.github.fvrodas.jaml.features.launcher.presentation.activities.MainActivity
-import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 import io.github.fvrodas.jaml.features.launcher.adapters.AppInfoRecyclerAdapter
 import io.github.fvrodas.jaml.features.launcher.adapters.IAppInfoListener
 import io.github.fvrodas.jaml.features.launcher.adapters.IShortcutListener
 import io.github.fvrodas.jaml.features.launcher.adapters.ShortcutsAdapter
+import io.github.fvrodas.jaml.features.launcher.presentation.activities.MainActivity
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.ApplicationsListUiState
 import io.github.fvrodas.jaml.features.launcher.presentation.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 import io.github.fvrodas.jaml.framework.receivers.CommunicationChannel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -163,7 +162,7 @@ class FragmentApps : MainActivity.Companion.INotificationEventListener, Fragment
         binding.settingsImageButton.scaleY = slideOffset
         binding.settingsImageButton.alpha = slideOffset
         binding.arrowImageView.rotation = -180 * slideOffset
-        binding.arrowImageView.translationY = -binding.arrowImageView.height * slideOffset
+        binding.arrowImageView.translationY = -(binding.arrowImageView.height) * slideOffset
     }
 
     private fun openApp(appInfo: AppInfo) {

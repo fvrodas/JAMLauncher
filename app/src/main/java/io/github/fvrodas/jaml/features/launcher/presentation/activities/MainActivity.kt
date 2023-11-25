@@ -18,8 +18,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.databinding.ActivityMainBinding
 import io.github.fvrodas.jaml.features.common.ThemedActivity
-import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.features.launcher.presentation.fragments.FragmentApps
+import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import java.text.SimpleDateFormat
 import java.util.*
 

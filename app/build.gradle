@@ -32,8 +32,8 @@ android {
     }
 
     compileOptions {
-        targetCompatibility = "8"
-        sourceCompatibility = "8"
+        targetCompatibility = "11"
+        sourceCompatibility = 11
     }
 
     buildFeatures {

@@ -3,8 +3,9 @@ package io.github.fvrodas.jaml.framework.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.*
-import android.content.IntentFilter
+import android.content.Intent.ACTION_PACKAGE_ADDED
+import android.content.Intent.ACTION_PACKAGE_CHANGED
+import android.content.Intent.ACTION_PACKAGE_FULLY_REMOVED
 import android.util.Log
 
 class PackageChangedReceiver : BroadcastReceiver() {

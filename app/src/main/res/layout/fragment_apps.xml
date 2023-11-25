@@ -14,7 +14,7 @@
         android:alpha="0"
         android:backgroundTint="?attr/colorPrimary"
         android:scaleType="centerInside"
-        android:src="@android:drawable/ic_menu_preferences"
+        android:src="@drawable/ic_round_settings_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?attr/colorOnPrimary"
@@ -53,13 +53,13 @@
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/arrowImageView"
         android:layout_width="48dp"
-        android:layout_height="56dp"
+        android:layout_height="48dp"
         android:layout_gravity="top|center_horizontal"
         android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/constraintLayoutAppList"
-        app:srcCompat="@drawable/ic_up_dark"
+        app:srcCompat="@drawable/ic_round_arrow_up_24"
         app:tint="?attr/colorOnPrimary"
         app:tintMode="src_atop" />
 </androidx.constraintlayout.widget.ConstraintLayout>
