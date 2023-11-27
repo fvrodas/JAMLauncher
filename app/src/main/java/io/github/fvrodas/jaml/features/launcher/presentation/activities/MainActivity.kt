@@ -1,34 +1,21 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.activities
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.WindowManager
-import android.widget.FrameLayout
-import androidx.activity.OnBackPressedCallback
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat.Type.systemBars
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.databinding.ActivityMainBinding
-import io.github.fvrodas.jaml.features.common.ThemedActivity
-import io.github.fvrodas.jaml.features.launcher.presentation.fragments.FragmentApps
-import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
-import java.text.SimpleDateFormat
-import java.util.*
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.compose.rememberNavController
+import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.features.common.themes.JamlColors
+import io.github.fvrodas.jaml.features.common.themes.JamlTheme
+import io.github.fvrodas.jaml.features.launcher.navigation.HomeNavigationGraph
+import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 
-class MainActivity : ThemedActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
-    private lateinit var notificationReceiver: NotificationReceiver
-    private val fragment = FragmentApps.newInstance()
+class MainActivity : AppCompatActivity() {
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,99 +26,32 @@ class MainActivity : ThemedActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
         window.setBackgroundDrawable(ColorDrawable(android.R.color.transparent))
 
-        binding = ActivityMainBinding.inflate(layoutInflater, null, false)
-        ViewCompat.setOnApplyWindowInsetsListener(
-            binding.root
-        ) { _, insets ->
-            insets.getInsets(systemBars()).apply {
-                binding.root.setPadding(0, top, 0, bottom)
-            }
-            insets
-        }
-        setContentView(binding.root)
-
-        supportFragmentManager
-            .beginTransaction()
-            .replace(R.id.bottomSheet, fragment)
-            .commit()
-
-        bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet).apply {
-            peekHeight = resources.getDimensionPixelSize(R.dimen.peekHeight)
-
-            addBottomSheetCallback(object :
-                BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    fragment.onBottomSheetStateChange(newState)
-                }
-
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    fragment.onBottomSheetSlides(slideOffset)
-                }
-            })
-        }
-
-        notificationReceiver = NotificationReceiver(fragment)
-        registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
-                else showBottomSheet(show = false)
-            }
-        })
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Calendar.getInstance().apply {
-            val dateFormatter = SimpleDateFormat("E, MMMM dd yyyy", Locale.getDefault())
-            binding.dateTextView.text = dateFormatter.format(time)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        showBottomSheet(false)
-    }
-
-    override fun onDestroy() {
-        unregisterReceiver(notificationReceiver)
-        super.onDestroy()
-    }
-
-    fun showBottomSheet(show: Boolean = true) {
-        if (show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        } else if (!show && bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
-    }
-
-    companion object {
-        interface INotificationEventListener {
-            fun onNotificationEvent(packageName: String?, hasNotification: Boolean = false)
-        }
-
-        class NotificationReceiver(private val listener: INotificationEventListener? = null) :
-            BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                try {
-                    intent?.let {
-                        Log.d("NOTIFICATION_EVENT", "${it.getStringExtra("package_name")}")
-                        listener?.onNotificationEvent(
-                            packageName = it.getStringExtra("package_name"),
-                            hasNotification = intent.getBooleanExtra("has_notification", false)
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.d(MainActivity::class.java.name, "${e.message}")
-                }
-            }
-
-            companion object {
-                fun provideIntentFilter(): IntentFilter =
-                    IntentFilter(JAMLNotificationService.NOTIFICATION_ACTION)
+        setContent {
+            val navHostController = rememberNavController()
+            JamlTheme(
+                colorScheme = JamlColors.Default,
+            ) {
+                HomeNavigationGraph(
+                    navHostController = navHostController,
+                    openApplication = this::openApplication
+                )
             }
         }
     }
+
+    private fun openApplication(appInfo: AppInfo) {
+        Log.d("AppInfo", appInfo.packageName)
+        if (appInfo.packageName == SettingsActivity::class.java.name) {
+//            Intent(this, SettingsActivity::class.java).apply {
+//                startForResult.launch(this)
+//            }
+        } else {
+            packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                startActivity(this)
+            }
+        }
+    }
+
 }
