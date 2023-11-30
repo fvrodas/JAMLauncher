@@ -21,6 +21,7 @@ import org.koin.java.KoinJavaComponent.getKoin
 @Composable
 fun HomeScreen(
     appsViewModel: AppsViewModel = getKoin().get(),
+    onSettingsPressed: () -> Unit = {},
     onApplicationPressed: (AppInfo) -> Unit = {}
 ) {
 
@@ -28,15 +29,14 @@ fun HomeScreen(
         appsViewModel.retrieveApplicationsList()
     }
 
-    val applicationsListUiState by appsViewModel.appsUiState.collectAsState()
-
-
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(
             BottomSheetValue.Collapsed,
             density = LocalDensity.current
         )
     )
+
+    val applicationsListUiState by appsViewModel.appsUiState.collectAsState()
 
     BottomSheetScaffold(
         backgroundColor = Color.Transparent,
@@ -46,9 +46,9 @@ fun HomeScreen(
                 is ApplicationsListUiState.Success -> {
                     ApplicationsSheet(
                         (applicationsListUiState as ApplicationsListUiState.Success).apps,
-                        { appsViewModel.filterApplicationsList(it) },
+                        onSettingsPressed,
                         onApplicationPressed
-                    )
+                    )  { appsViewModel.filterApplicationsList(it) }
                 }
 
                 else -> {}

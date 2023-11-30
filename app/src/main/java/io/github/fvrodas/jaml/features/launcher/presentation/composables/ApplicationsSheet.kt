@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.features.launcher.presentation.composables
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import io.github.fvrodas.jaml.R
@@ -39,12 +42,12 @@ import io.github.fvrodas.jaml.features.common.themes.dimen56dp
 import io.github.fvrodas.jaml.features.common.themes.dimen64dp
 import io.github.fvrodas.jaml.features.common.themes.dimen8dp
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ApplicationsSheet(
     applicationsList: List<AppInfo>,
-    onSearchApplication: (String) -> Unit,
-    onApplicationPressed: (AppInfo) -> Unit
+    onSettingsPressed: () -> Unit,
+    onApplicationPressed: (AppInfo) -> Unit,
+    onSearchApplication: (String) -> Unit
 ) {
     var searchFieldValue by remember { mutableStateOf("") }
     Column(
@@ -98,28 +101,42 @@ fun ApplicationsSheet(
         LazyColumn {
             items(applicationsList.size) {
                 val item = applicationsList[it]
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(dimen64dp)
-                        .padding(vertical = dimen8dp, horizontal = dimen16dp)
-                        .combinedClickable {
-                            onApplicationPressed.invoke(item)
-                        },
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (item.icon != null) {
-                        Image(
-                            bitmap = item.icon!!.asImageBitmap(),
-                            contentDescription = "",
-                            modifier = Modifier.size(dimen56dp)
-                        )
-                        Spacer(modifier = Modifier.width(dimen16dp))
-                    }
-                    Text(text = item.label, style = MaterialTheme.typography.subtitle1)
+                ApplicationItem(label = item.label, icon = item.icon) {
+                    onApplicationPressed.invoke(item)
+                }
+            }
+            item {
+                Divider()
+                ApplicationItem(label = "Launcher Settings") {
+                    onSettingsPressed.invoke()
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ApplicationItem(label: String, icon: Bitmap? = null, onApplicationPressed: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(dimen64dp)
+            .padding(vertical = dimen8dp, horizontal = dimen16dp)
+            .combinedClickable {
+                onApplicationPressed.invoke()
+            },
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) {
+            Image(
+                bitmap = icon.asImageBitmap(),
+                contentDescription = "",
+                modifier = Modifier.size(dimen56dp)
+            )
+            Spacer(modifier = Modifier.width(dimen16dp))
+        }
+        Text(text = label, style = MaterialTheme.typography.subtitle1)
     }
 }

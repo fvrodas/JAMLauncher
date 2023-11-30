@@ -6,35 +6,37 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.ui.graphics.Color
 
-sealed class JamlColors(val lightColors: Colors, val darkColors: Colors) {
-    object Default : JamlColors(
-        lightColors = lightColors(
-            primary = Color(0xffe6e6e6),
-            primaryVariant = Color(0xffe6e6e6),
-            secondary = Color(0xff424242),
-            background = Color(0xffe6e6e6),
-            surface = Color(0xffe6e6e6),
-            onPrimary = Color(0xff424242),
-            onSecondary = Color(0xffe6e6e6),
-            onBackground = Color(0xff424242),
-            onSurface = Color(0xff424242),
-            error = Color(0xffe6e6e6),
-            onError = Color(0xff424242)
-        ),
-        darkColors = darkColors(
-            primary = Color(0xff424242),
-            primaryVariant = Color(0xff424242),
-            secondary = Color(0xffe6e6e6),
-            background = Color(0xff424242),
-            surface = Color(0xff424242),
-            onPrimary = Color(0xffe6e6e6),
-            onSecondary = Color(0xff424242),
-            onBackground = Color(0xffe6e6e6),
-            onSurface = Color(0xffe6e6e6),
-            error = Color(0xff424242),
-            onError = Color(0xffe6e6e6)
-        )
+sealed class JamlColors(
+    val lightColors: Colors = lightColors(
+        primary = Color(0xffe6e6e6),
+        primaryVariant = Color(0xffe6e6e6),
+        secondary = Color(0xff424242),
+        background = Color(0xffe6e6e6),
+        surface = Color(0xffe6e6e6),
+        onPrimary = Color(0xff424242),
+        onSecondary = Color(0xffe6e6e6),
+        onBackground = Color(0xff424242),
+        onSurface = Color(0xff424242),
+        error = Color(0xffe6e6e6),
+        onError = Color(0xff424242)
+    ), val darkColors: Colors = darkColors(
+        primary = Color(0xff424242),
+        primaryVariant = Color(0xff424242),
+        secondary = Color(0xffe6e6e6),
+        background = Color(0xff424242),
+        surface = Color(0xff424242),
+        onPrimary = Color(0xffe6e6e6),
+        onSecondary = Color(0xff424242),
+        onBackground = Color(0xffe6e6e6),
+        onSurface = Color(0xffe6e6e6),
+        error = Color(0xff424242),
+        onError = Color(0xffe6e6e6)
     )
+) {
+    object Default : JamlColors()
+
+    object DynamicColors : JamlColors()
+
     @SuppressLint("ConflictingOnColor")
     object Gruvbox : JamlColors(
         lightColors = lightColors(
@@ -86,10 +88,10 @@ sealed class JamlColors(val lightColors: Colors, val darkColors: Colors) {
             secondary = Color(0xff88C0D0),
             background = Color(0xff2E3440),
             surface = Color(0xff2E3440),
-            onPrimary = Color(0xff3B4252),
-            onSecondary = Color(0xff4C566A),
-            onBackground = Color(0xff3B4252),
-            onSurface = Color(0xff3B4252),
+            onPrimary = Color(0xffECEFF4),
+            onSecondary = Color(0xffECEFF4),
+            onBackground = Color(0xffECEFF4),
+            onSurface = Color(0xffECEFF4),
             error = Color(0xff2E3440),
             onError = Color(0xff3B4252)
         )

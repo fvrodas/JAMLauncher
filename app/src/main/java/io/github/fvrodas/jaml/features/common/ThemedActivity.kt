@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.media.RingtoneManager.isDefault
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -15,22 +16,35 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.features.common.themes.JamlColors
+import io.github.fvrodas.jaml.features.common.viewmodels.ThemeViewModel
 import io.github.fvrodas.jaml.features.launcher.presentation.activities.MainActivity
+import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 import io.github.fvrodas.jaml.features.settings.presentation.fragments.SettingsFragment
+import org.koin.android.ext.android.getKoin
 
 
 open class ThemedActivity : AppCompatActivity() {
 
     private lateinit var defaultPrefs: SharedPreferences
 
-    private val startForResult =
+    val themeViewModel: ThemeViewModel = getKoin().get()
+
+    protected val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
-                Toast.makeText(
-                    applicationContext,
-                    resources.getString(R.string.app_name) + " has been set as default launcher.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                this.recreate()
+                if (result.data?.getBooleanExtra(
+                        SettingsActivity.EXTRA_THEME_CHANGED,
+                        false
+                    ) != true
+                ) {
+                    Toast.makeText(
+                        applicationContext,
+                        resources.getString(R.string.app_name) + " has been set as default launcher.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
 
@@ -46,9 +60,20 @@ open class ThemedActivity : AppCompatActivity() {
 
             val themedId: Int =
                 when (defaultPrefs.getString(SettingsFragment.PREF_THEME, themeNames[0])) {
-                    themeNames[1] -> R.style.Theme_Gruvbox
-                    themeNames[2] -> R.style.Theme_Nord
-                    else -> R.style.Theme_Default
+                    themeNames[1] -> {
+                        themeViewModel.setLauncherTheme(JamlColors.Gruvbox)
+                        R.style.Theme_Gruvbox
+                    }
+
+                    themeNames[2] -> {
+                        themeViewModel.setLauncherTheme(JamlColors.Nord)
+                        R.style.Theme_Nord
+                    }
+
+                    else -> {
+                        themeViewModel.setLauncherTheme(JamlColors.Default)
+                        R.style.Theme_Default
+                    }
                 }
             setTheme(themedId)
         }

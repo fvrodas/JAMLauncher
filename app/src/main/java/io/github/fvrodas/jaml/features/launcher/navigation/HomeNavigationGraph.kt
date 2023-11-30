@@ -10,6 +10,7 @@ import io.github.fvrodas.jaml.features.launcher.presentation.composables.HomeScr
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
+    onSettingsPressed: () -> Unit,
     openApplication: (AppInfo) -> Unit,
 ) {
     NavHost(
@@ -19,6 +20,7 @@ fun HomeNavigationGraph(
 
         composable(HomeRoutes.HOME_SCREEN) {
             HomeScreen(
+                onSettingsPressed = onSettingsPressed,
                 onApplicationPressed = openApplication
             )
         }

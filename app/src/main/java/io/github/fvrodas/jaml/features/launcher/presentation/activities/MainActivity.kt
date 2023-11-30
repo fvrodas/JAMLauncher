@@ -7,15 +7,19 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.features.common.ThemedActivity
 import io.github.fvrodas.jaml.features.common.themes.JamlColors
 import io.github.fvrodas.jaml.features.common.themes.JamlTheme
+import io.github.fvrodas.jaml.features.common.viewmodels.ThemeViewModel
 import io.github.fvrodas.jaml.features.launcher.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
+import org.koin.android.ext.android.getKoin
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ThemedActivity() {
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,30 +31,39 @@ class MainActivity : AppCompatActivity() {
         window.setBackgroundDrawable(ColorDrawable(android.R.color.transparent))
 
         setContent {
+            val currentTheme by themeViewModel.currentTheme.collectAsState()
             val navHostController = rememberNavController()
+
             JamlTheme(
-                colorScheme = JamlColors.Default,
+                colorScheme = currentTheme,
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
+                    onSettingsPressed = this::onSettingsPressed,
                     openApplication = this::openApplication
                 )
             }
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        if (!isDefault()) {
+            requestDefaultHome()
+        }
+    }
+
+    private fun onSettingsPressed() {
+        Intent(this, SettingsActivity::class.java).apply {
+            this@MainActivity.startForResult.launch(this)
+        }
+    }
+
     private fun openApplication(appInfo: AppInfo) {
-        Log.d("AppInfo", appInfo.packageName)
-        if (appInfo.packageName == SettingsActivity::class.java.name) {
-//            Intent(this, SettingsActivity::class.java).apply {
-//                startForResult.launch(this)
-//            }
-        } else {
-            packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-                startActivity(this)
-            }
+        packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            startActivity(this)
         }
     }
 

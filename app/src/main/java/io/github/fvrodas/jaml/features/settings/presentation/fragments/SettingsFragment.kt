@@ -16,6 +16,7 @@ import io.github.fvrodas.jaml.features.settings.presentation.activities.Settings
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
     }
@@ -27,7 +28,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val launcherThemePrefs = findPreference<DropDownPreference>(PREF_THEME)
         val setDefaultHome = findPreference<Preference>(PREF_DEFAULT_HOME)
 
-        val isDefaultHome =  (requireActivity() as ThemedActivity).isDefault()
+        val isDefaultHome = (requireActivity() as ThemedActivity).isDefault()
 
         val isDynamicColorEnabled = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getBoolean(PREF_DYNAMIC_COLOR, false)
@@ -35,7 +36,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         launcherThemePrefs?.let {
             it.setOnPreferenceChangeListener { _, _ ->
-                requireActivity().recreate()
                 requireActivity().setResult(AppCompatActivity.RESULT_OK, Intent().apply {
                     putExtra(SettingsActivity.EXTRA_THEME_CHANGED, true)
                 })
@@ -46,7 +46,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         dynamicColorPrefs?.let {
             it.setOnPreferenceChangeListener { _, _ ->
-                requireActivity().recreate()
                 requireActivity().setResult(AppCompatActivity.RESULT_OK, Intent().apply {
                     putExtra(SettingsActivity.EXTRA_THEME_CHANGED, true)
                 })
@@ -62,9 +61,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        if (Build.VERSION.SDK_INT < 31) {
+        /* TODO Make it visible again once Compose Themes are migrated to M3*/
+
+//        if (Build.VERSION.SDK_INT < 31) {
             dynamicColorPrefs?.isVisible = false
-        }
+//        }
     }
 
     companion object {
