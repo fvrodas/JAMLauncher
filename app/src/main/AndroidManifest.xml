@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.github.fvrodas.jaml"
     android:versionName="@string/app_version_name">
 
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -25,11 +24,11 @@
         android:stateNotNeeded="true"
         android:supportsRtl="true"
         android:taskAffinity=""
-        android:theme="@style/Theme.Default"
         android:windowSoftInputMode="stateHidden">
         <activity
             android:launchMode="singleTask"
-            android:name=".features.launcher.presentation.activities.MainActivity"
+            android:theme="@style/Theme.Default"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

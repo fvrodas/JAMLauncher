@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.features.settings.presentation.fragments
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +10,6 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreference
 import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.features.common.ThemedActivity
 import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -28,7 +26,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val launcherThemePrefs = findPreference<DropDownPreference>(PREF_THEME)
         val setDefaultHome = findPreference<Preference>(PREF_DEFAULT_HOME)
 
-        val isDefaultHome = (requireActivity() as ThemedActivity).isDefault()
+        val isDefaultHome = false
 
         val isDynamicColorEnabled = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getBoolean(PREF_DYNAMIC_COLOR, false)
@@ -57,7 +55,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setDefaultHome?.isVisible = !isDefaultHome
 
         setDefaultHome?.setOnPreferenceClickListener {
-            (requireActivity() as ThemedActivity).requestDefaultHome()
+
             true
         }
 

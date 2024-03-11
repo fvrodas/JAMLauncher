@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.launcher.navigation
+package io.github.fvrodas.jaml.navigation
 
 object HomeRoutes {
     const val HOME_SCREEN = "home_screen"

@@ -1,36 +1,31 @@
-package io.github.fvrodas.jaml.features.common
+package io.github.fvrodas.jaml
 
+import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.media.RingtoneManager.isDefault
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.PreferenceManager
-import com.google.android.material.color.DynamicColors
-import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.features.common.themes.JamlColors
-import io.github.fvrodas.jaml.features.common.viewmodels.ThemeViewModel
-import io.github.fvrodas.jaml.features.launcher.presentation.activities.MainActivity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.navigation.compose.rememberNavController
+import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.features.common.themes.JamlColorSchemes
+import io.github.fvrodas.jaml.features.common.themes.JamlTheme
+import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
-import io.github.fvrodas.jaml.features.settings.presentation.fragments.SettingsFragment
-import org.koin.android.ext.android.getKoin
 
+class MainActivity : AppCompatActivity() {
 
-open class ThemedActivity : AppCompatActivity() {
-
-    private lateinit var defaultPrefs: SharedPreferences
-
-    val themeViewModel: ThemeViewModel = getKoin().get()
-
-    protected val startForResult =
+    private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 this.recreate()
@@ -48,39 +43,42 @@ open class ThemedActivity : AppCompatActivity() {
             }
         }
 
+    @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val themeNames = resources.getStringArray(R.array.theme_names)
-        defaultPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val isDynamicColorEnabled =
-            defaultPrefs.getBoolean(SettingsFragment.PREF_DYNAMIC_COLOR, false)
-        if (isDynamicColorEnabled) {
-            setTheme(R.style.Theme_Dynamic)
-            DynamicColors.applyToActivitiesIfAvailable(application)
-        } else {
-
-            val themedId: Int =
-                when (defaultPrefs.getString(SettingsFragment.PREF_THEME, themeNames[0])) {
-                    themeNames[1] -> {
-                        themeViewModel.setLauncherTheme(JamlColors.Gruvbox)
-                        R.style.Theme_Gruvbox
-                    }
-
-                    themeNames[2] -> {
-                        themeViewModel.setLauncherTheme(JamlColors.Nord)
-                        R.style.Theme_Nord
-                    }
-
-                    else -> {
-                        themeViewModel.setLauncherTheme(JamlColors.Default)
-                        R.style.Theme_Default
-                    }
-                }
-            setTheme(themedId)
-        }
         super.onCreate(savedInstanceState)
+
+        supportActionBar?.hide()
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
+        window.setBackgroundDrawable(ColorDrawable(0x00000000))
+
+
+        setContent {
+            val navHostController = rememberNavController()
+
+            val darkMode = isSystemInDarkTheme()
+
+            JamlTheme(
+                colorScheme = JamlColorSchemes.Default,
+                isInDarkMode = darkMode
+            ) {
+                HomeNavigationGraph(
+                    navHostController = navHostController,
+                    onSettingsPressed = this::onSettingsPressed,
+                    openApplication = this::openApplication
+                )
+            }
+        }
     }
 
-    fun requestDefaultHome() {
+    override fun onStart() {
+        super.onStart()
+        if (!isDefault()) {
+            requestDefaultHome()
+        }
+    }
+
+    private fun requestDefaultHome() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             if (!isDefault()) {
                 val componentName =
@@ -114,7 +112,7 @@ open class ThemedActivity : AppCompatActivity() {
         }
     }
 
-    fun isDefault(): Boolean {
+    private fun isDefault(): Boolean {
         val localPackageManager = packageManager
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
@@ -134,4 +132,17 @@ open class ThemedActivity : AppCompatActivity() {
         }
 
     }
+
+    private fun onSettingsPressed() {
+
+    }
+
+    private fun openApplication(appInfo: AppInfo) {
+        packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            startActivity(this)
+        }
+    }
+
 }

@@ -44,6 +44,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.8"
     }
+    namespace 'io.github.fvrodas.jaml'
 }
 
 dependencies {

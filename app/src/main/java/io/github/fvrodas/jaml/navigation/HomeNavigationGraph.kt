@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.launcher.navigation
+package io.github.fvrodas.jaml.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

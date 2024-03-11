@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Nord" parent="Theme.MaterialComponents.DayNight">
+    <style name="Theme.Nord" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/light_bg_nord</item>
         <item name="colorPrimaryVariant">@color/light_bg_nord</item>
