@@ -13,7 +13,6 @@ import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicatio
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-
 class AppsViewModel(
     val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,

@@ -9,7 +9,7 @@
     <string name="about_neutral">View on Github</string>
     <string name="about_github_url" translatable="false">https://github.com/fvrodas/JAMLauncher</string>
     <string name="apps_sv_hint">What are you looking for?</string>
-    <string name="app_version_name">1.1.0</string>
+    <string name="app_version_name">Version 1.1.0</string>
     <string name="service_name">Show notification dots</string>
     <string name="summary_dynamic_colors">Enable Material Design 3 Dynamic Colors on Android 12 and above</string>
     <string name="menu_dynamic_colors">Dynamic Colors</string>

@@ -10,36 +10,33 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
 import io.github.fvrodas.jaml.features.common.themes.JamlColorSchemes
 import io.github.fvrodas.jaml.features.common.themes.JamlTheme
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
-import io.github.fvrodas.jaml.features.settings.presentation.activities.SettingsActivity
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : androidx.activity.ComponentActivity() {
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 this.recreate()
-                if (result.data?.getBooleanExtra(
-                        SettingsActivity.EXTRA_THEME_CHANGED,
-                        false
-                    ) != true
-                ) {
-                    Toast.makeText(
-                        applicationContext,
-                        resources.getString(R.string.app_name) + " has been set as default launcher.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+//                if (result.data?.getBooleanExtra(
+//                        SettingsActivity.EXTRA_THEME_CHANGED,
+//                        false
+//                    ) != true
+//                ) {
+//                    Toast.makeText(
+//                        applicationContext,
+//                        resources.getString(R.string.app_name) + " has been set as default launcher.",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
             }
         }
 
@@ -47,11 +44,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        supportActionBar?.hide()
-
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
         window.setBackgroundDrawable(ColorDrawable(0x00000000))
 
+        actionBar?.hide()
 
         setContent {
             val navHostController = rememberNavController()
@@ -64,17 +60,29 @@ class MainActivity : AppCompatActivity() {
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    onSettingsPressed = this::onSettingsPressed,
-                    openApplication = this::openApplication
+                    openApplication = this::openApplication,
+                    isDefaultHome = this::isDefault,
+                    setAsDefaultHome = this::requestDefaultHome,
+                    setWallpaper = this::setWallpaper,
+                    enableNotificationAccess = this::enableNotificationAccess
                 )
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (!isDefault()) {
-            requestDefaultHome()
+    private fun setWallpaper() {
+        Intent().apply {
+            action = "android.intent.action.SET_WALLPAPER"
+        }.also {
+            startActivity(it)
+        }
+    }
+
+    private fun enableNotificationAccess() {
+        Intent().apply {
+            action = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
+        }.also {
+            startActivity(it)
         }
     }
 
@@ -130,10 +138,6 @@ class MainActivity : AppCompatActivity() {
             )!!.activityInfo.packageName
             str == packageName
         }
-
-    }
-
-    private fun onSettingsPressed() {
 
     }
 

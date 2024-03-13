@@ -27,7 +27,6 @@
         android:windowSoftInputMode="stateHidden">
         <activity
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Default"
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -39,14 +38,6 @@
                 <category android:name="android.intent.category.LAUNCHER_APP" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".features.settings.presentation.activities.SettingsActivity"
-            android:autoRemoveFromRecents="true"
-            android:exported="true"
-            android:label="@string/settings_activity"
-            android:launchMode="singleTask"
-            android:screenOrientation="nosensor"
-            android:stateNotNeeded="true" />
         <receiver
             android:name=".framework.receivers.PackageChangedReceiver"
             android:exported="true">
