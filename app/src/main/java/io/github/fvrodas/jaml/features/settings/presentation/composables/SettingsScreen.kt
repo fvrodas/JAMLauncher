@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.features.settings.presentation.composables
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,23 +18,43 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.features.common.themes.dimen16dp
 import io.github.fvrodas.jaml.features.common.themes.dimen8dp
 import io.github.fvrodas.jaml.features.common.themes.dimenZero
+import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.SettingsViewModel
 
 @Composable
 fun SettingsScreen(
+    settingsViewModel: SettingsViewModel,
     isDefaultHome: () -> Boolean = { false },
     setAsDefaultHome: () -> Unit = {},
     setWallpaper: () -> Unit = {},
     enableNotificationAccess: () -> Unit = {},
+    onSettingsSaved: () -> Unit,
     onBackPressed: () -> Unit = {}
 ) {
+    var dynamicColor by remember {
+        mutableStateOf(settingsViewModel.isDynamicColorEnabled)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            settingsViewModel.saveSetting(LauncherSettings.DYNAMIC_COLOR_ENABLED, dynamicColor)
+            onSettingsSaved()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,7 +89,7 @@ fun SettingsScreen(
             Row {
                 Text(
                     text = stringResource(id = R.string.menu_other_settings),
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
@@ -93,7 +112,7 @@ fun SettingsScreen(
             Row {
                 Text(
                     text = stringResource(id = R.string.menu_appearance),
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
@@ -104,11 +123,18 @@ fun SettingsScreen(
             ) {
                 setWallpaper()
             }
+            SettingSwitch(
+                title = stringResource(id = R.string.menu_dynamic_colors),
+                description = stringResource(id = R.string.summary_dynamic_colors),
+                value = dynamicColor
+            ) { checked ->
+                dynamicColor = checked
+            }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {
                 Text(
                     text = stringResource(id = R.string.menu_about),
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    style = MaterialTheme.typography.titleLarge.copy(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
@@ -132,35 +158,4 @@ fun SettingsScreen(
             }
         }
     }
-}
-
-@Composable
-fun SettingItem(title: String, description: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .clickable {
-                onClick()
-            }
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = dimen8dp, vertical = dimen8dp)
-        ) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground
-            ))
-            Text(
-                text = description, style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = ContentAlpha.medium)
-                )
-            )
-        }
-    }
-}
-
-@Preview(showSystemUi = false)
-@Composable
-fun SettingsScreenPreview() {
-    SettingsScreen {}
 }

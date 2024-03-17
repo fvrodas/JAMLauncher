@@ -11,10 +11,10 @@ class JAMLNotificationService : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         Intent(NOTIFICATION_ACTION).apply {
             val bundle = Bundle().apply {
-                putString("package_name", sbn?.packageName)
-                putBoolean("has_notification", true)
-                putString("notification_title", sbn?.notification?.extras?.getString("android:title"))
-                putString("notification_text", sbn?.notification?.extras?.getString("android:text"))
+                putString(NOTIF_PACKAGE_NAME, sbn?.packageName)
+                putBoolean(NOTIF_HAS_NOTIFICATION, true)
+                putString(NOTIF_TITLE, sbn?.notification?.extras?.getString("android:title"))
+                putString(NOTIF_TEXT, sbn?.notification?.extras?.getString("android:text"))
             }
             putExtras(bundle)
             Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
@@ -26,10 +26,10 @@ class JAMLNotificationService : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
         Intent(NOTIFICATION_ACTION).apply {
             val bundle = Bundle().apply {
-                putString("package_name", sbn?.packageName)
-                putBoolean("has_notification", false)
-                putString("notification_title", sbn?.notification?.extras?.getString("android:title"))
-                putString("notification_text", sbn?.notification?.extras?.getString("android:text"))
+                putString(NOTIF_PACKAGE_NAME, sbn?.packageName)
+                putBoolean(NOTIF_HAS_NOTIFICATION, false)
+                putString(NOTIF_TITLE, sbn?.notification?.extras?.getString("android:title"))
+                putString(NOTIF_TEXT, sbn?.notification?.extras?.getString("android:text"))
             }
             putExtras(bundle)
             Log.d("NOTIFICATION_DELETE", "${sbn?.packageName}")
@@ -43,3 +43,8 @@ class JAMLNotificationService : NotificationListenerService() {
         const val NOTIFICATION_ACTION = "io.github.fvrodas.jaml.NOTIFICATION_EVENT"
     }
 }
+
+const val NOTIF_PACKAGE_NAME = "package_name"
+const val NOTIF_HAS_NOTIFICATION = "has_notification"
+const val NOTIF_TITLE = "notification_title"
+const val NOTIF_TEXT = "notification_text"

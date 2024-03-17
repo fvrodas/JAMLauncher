@@ -3,7 +3,8 @@ package io.github.fvrodas.jaml.features.launcher.presentation.viewmodels
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+
 import io.github.fvrodas.jaml.BuildConfig
 import io.github.fvrodas.jaml.core.data.repositories.ShortcutsUtil
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo

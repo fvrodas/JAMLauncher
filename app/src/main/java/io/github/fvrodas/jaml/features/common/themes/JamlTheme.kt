@@ -15,28 +15,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun JamlTheme(
-    colorScheme: JamlColorSchemes,
+    colorScheme: JamlColorScheme,
     isInDarkMode: Boolean,
+    isDynamicColorsEnabled: Boolean,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val currentScheme = remember {
-        mutableStateOf(JamlColorSchemes.Default.lightColorScheme)
+        mutableStateOf(JamlColorScheme.Default.lightColorScheme)
     }
 
-    //CURRENT STATE: DESPITE REACH THE RIGHT STATEMENTS IN BOTH SCENARIOS,
-    //DARK THEME IS NOT APPLIED
     currentScheme.value = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isDynamicColorsEnabled -> {
             if (isInDarkMode) {
-                //REACH HERE
                 dynamicDarkColorScheme(context)
             } else {
-                //ALSO REACH HERE
                 dynamicLightColorScheme(context)
             }
         }

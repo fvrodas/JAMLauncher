@@ -3,12 +3,11 @@ package io.github.fvrodas.jaml.features.common.themes
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 
-sealed class JamlColorSchemes(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
-
-    object Default : JamlColorSchemes(
+sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
+    object Default : JamlColorScheme(
         lightColorScheme = ColorScheme(
-            primary = Color(0xffe6e6e6),
-            onPrimary = Color(0xff424242),
+            primary = Color(0xff777777),
+            onPrimary = Color(0xffe6e6e6),
             primaryContainer = Color(0xffe6e6e6),
             onPrimaryContainer = Color(0xff424242),
             inversePrimary = Color(0xFF000000),
@@ -38,8 +37,8 @@ sealed class JamlColorSchemes(val lightColorScheme: ColorScheme, val darkColorSc
             scrim = Color(0xff424242),
         ),
         darkColorScheme = ColorScheme(
-            primary = Color(0xff424242),
-            onPrimary = Color(0xffe6e6e6),
+            primary = Color(0xff888888),
+            onPrimary = Color(0xffffffff),
             primaryContainer = Color(0xff424242),
             onPrimaryContainer = Color(0xffe6e6e6),
             inversePrimary = Color(0xFF000000),
@@ -70,3 +69,8 @@ sealed class JamlColorSchemes(val lightColorScheme: ColorScheme, val darkColorSc
         )
     )
 }
+
+val themesByName = mapOf(
+    JamlColorScheme.Default.toString() to JamlColorScheme.Default
+)
+

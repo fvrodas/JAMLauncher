@@ -118,7 +118,7 @@ object BitmapUtils {
                     iconCache.put(packageName, drawable.toBitmap())
                     drawable.toBitmap()
                 } else {
-                    val scaled = InsetDrawable(drawable, 0.28f)
+                    val scaled = InsetDrawable(drawable, 0.24f)
                     scaled.bounds = drawable.bounds
                     AdaptiveIconDrawable(ColorDrawable(Color.WHITE), scaled).toBitmap()
                 }

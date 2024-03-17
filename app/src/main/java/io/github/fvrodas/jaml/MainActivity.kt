@@ -14,11 +14,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.features.common.themes.JamlColorSchemes
+import io.github.fvrodas.jaml.features.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.features.common.themes.JamlTheme
+import io.github.fvrodas.jaml.features.common.themes.themesByName
+import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.SettingsViewModel
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
+import org.koin.android.ext.android.getKoin
 
 class MainActivity : androidx.activity.ComponentActivity() {
 
@@ -50,20 +60,35 @@ class MainActivity : androidx.activity.ComponentActivity() {
         actionBar?.hide()
 
         setContent {
+            val settingsViewModel: SettingsViewModel = getKoin().get()
+
+            val selectedTheme by remember {
+                mutableStateOf(JamlColorScheme.Default.toString())
+            }
+
+            var isDynamicColorsEnabled by remember {
+                mutableStateOf(settingsViewModel.isDynamicColorEnabled)
+            }
+
             val navHostController = rememberNavController()
 
             val darkMode = isSystemInDarkTheme()
 
             JamlTheme(
-                colorScheme = JamlColorSchemes.Default,
-                isInDarkMode = darkMode
+                colorScheme = themesByName[selectedTheme] ?: JamlColorScheme.Default,
+                isInDarkMode = darkMode,
+                isDynamicColorsEnabled = isDynamicColorsEnabled
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
+                    settingsViewModel = settingsViewModel,
                     openApplication = this::openApplication,
                     isDefaultHome = this::isDefault,
                     setAsDefaultHome = this::requestDefaultHome,
                     setWallpaper = this::setWallpaper,
+                    onSettingsSaved = {
+                        isDynamicColorsEnabled = settingsViewModel.isDynamicColorEnabled
+                    },
                     enableNotificationAccess = this::enableNotificationAccess
                 )
             }
