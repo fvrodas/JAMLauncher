@@ -4,6 +4,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 
 sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
+
     object Default : JamlColorScheme(
         lightColorScheme = ColorScheme(
             primary = Color(0xff777777),
@@ -68,9 +69,75 @@ sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorSch
             scrim = Color(0xff424242),
         )
     )
+
+    object Gruvbox : JamlColorScheme(
+        lightColorScheme = ColorScheme(
+            primary = Color(0xff689d6a),
+            onPrimary = Color(0xff3c3836),
+            primaryContainer = Color(0xff689d6a),
+            onPrimaryContainer = Color(0xff3c3836),
+            inversePrimary = Color(0xffb16286),
+            secondary = Color(0xff458588),
+            onSecondary = Color(0xff3c3836),
+            secondaryContainer = Color(0xff458588),
+            onSecondaryContainer = Color(0xff3c3836),
+            tertiary = Color(0xff424242),
+            onTertiary = Color(0xff3c3836),
+            tertiaryContainer = Color(0xff98971a),
+            onTertiaryContainer = Color(0xff3c3836),
+            background = Color(0xfffbf1c7),
+            onBackground = Color(0xff3c3836),
+            surface = Color(0xfffbf1c7),
+            onSurface = Color(0xff3c3836),
+            surfaceVariant = Color(0xffebdbb2),
+            onSurfaceVariant = Color(0xff3c3836),
+            surfaceTint = Color(0xffebdbb2),
+            inverseSurface = Color(0xff282828),
+            inverseOnSurface = Color(0xfffbf1c7),
+            error = Color(0xffcc241d),
+            onError = Color(0xff3c3836),
+            errorContainer = Color(0xffcc241d),
+            onErrorContainer = Color(0xff3c3836),
+            outline = Color(0xff689d6a),
+            outlineVariant = Color(0xff458588),
+            scrim = Color(0xff3c3836),
+        ),
+        darkColorScheme = ColorScheme(
+            primary = Color(0xff689d6a),
+            onPrimary = Color(0xffebdbb2),
+            primaryContainer = Color(0xff689d6a),
+            onPrimaryContainer = Color(0xffebdbb2),
+            inversePrimary = Color(0xffb16286),
+            secondary = Color(0xff458588),
+            onSecondary = Color(0xffebdbb2),
+            secondaryContainer = Color(0xff458588),
+            onSecondaryContainer = Color(0xffebdbb2),
+            tertiary = Color(0xff98971a),
+            onTertiary = Color(0xffebdbb2),
+            tertiaryContainer = Color(0xff98971a),
+            onTertiaryContainer = Color(0xffebdbb2),
+            background = Color(0xff282828),
+            onBackground = Color(0xffebdbb2),
+            surface = Color(0xff282828),
+            onSurface = Color(0xffebdbb2),
+            surfaceVariant = Color(0xff3c3836),
+            onSurfaceVariant = Color(0xffebdbb2),
+            surfaceTint = Color(0xff282828),
+            inverseSurface = Color(0xffebdbb2),
+            inverseOnSurface = Color(0xff3c3836),
+            error = Color(0xffcc241d),
+            onError = Color(0xffebdbb2),
+            errorContainer = Color(0xffcc241d),
+            onErrorContainer = Color(0xffebdbb2),
+            outline = Color(0xff689d6a),
+            outlineVariant = Color(0xff458588),
+            scrim = Color(0xff3c3836),
+        )
+    )
 }
 
 val themesByName = mapOf(
-    JamlColorScheme.Default.toString() to JamlColorScheme.Default
+    JamlColorScheme.Default.toString() to JamlColorScheme.Default,
+    JamlColorScheme.Gruvbox.toString() to JamlColorScheme.Gruvbox
 )
 
