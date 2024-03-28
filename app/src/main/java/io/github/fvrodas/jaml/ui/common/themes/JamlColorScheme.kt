@@ -1,11 +1,13 @@
-package io.github.fvrodas.jaml.features.common.themes
+package io.github.fvrodas.jaml.ui.common.themes
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 
 sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
 
-    object Default : JamlColorScheme(
+    val name: String get() = this::class.java.simpleName
+
+    data object Default : JamlColorScheme(
         lightColorScheme = ColorScheme(
             primary = Color(0xff777777),
             onPrimary = Color(0xffe6e6e6),
@@ -70,7 +72,7 @@ sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorSch
         )
     )
 
-    object Gruvbox : JamlColorScheme(
+    data object Gruvbox : JamlColorScheme(
         lightColorScheme = ColorScheme(
             primary = Color(0xff689d6a),
             onPrimary = Color(0xff3c3836),
@@ -137,7 +139,7 @@ sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorSch
 }
 
 val themesByName = mapOf(
-    JamlColorScheme.Default.toString() to JamlColorScheme.Default,
-    JamlColorScheme.Gruvbox.toString() to JamlColorScheme.Gruvbox
+    JamlColorScheme.Default.name to JamlColorScheme.Default,
+    JamlColorScheme.Gruvbox.name to JamlColorScheme.Gruvbox
 )
 

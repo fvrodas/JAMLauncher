@@ -1,5 +1,6 @@
-package io.github.fvrodas.jaml.features.settings.presentation.composables
+package io.github.fvrodas.jaml.ui.settings.composables
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,19 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,12 +28,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.features.common.themes.dimen16dp
-import io.github.fvrodas.jaml.features.common.themes.dimen8dp
-import io.github.fvrodas.jaml.features.common.themes.dimenZero
-import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.LauncherSettings
-import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.SettingsViewModel
+import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
+import io.github.fvrodas.jaml.ui.common.themes.themesByName
+import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settingsViewModel: SettingsViewModel,
@@ -48,9 +49,18 @@ fun SettingsScreen(
         mutableStateOf(settingsViewModel.isDynamicColorEnabled)
     }
 
+    var selectedTheme by remember {
+        mutableStateOf(settingsViewModel.selectedThemeName)
+    }
+
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             settingsViewModel.saveSetting(LauncherSettings.DYNAMIC_COLOR_ENABLED, dynamicColor)
+            settingsViewModel.saveSetting(LauncherSettings.SELECTED_THEME, selectedTheme)
             onSettingsSaved()
         }
     }
@@ -61,21 +71,23 @@ fun SettingsScreen(
                 title = {
                     Text(
                         stringResource(id = R.string.settings_activity),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
-                            imageVector = Icons.Rounded.ArrowBack,
-                            contentDescription = "", tint = MaterialTheme.colorScheme.onPrimary
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "",
                         )
                     }
                 },
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                elevation = dimenZero
+                colors = TopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    scrolledContainerColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                )
             )
         }
     ) {
@@ -130,6 +142,14 @@ fun SettingsScreen(
             ) { checked ->
                 dynamicColor = checked
             }
+            AnimatedVisibility(visible = !dynamicColor) {
+                SettingItem(
+                    title = stringResource(id = R.string.menu_theme),
+                    description = selectedTheme
+                ) {
+                    showDialog = true
+                }
+            }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {
                 Text(
@@ -147,14 +167,23 @@ fun SettingsScreen(
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = stringResource(id = R.string.app_version_name),
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.medium)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                 )
+            }
+            SettingOptionsDialog(
+                showIf = showDialog,
+                title = stringResource(id = R.string.menu_theme),
+                options = themesByName.entries.toList().map { item -> item.key },
+                defaultValue = selectedTheme,
+                onDismiss = { showDialog = false },
+            ) { selected ->
+                selectedTheme = selected
             }
         }
     }

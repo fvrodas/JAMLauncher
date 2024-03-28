@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.common.extensions
+package io.github.fvrodas.jaml.ui.common.extensions
 
 import android.content.Context
 import android.util.TypedValue

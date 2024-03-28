@@ -32,17 +32,16 @@ android {
     }
 
     compileOptions {
-        targetCompatibility = "11"
-        sourceCompatibility = 11
+        targetCompatibility = "8"
+        sourceCompatibility = 8
     }
 
     buildFeatures {
-        viewBinding true
         compose true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.8"
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
     namespace 'io.github.fvrodas.jaml'
 }
@@ -52,26 +51,23 @@ dependencies {
 
     api "io.insert-koin:koin-android:$koin_version"
     api "androidx.core:core-ktx:1.12.0"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
 
-    def nav_version = "2.7.5"
+    def nav_version = "2.7.7"
     def compose_ui_version = "1.5.4"
-    def material_version = "1.5.4"
-    def material3_version = "1.1.2"
+    def material3_version = "1.2.1"
 
-    implementation "androidx.compose.material:material:$material_version"
     implementation "androidx.compose.material3:material3:$material3_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_ui_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
 
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     implementation "com.google.android.material:compose-theme-adapter:1.2.1"
 
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.navigation:navigation-compose:$nav_version"
 
@@ -79,7 +75,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
 
     implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
     implementation 'androidx.core:core-role:1.0.0'

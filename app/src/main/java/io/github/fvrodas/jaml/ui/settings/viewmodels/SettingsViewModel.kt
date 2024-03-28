@@ -1,11 +1,21 @@
-package io.github.fvrodas.jaml.features.settings.presentation.viewmodels
+package io.github.fvrodas.jaml.ui.settings.viewmodels
 
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
+import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 
 class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
 
-    val isDynamicColorEnabled get() =  prefs.getBoolean(LauncherSettings.DYNAMIC_COLOR_ENABLED, false)
+    val isDynamicColorEnabled
+        get() = prefs.getBoolean(
+            LauncherSettings.DYNAMIC_COLOR_ENABLED,
+            false
+        )
+    val selectedThemeName
+        get() = prefs.getString(
+            LauncherSettings.SELECTED_THEME,
+            JamlColorScheme.Default.name
+        ) ?: JamlColorScheme.Default.name
 
     fun saveSetting(key: String, value: Any) {
         prefs.edit().apply {

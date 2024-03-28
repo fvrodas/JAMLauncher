@@ -44,6 +44,10 @@ class JAMLNotificationService : NotificationListenerService() {
     }
 }
 
+interface INotificationEventListener {
+    fun onNotificationEvent(packageName: String?, hasNotification: Boolean = false)
+}
+
 const val NOTIF_PACKAGE_NAME = "package_name"
 const val NOTIF_HAS_NOTIFICATION = "has_notification"
 const val NOTIF_TITLE = "notification_title"

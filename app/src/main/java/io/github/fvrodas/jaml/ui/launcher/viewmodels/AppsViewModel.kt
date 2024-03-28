@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.launcher.presentation.viewmodels
+package io.github.fvrodas.jaml.ui.launcher.viewmodels
 
 import android.os.Build
 import android.os.Process

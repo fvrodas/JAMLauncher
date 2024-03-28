@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.launcher.presentation.composables
+package io.github.fvrodas.jaml.ui.launcher.composables
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
@@ -19,12 +20,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.features.common.themes.dimen16dp
-import io.github.fvrodas.jaml.features.common.themes.dimen24dp
-import io.github.fvrodas.jaml.features.common.themes.dimen8dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 
 @Composable
 fun ApplicationsSheet(
@@ -72,12 +71,16 @@ fun ApplicationsSheet(
         LazyColumn {
             items(applicationsList.size) {
                 val item = applicationsList[it]
-                ApplicationItem(label = item.label, icon = item.icon) {
+                ApplicationItem(
+                    label = item.label,
+                    icon = item.icon,
+                    hasNotification = item.hasNotification
+                ) {
                     onApplicationPressed.invoke(item)
                 }
             }
             item {
-                Divider()
+                HorizontalDivider()
                 ApplicationItem(label = "Launcher Settings") {
                     onSettingsPressed.invoke()
                 }

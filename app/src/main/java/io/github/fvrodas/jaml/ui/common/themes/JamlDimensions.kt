@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.features.common.themes
+package io.github.fvrodas.jaml.ui.common.themes
 
 import androidx.compose.ui.unit.dp
 

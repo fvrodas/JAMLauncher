@@ -6,13 +6,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.features.launcher.presentation.composables.HomeScreen
-import io.github.fvrodas.jaml.features.settings.presentation.composables.SettingsScreen
-import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.SettingsViewModel
+import io.github.fvrodas.jaml.ui.launcher.composables.HomeScreen
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.ui.settings.composables.SettingsScreen
+import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
+    appsViewModel: AppsViewModel,
     settingsViewModel: SettingsViewModel,
     openApplication: (AppInfo) -> Unit,
     isDefaultHome: () -> Boolean,
@@ -34,6 +36,7 @@ fun HomeNavigationGraph(
             }
 
             HomeScreen(
+                appsViewModel = appsViewModel,
                 onSettingsPressed = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
@@ -48,7 +51,7 @@ fun HomeNavigationGraph(
                 setAsDefaultHome,
                 setWallpaper,
                 enableNotificationAccess,
-                onSettingsSaved
+                onSettingsSaved,
             ) {
                 navHostController.navigateUp()
             }

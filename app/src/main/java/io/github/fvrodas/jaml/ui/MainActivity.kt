@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml
+package io.github.fvrodas.jaml.ui
 
 import android.annotation.SuppressLint
 import android.app.role.RoleManager
@@ -14,41 +14,35 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.features.common.themes.JamlColorScheme
-import io.github.fvrodas.jaml.features.common.themes.JamlTheme
-import io.github.fvrodas.jaml.features.common.themes.themesByName
-import io.github.fvrodas.jaml.features.settings.presentation.viewmodels.SettingsViewModel
+import io.github.fvrodas.jaml.framework.receivers.NotificationReceiver
+import io.github.fvrodas.jaml.framework.services.INotificationEventListener
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
-import org.koin.android.ext.android.getKoin
+import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
+import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
+import io.github.fvrodas.jaml.ui.common.themes.themesByName
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : androidx.activity.ComponentActivity() {
+class MainActivity : INotificationEventListener, androidx.activity.ComponentActivity() {
+
+    private val appsViewModel: AppsViewModel by viewModel()
+    private val settingsViewModel: SettingsViewModel by viewModel()
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 this.recreate()
-//                if (result.data?.getBooleanExtra(
-//                        SettingsActivity.EXTRA_THEME_CHANGED,
-//                        false
-//                    ) != true
-//                ) {
-//                    Toast.makeText(
-//                        applicationContext,
-//                        resources.getString(R.string.app_name) + " has been set as default launcher.",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
             }
         }
+
+    private lateinit var notificationReceiver: NotificationReceiver
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,20 +53,18 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
         actionBar?.hide()
 
+        notificationReceiver = NotificationReceiver(this)
+
         setContent {
-            val settingsViewModel: SettingsViewModel = getKoin().get()
+            val navHostController = rememberNavController()
+            val darkMode = isSystemInDarkTheme()
 
-            val selectedTheme by remember {
-                mutableStateOf(JamlColorScheme.Default.toString())
+            var selectedTheme by remember {
+                mutableStateOf(settingsViewModel.selectedThemeName)
             }
-
             var isDynamicColorsEnabled by remember {
                 mutableStateOf(settingsViewModel.isDynamicColorEnabled)
             }
-
-            val navHostController = rememberNavController()
-
-            val darkMode = isSystemInDarkTheme()
 
             JamlTheme(
                 colorScheme = themesByName[selectedTheme] ?: JamlColorScheme.Default,
@@ -81,6 +73,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
+                    appsViewModel = appsViewModel,
                     settingsViewModel = settingsViewModel,
                     openApplication = this::openApplication,
                     isDefaultHome = this::isDefault,
@@ -88,6 +81,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
                     setWallpaper = this::setWallpaper,
                     onSettingsSaved = {
                         isDynamicColorsEnabled = settingsViewModel.isDynamicColorEnabled
+                        selectedTheme = settingsViewModel.selectedThemeName
                     },
                     enableNotificationAccess = this::enableNotificationAccess
                 )
@@ -95,9 +89,25 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter(),
+                RECEIVER_EXPORTED
+            )
+        } else {
+            registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(notificationReceiver)
+    }
+
     private fun setWallpaper() {
         Intent().apply {
-            action = "android.intent.action.SET_WALLPAPER"
+            action = SET_WALLPAPER_ACTION
         }.also {
             startActivity(it)
         }
@@ -105,7 +115,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
     private fun enableNotificationAccess() {
         Intent().apply {
-            action = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
+            action = ENABLE_NOTIFICATION_ACTION
         }.also {
             startActivity(it)
         }
@@ -174,4 +184,11 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
+    override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
+        appsViewModel.markNotification(packageName, hasNotification)
+    }
 }
+
+internal const val SET_WALLPAPER_ACTION = "android.intent.action.SET_WALLPAPER"
+internal const val ENABLE_NOTIFICATION_ACTION =
+    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
