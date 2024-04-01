@@ -23,9 +23,10 @@
         android:stateNotNeeded="true"
         android:supportsRtl="true"
         android:taskAffinity=""
-        android:windowSoftInputMode="stateHidden">
+        android:windowSoftInputMode="stateHidden"
+        tools:ignore="DiscouragedApi">
         <activity
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -49,7 +50,7 @@
         </receiver>
         <receiver
             android:name=".framework.receivers.NotificationReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="io.github.fvrodas.jaml.NOTIFICATION_EVENT" />
                 <data android:scheme="package" />
@@ -57,7 +58,7 @@
         </receiver>
         <service
             android:name=".framework.services.JAMLNotificationService"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/service_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

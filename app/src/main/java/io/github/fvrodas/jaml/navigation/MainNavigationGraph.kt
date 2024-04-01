@@ -17,6 +17,7 @@ fun HomeNavigationGraph(
     appsViewModel: AppsViewModel,
     settingsViewModel: SettingsViewModel,
     openApplication: (AppInfo) -> Unit,
+    openApplicationInfo: (AppInfo) -> Unit,
     isDefaultHome: () -> Boolean,
     setAsDefaultHome: () -> Unit,
     setWallpaper: () -> Unit,
@@ -40,6 +41,7 @@ fun HomeNavigationGraph(
                 onSettingsPressed = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
+                onApplicationInfoPressed = openApplicationInfo,
                 onApplicationPressed = openApplication
             )
         }

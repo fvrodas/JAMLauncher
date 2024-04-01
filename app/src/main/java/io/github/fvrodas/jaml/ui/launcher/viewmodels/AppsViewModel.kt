@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 
 import io.github.fvrodas.jaml.BuildConfig
 import io.github.fvrodas.jaml.core.data.repositories.ShortcutsUtil
@@ -22,9 +23,11 @@ class AppsViewModel(
 ) : ViewModel() {
 
     private var applicationsListCache: Set<AppInfo> = emptySet()
+    private var _appsList: MutableStateFlow<Set<AppInfo>> = MutableStateFlow(applicationsListCache)
+    private var _shortcutList: MutableStateFlow<Pair<AppInfo, Set<AppShortcutInfo>>?> = MutableStateFlow(null)
 
-    val appsUiState: MutableStateFlow<ApplicationsListUiState> =
-        MutableStateFlow(ApplicationsListUiState.Success(applicationsListCache.toList(), null))
+    val appsListState: StateFlow<Set<AppInfo>> = _appsList
+    val shortcutsListState: StateFlow<Pair<AppInfo, Set<AppShortcutInfo>>?> = _shortcutList
 
     init {
         retrieveApplicationsList()
@@ -36,11 +39,10 @@ class AppsViewModel(
                 val result = getApplicationsListUseCase(null).getOrThrow()
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
-                appsUiState.value =
-                    ApplicationsListUiState.Success(applicationsListCache.toList(), null)
+                _appsList.value = applicationsListCache
 
             } catch (e: Exception) {
-                appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+                _appsList.value = emptySet()
             }
         }
     }
@@ -48,14 +50,14 @@ class AppsViewModel(
     fun filterApplicationsList(query: String = "") {
         CoroutineScope(coroutineDispatcher).launch {
             try {
-                appsUiState.value = ApplicationsListUiState.Success(applicationsListCache.filter {
+                _appsList.value = applicationsListCache.filter {
                     it.label.contains(
                         query,
                         true
                     )
-                }.toList(), null)
+                }.toSet()
             } catch (e: Exception) {
-                appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+                _appsList.value = emptySet()
             }
         }
     }
@@ -67,20 +69,24 @@ class AppsViewModel(
                     it.packageName.contains(packageName ?: "", ignoreCase = true)
                 }
                 applicationsListCache.elementAtOrNull(index)?.hasNotification = hasNotification
-                appsUiState.value =
-                    ApplicationsListUiState.Success(applicationsListCache.toList(), index)
+                _appsList.value = applicationsListCache
             } catch (e: Exception) {
-                appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+                _appsList.value = emptySet()
             }
         }
     }
 
-    fun retrieveShortcuts(packageName: String) = flow {
-        emit(getShortcutsListForApplicationUseCase(packageName).getOrThrow())
-    }.flowOn(coroutineDispatcher)
-        .catch { e ->
-            appsUiState.value = ApplicationsListUiState.Failure(e.message ?: "")
+    fun retrieveShortcuts(packageName: String) {
+        viewModelScope.launch {
+            try {
+                val applicationInfo = applicationsListCache.first { it.packageName == packageName }
+                val shortcuts = getShortcutsListForApplicationUseCase(packageName).getOrThrow().toSet()
+                _shortcutList.value = Pair(applicationInfo, shortcuts)
+            } catch (e: Exception) {
+                _shortcutList.value = null
+            }
         }
+    }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun startShortcut(shortcut: AppShortcutInfo) {
@@ -93,9 +99,3 @@ class AppsViewModel(
         )
     }
 }
-
-sealed class ApplicationsListUiState {
-    data class Success(val apps: List<AppInfo>, val position: Int?) : ApplicationsListUiState()
-    data class Failure(val errorMessage: String) : ApplicationsListUiState()
-}
-

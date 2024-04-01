@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -30,9 +29,11 @@ fun ApplicationsSheet(
     applicationsList: List<AppInfo>,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (AppInfo) -> Unit,
+    onApplicationLongPressed: (AppInfo) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
     var searchFieldValue by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +75,10 @@ fun ApplicationsSheet(
                 ApplicationItem(
                     label = item.label,
                     icon = item.icon,
-                    hasNotification = item.hasNotification
+                    hasNotification = item.hasNotification,
+                    onApplicationLongPressed = {
+                        onApplicationLongPressed.invoke(item)
+                    }
                 ) {
                     onApplicationPressed.invoke(item)
                 }

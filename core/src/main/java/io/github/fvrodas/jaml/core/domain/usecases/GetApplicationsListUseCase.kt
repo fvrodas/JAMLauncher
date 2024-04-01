@@ -11,7 +11,7 @@ class GetApplicationsListUseCase(
     private val repository: IApplicationsRepository,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : UseCase<List<AppInfo>, Nothing?>() {
-    override suspend fun invoke(params: Nothing?): Result<List<AppInfo>> =
+    override suspend fun invoke(ignoredParams: Nothing?): Result<List<AppInfo>> =
         withContext(coroutineDispatcher) {
             return@withContext repository.getApplicationsList()
         }

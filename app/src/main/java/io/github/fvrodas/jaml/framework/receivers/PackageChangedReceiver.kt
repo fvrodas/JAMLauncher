@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.Intent.ACTION_PACKAGE_ADDED
 import android.content.Intent.ACTION_PACKAGE_CHANGED
 import android.content.Intent.ACTION_PACKAGE_FULLY_REMOVED
+import android.content.IntentFilter
 import android.util.Log
 
 class PackageChangedReceiver : BroadcastReceiver() {
@@ -20,6 +21,15 @@ class PackageChangedReceiver : BroadcastReceiver() {
                 CommunicationChannel.onPackageChangedReceived.invoke()
             }
         }
+    }
+
+    companion object {
+        fun provideIntentFilter(): IntentFilter =
+            IntentFilter().apply {
+                addAction(ACTION_PACKAGE_FULLY_REMOVED)
+                addAction(ACTION_PACKAGE_ADDED)
+                addAction(ACTION_PACKAGE_CHANGED)
+            }
     }
 
 }

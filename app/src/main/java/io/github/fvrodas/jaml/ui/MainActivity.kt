@@ -7,8 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -21,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
 import io.github.fvrodas.jaml.framework.receivers.NotificationReceiver
+import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
 import io.github.fvrodas.jaml.framework.services.INotificationEventListener
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -43,6 +46,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
         }
 
     private lateinit var notificationReceiver: NotificationReceiver
+    private lateinit var packageReceiver: PackageChangedReceiver
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +58,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
         actionBar?.hide()
 
         notificationReceiver = NotificationReceiver(this)
+        packageReceiver = PackageChangedReceiver()
 
         setContent {
             val navHostController = rememberNavController()
@@ -76,6 +81,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
                     appsViewModel = appsViewModel,
                     settingsViewModel = settingsViewModel,
                     openApplication = this::openApplication,
+                    openApplicationInfo = this::openApplicationInfo,
                     isDefaultHome = this::isDefault,
                     setAsDefaultHome = this::requestDefaultHome,
                     setWallpaper = this::setWallpaper,
@@ -89,20 +95,28 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
         }
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
         super.onResume()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter(),
-                RECEIVER_EXPORTED
+            registerReceiver(
+                notificationReceiver, NotificationReceiver.provideIntentFilter(),
+                RECEIVER_NOT_EXPORTED
+            )
+            registerReceiver(
+                packageReceiver, PackageChangedReceiver.provideIntentFilter(),
+                RECEIVER_NOT_EXPORTED
             )
         } else {
             registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
+            registerReceiver(packageReceiver, PackageChangedReceiver.provideIntentFilter())
         }
     }
 
     override fun onPause() {
         super.onPause()
         unregisterReceiver(notificationReceiver)
+        unregisterReceiver(packageReceiver)
     }
 
     private fun setWallpaper() {
@@ -160,7 +174,6 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            @Suppress("DEPRECATION")
             val str = localPackageManager.resolveActivity(
                 intent,
                 PackageManager.MATCH_DEFAULT_ONLY
@@ -181,6 +194,15 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             startActivity(this)
+        }
+    }
+
+    private fun openApplicationInfo(appInfo: AppInfo) {
+        Intent().apply {
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            data = Uri.fromParts("package", appInfo.packageName, null)
+        }.also {
+            startActivity(it)
         }
     }
 
