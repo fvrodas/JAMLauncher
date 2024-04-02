@@ -4,9 +4,10 @@ import io.github.fvrodas.jaml.core.common.usecases.UseCase
 import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
 import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
 
-class GetShortcutsListForApplicationUseCase(
+class LaunchApplicationShortcutUseCase(
     private val repository: IApplicationsRepository
-) : UseCase<List<AppShortcutInfo>, String>() {
-    override suspend fun invoke(params: String): List<AppShortcutInfo> =
-        repository.getShortcutsListForApplication(params)
+) : UseCase<Unit, AppShortcutInfo>() {
+    override suspend fun invoke(params: AppShortcutInfo) {
+        repository.launchShortcut(params)
+    }
 }

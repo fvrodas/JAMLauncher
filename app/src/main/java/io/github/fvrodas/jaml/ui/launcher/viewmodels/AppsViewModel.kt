@@ -1,25 +1,23 @@
 package io.github.fvrodas.jaml.ui.launcher.viewmodels
 
 import android.os.Build
-import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-
 import io.github.fvrodas.jaml.BuildConfig
-import io.github.fvrodas.jaml.core.data.repositories.ShortcutsUtil
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
 import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class AppsViewModel(
-    val getApplicationsListUseCase: GetApplicationsListUseCase,
+    private val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
-    private val shortcutsUtil: ShortcutsUtil,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
 ) : ViewModel() {
 
     private var applicationsListCache: Set<AppInfo> = emptySet()
@@ -34,9 +32,9 @@ class AppsViewModel(
     }
 
     fun retrieveApplicationsList() {
-        CoroutineScope(coroutineDispatcher).launch {
+        viewModelScope.launch {
             try {
-                val result = getApplicationsListUseCase(null).getOrThrow()
+                val result = getApplicationsListUseCase(null)
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
                 _appsList.value = applicationsListCache
@@ -48,7 +46,7 @@ class AppsViewModel(
     }
 
     fun filterApplicationsList(query: String = "") {
-        CoroutineScope(coroutineDispatcher).launch {
+        viewModelScope.launch {
             try {
                 _appsList.value = applicationsListCache.filter {
                     it.label.contains(
@@ -63,7 +61,7 @@ class AppsViewModel(
     }
 
     fun markNotification(packageName: String?, hasNotification: Boolean) {
-        CoroutineScope(coroutineDispatcher).launch {
+        viewModelScope.launch {
             try {
                 val index = applicationsListCache.indexOfFirst {
                     it.packageName.contains(packageName ?: "", ignoreCase = true)
@@ -80,7 +78,7 @@ class AppsViewModel(
         viewModelScope.launch {
             try {
                 val applicationInfo = applicationsListCache.first { it.packageName == packageName }
-                val shortcuts = getShortcutsListForApplicationUseCase(packageName).getOrThrow().toSet()
+                val shortcuts = getShortcutsListForApplicationUseCase(packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
             } catch (e: Exception) {
                 _shortcutList.value = null
@@ -90,12 +88,8 @@ class AppsViewModel(
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun startShortcut(shortcut: AppShortcutInfo) {
-        shortcutsUtil.launcherApps.startShortcut(
-            shortcut.packageName,
-            shortcut.id,
-            null,
-            null,
-            Process.myUserHandle()
-        )
+        viewModelScope.launch {
+            launchApplicationShortcutUseCase.invoke(shortcut)
+        }
     }
 }
