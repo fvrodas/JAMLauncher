@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -29,13 +30,13 @@ import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.launcher.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : INotificationEventListener, androidx.activity.ComponentActivity() {
 
-    private val appsViewModel: AppsViewModel by viewModel()
+    private val homeViewModel: HomeViewModel by viewModel()
     private val settingsViewModel: SettingsViewModel by viewModel()
 
     private val startForResult =
@@ -50,6 +51,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
@@ -78,7 +80,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    appsViewModel = appsViewModel,
+                    homeViewModel = homeViewModel,
                     settingsViewModel = settingsViewModel,
                     openApplication = this::openApplication,
                     openApplicationInfo = this::openApplicationInfo,
@@ -207,7 +209,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
     }
 
     override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
-        appsViewModel.markNotification(packageName, hasNotification)
+        homeViewModel.markNotification(packageName, hasNotification)
     }
 }
 

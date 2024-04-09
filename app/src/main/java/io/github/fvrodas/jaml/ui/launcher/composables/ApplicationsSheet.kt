@@ -6,14 +6,18 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,8 +28,10 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApplicationsSheet(
+    bottomSheetValue: SheetValue,
     applicationsList: List<AppInfo>,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (AppInfo) -> Unit,
@@ -33,6 +39,13 @@ fun ApplicationsSheet(
     onSearchApplication: (String) -> Unit,
 ) {
     var searchFieldValue by remember { mutableStateOf("") }
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(bottomSheetValue) {
+        if (bottomSheetValue != SheetValue.Expanded) {
+            lazyListState.scrollToItem(0)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -69,7 +82,9 @@ fun ApplicationsSheet(
                     horizontal = dimen16dp
                 ),
         )
-        LazyColumn {
+        LazyColumn(
+            state = lazyListState
+        ) {
             items(applicationsList.size) {
                 val item = applicationsList[it]
                 ApplicationItem(

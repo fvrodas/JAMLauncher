@@ -24,9 +24,10 @@
         android:supportsRtl="true"
         android:taskAffinity=""
         android:windowSoftInputMode="stateHidden"
+        android:launchMode="singleTask"
         tools:ignore="DiscouragedApi">
         <activity
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>

@@ -43,15 +43,12 @@ class GetShortcutsListForApplicationTest {
             )
 
             `when`(repository.getShortcutsListForApplication(exampleAppInfo.packageName)).thenReturn(
-                Result.success(
-                    expectedResult
-                )
+                expectedResult
             )
 
             val result = useCase(exampleAppInfo.packageName)
 
-            assert(result.isSuccess)
-            assert(expectedResult == result.getOrNull())
+            assert(expectedResult == result)
         }
     }
 

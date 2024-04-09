@@ -49,7 +49,6 @@ fun ApplicationItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimen64dp)
-            .padding(horizontal = dimen16dp)
             .combinedClickable(
                 onLongClick = { onApplicationLongPressed?.invoke() }
             ) {
@@ -58,8 +57,9 @@ fun ApplicationItem(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        icon?.let {
-            Box {
+
+        Box(modifier = Modifier.padding(start = dimen16dp)) {
+            icon?.let {
                 Image(
                     bitmap = icon.asImageBitmap(),
                     contentScale = ContentScale.FillBounds,
@@ -82,15 +82,15 @@ fun ApplicationItem(
                             .align(Alignment.BottomEnd)
                     )
                 }
+            } ?: run {
+                Icon(
+                    imageVector = Icons.Rounded.Settings,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(dimen48dp),
+                )
             }
-        } ?: run {
-            Icon(
-                imageVector = Icons.Rounded.Settings,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(dimen48dp),
-            )
         }
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(

@@ -7,14 +7,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.AppInfo
 import io.github.fvrodas.jaml.ui.launcher.composables.HomeScreen
-import io.github.fvrodas.jaml.ui.launcher.viewmodels.AppsViewModel
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.composables.SettingsScreen
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
-    appsViewModel: AppsViewModel,
+    homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel,
     openApplication: (AppInfo) -> Unit,
     openApplicationInfo: (AppInfo) -> Unit,
@@ -37,7 +37,7 @@ fun HomeNavigationGraph(
             }
 
             HomeScreen(
-                appsViewModel = appsViewModel,
+                homeViewModel = homeViewModel,
                 onSettingsPressed = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },

@@ -43,14 +43,13 @@ fun ShortcutItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimen48dp)
-            .padding(horizontal = dimen16dp)
             .combinedClickable {
                 onApplicationPressed.invoke()
             },
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box {
+        Box(modifier = Modifier.padding(start = dimen16dp)) {
             icon?.let {
                 Image(
                     bitmap = icon.asImageBitmap(),

@@ -35,12 +35,11 @@ class GetApplicationsListUseCaseTest {
                 repository = repository
             )
 
-            `when`(repository.getApplicationsList()).thenReturn(Result.success(expectedResult))
+            `when`(repository.getApplicationsList()).thenReturn(expectedResult)
 
             val result = useCase(null)
 
-            assert(result.isSuccess)
-            assert(expectedResult == result.getOrNull())
+            assert(expectedResult == result)
         }
 
     }
