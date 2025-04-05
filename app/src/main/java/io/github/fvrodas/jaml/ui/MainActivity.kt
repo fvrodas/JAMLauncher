@@ -3,7 +3,6 @@ package io.github.fvrodas.jaml.ui
 import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.ColorDrawable
@@ -13,7 +12,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -22,22 +20,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.framework.receivers.NotificationReceiver
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
-import io.github.fvrodas.jaml.framework.services.INotificationEventListener
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.compose.koinViewModel
 
-class MainActivity : INotificationEventListener, androidx.activity.ComponentActivity() {
-
-    private val homeViewModel: HomeViewModel by viewModel()
-    private val settingsViewModel: SettingsViewModel by viewModel()
+class MainActivity : androidx.activity.ComponentActivity() {
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -46,12 +38,10 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
             }
         }
 
-    private lateinit var notificationReceiver: NotificationReceiver
     private lateinit var packageReceiver: PackageChangedReceiver
 
     @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
@@ -59,10 +49,11 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
 
         actionBar?.hide()
 
-        notificationReceiver = NotificationReceiver(this)
         packageReceiver = PackageChangedReceiver()
 
         setContent {
+            val settingsViewModel: SettingsViewModel = koinViewModel()
+
             val navHostController = rememberNavController()
             val darkMode = isSystemInDarkTheme()
 
@@ -80,12 +71,11 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    homeViewModel = homeViewModel,
                     settingsViewModel = settingsViewModel,
                     openApplication = this::openApplication,
                     openApplicationInfo = this::openApplicationInfo,
                     isDefaultHome = this::isDefault,
-                    setAsDefaultHome = this::requestDefaultHome,
+                    requestDefaultHome = this::requestDefaultHome,
                     setWallpaper = this::setWallpaper,
                     onSettingsSaved = {
                         isDynamicColorsEnabled = settingsViewModel.isDynamicColorEnabled
@@ -102,22 +92,16 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
         super.onResume()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(
-                notificationReceiver, NotificationReceiver.provideIntentFilter(),
-                RECEIVER_NOT_EXPORTED
-            )
-            registerReceiver(
                 packageReceiver, PackageChangedReceiver.provideIntentFilter(),
                 RECEIVER_NOT_EXPORTED
             )
         } else {
-            registerReceiver(notificationReceiver, NotificationReceiver.provideIntentFilter())
             registerReceiver(packageReceiver, PackageChangedReceiver.provideIntentFilter())
         }
     }
 
     override fun onPause() {
         super.onPause()
-        unregisterReceiver(notificationReceiver)
         unregisterReceiver(packageReceiver)
     }
 
@@ -160,7 +144,7 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
                 )
             }
         } else {
-            val roleManager = getSystemService(Context.ROLE_SERVICE) as RoleManager
+            val roleManager = getSystemService(ROLE_SERVICE) as RoleManager
             if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME) && !roleManager.isRoleHeld(
                     RoleManager.ROLE_HOME
                 )
@@ -191,25 +175,21 @@ class MainActivity : INotificationEventListener, androidx.activity.ComponentActi
 
     }
 
-    private fun openApplication(appInfo: AppInfo) {
-        packageManager?.getLaunchIntentForPackage(appInfo.packageName)?.apply {
+    private fun openApplication(packageInfo: PackageInfo) {
+        packageManager?.getLaunchIntentForPackage(packageInfo.packageName)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             startActivity(this)
         }
     }
 
-    private fun openApplicationInfo(appInfo: AppInfo) {
+    private fun openApplicationInfo(packageInfo: PackageInfo) {
         Intent().apply {
             action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-            data = Uri.fromParts("package", appInfo.packageName, null)
+            data = Uri.fromParts("package", packageInfo.packageName, null)
         }.also {
             startActivity(it)
         }
-    }
-
-    override fun onNotificationEvent(packageName: String?, hasNotification: Boolean) {
-        homeViewModel.markNotification(packageName, hasNotification)
     }
 }
 

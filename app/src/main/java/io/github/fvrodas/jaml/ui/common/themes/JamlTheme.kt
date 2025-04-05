@@ -2,7 +2,6 @@ package io.github.fvrodas.jaml.ui.common.themes
 
 
 import android.os.Build
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha

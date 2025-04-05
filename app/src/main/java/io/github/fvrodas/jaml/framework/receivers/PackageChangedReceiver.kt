@@ -8,6 +8,8 @@ import android.content.Intent.ACTION_PACKAGE_CHANGED
 import android.content.Intent.ACTION_PACKAGE_FULLY_REMOVED
 import android.content.IntentFilter
 import android.util.Log
+import io.github.fvrodas.jaml.framework.LauncherEventBus
+import io.github.fvrodas.jaml.framework.LauncherEvents
 
 class PackageChangedReceiver : BroadcastReceiver() {
 
@@ -18,7 +20,9 @@ class PackageChangedReceiver : BroadcastReceiver() {
                 || it.action == ACTION_PACKAGE_CHANGED
             ) {
                 Log.d(PackageChangedReceiver::class.java.name, "${it.action}")
-                CommunicationChannel.onPackageChangedReceived.invoke()
+                LauncherEventBus.postEvent(
+                    LauncherEvents.OnPackageChanged
+                )
             }
         }
     }
@@ -32,8 +36,4 @@ class PackageChangedReceiver : BroadcastReceiver() {
             }
     }
 
-}
-
-object CommunicationChannel {
-    var onPackageChangedReceived: () -> Unit = {}
 }

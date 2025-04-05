@@ -1,8 +1,8 @@
 package io.github.fvrodas.jaml.core.usecases
 
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
-import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
+import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -15,11 +15,11 @@ import org.mockito.junit.MockitoJUnitRunner
 class GetShortcutsListForApplicationTest {
 
     @Mock
-    private lateinit var repository: IApplicationsRepository
+    private lateinit var repository: ApplicationsRepository
 
     private lateinit var useCase: GetShortcutsListForApplicationUseCase
 
-    private val exampleAppInfo = AppInfo(
+    private val examplePackageInfo = PackageInfo(
         packageName = "com.example.package_name",
         label = "Example App",
         icon = null,
@@ -42,11 +42,11 @@ class GetShortcutsListForApplicationTest {
                 repository = repository
             )
 
-            `when`(repository.getShortcutsListForApplication(exampleAppInfo.packageName)).thenReturn(
+            `when`(repository.getShortcutsListForApplication(examplePackageInfo.packageName)).thenReturn(
                 expectedResult
             )
 
-            val result = useCase(exampleAppInfo.packageName)
+            val result = useCase(examplePackageInfo.packageName)
 
             assert(expectedResult == result)
         }

@@ -9,30 +9,31 @@ import android.os.Process
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
-import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 
 
-class ApplicationRepository(
-    app: Application
-) : IApplicationsRepository {
+class ConcreteApplicationsRepository(
+    application: Application
+) : ApplicationsRepository {
 
-    private val _packageManager: PackageManager = app.packageManager
-    private val _launcherApps =
-        app.baseContext.applicationContext.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+    private val pm: PackageManager = application.packageManager
+    private val launcherApps by lazy {
+        application.baseContext.applicationContext
+            .getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+    }
 
-    override suspend fun getApplicationsList(): List<AppInfo> {
-        val apps: ArrayList<AppInfo> = ArrayList()
+    override suspend fun getApplicationsList(): List<PackageInfo> {
+        val apps: ArrayList<PackageInfo> = ArrayList()
 
-        _launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
-            if (_packageManager.getApplicationInfo(
+        launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
+            if (pm.getApplicationInfo(
                     it.applicationInfo.packageName,
                     PackageManager.MATCH_UNINSTALLED_PACKAGES
                 ).enabled
             ) {
                 apps.add(
-                    AppInfo(
+                    PackageInfo(
                         it.applicationInfo.packageName,
                         it.label.toString(),
                         BitmapUtils.loadIcon(
@@ -51,28 +52,32 @@ class ApplicationRepository(
         return apps
     }
 
-    override suspend fun getShortcutsListForApplication(packageName: String): List<AppShortcutInfo> {
-        val shortcuts = ArrayList<AppShortcutInfo>()
+    override suspend fun getShortcutsListForApplication(packageName: String): List<PackageInfo.ShortcutInfo> {
+        val shortcuts = ArrayList<PackageInfo.ShortcutInfo>()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             shortcuts.addAll(
-                _launcherApps.getShortcuts(
+                launcherApps.getShortcuts(
                     LauncherApps.ShortcutQuery().apply {
-                        setQueryFlags(LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED)
+                        setQueryFlags(
+                            LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST
+                                    or LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC
+                                    or LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED
+                        )
                         setPackage(packageName)
                     }, Process.myUserHandle()
                 )!!.map {
-                    AppShortcutInfo(
+                    PackageInfo.ShortcutInfo(
                         it.id,
                         it.`package`,
                         it.shortLabel.toString(),
-                        BitmapUtils.loadShortcutIcon(_launcherApps, it)
+                        BitmapUtils.loadShortcutIcon(launcherApps, it)
                     )
                 }.toList()
             )
         }
         shortcuts.add(
-            AppShortcutInfo(
+            PackageInfo.ShortcutInfo(
                 "package:${packageName}",
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 "App Info",
@@ -83,8 +88,8 @@ class ApplicationRepository(
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
-    override suspend fun launchShortcut(shortcut: AppShortcutInfo) {
-        _launcherApps.startShortcut(
+    override suspend fun launchShortcut(shortcut: PackageInfo.ShortcutInfo) {
+        launcherApps.startShortcut(
             shortcut.packageName,
             shortcut.id,
             null,

@@ -1,54 +1,66 @@
 package io.github.fvrodas.jaml.framework.services
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
-import android.os.Bundle
+import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
+import io.github.fvrodas.jaml.framework.LauncherEventBus
+import io.github.fvrodas.jaml.framework.LauncherEvents
 
 class JAMLNotificationService : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        Intent(NOTIFICATION_ACTION).apply {
-            val bundle = Bundle().apply {
-                putString(NOTIF_PACKAGE_NAME, sbn?.packageName)
-                putBoolean(NOTIF_HAS_NOTIFICATION, true)
-                putString(NOTIF_TITLE, sbn?.notification?.extras?.getString("android:title"))
-                putString(NOTIF_TEXT, sbn?.notification?.extras?.getString("android:text"))
-            }
-            putExtras(bundle)
-            Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
-            this@JAMLNotificationService.sendBroadcast(this)
-        }
+        Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
+        LauncherEventBus.postEvent(
+            LauncherEvents.OnNotificationChanged(
+                packageName = sbn?.packageName,
+                hasNotification = false
+            )
+        )
         super.onNotificationPosted(sbn)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        Intent(NOTIFICATION_ACTION).apply {
-            val bundle = Bundle().apply {
-                putString(NOTIF_PACKAGE_NAME, sbn?.packageName)
-                putBoolean(NOTIF_HAS_NOTIFICATION, false)
-                putString(NOTIF_TITLE, sbn?.notification?.extras?.getString("android:title"))
-                putString(NOTIF_TEXT, sbn?.notification?.extras?.getString("android:text"))
-            }
-            putExtras(bundle)
-            Log.d("NOTIFICATION_DELETE", "${sbn?.packageName}")
-            this@JAMLNotificationService.sendBroadcast(this)
-        }
-
+        Log.d("NOTIFICATION_DELETE", "${sbn?.packageName}")
+        LauncherEventBus.postEvent(
+            LauncherEvents.OnNotificationChanged(
+                packageName = sbn?.packageName,
+                hasNotification = false
+            )
+        )
         super.onNotificationRemoved(sbn)
     }
 
     companion object {
-        const val NOTIFICATION_ACTION = "io.github.fvrodas.jaml.NOTIFICATION_EVENT"
+        internal fun isNotificationListenerServiceEnabled(context: Context): Boolean {
+            return NotificationManagerCompat.getEnabledListenerPackages(context)
+                .contains(context.packageName)
+        }
+
+        fun tryReEnableNotificationListener(context: Context) {
+            if (isNotificationListenerServiceEnabled(context)) {
+                // Rebind the service if it's already enabled
+                val componentName =
+                    ComponentName(
+                        context,
+                        JAMLNotificationService::class.java,
+                    )
+                val pm = context.packageManager
+                pm.setComponentEnabledSetting(
+                    componentName,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP,
+                )
+                pm.setComponentEnabledSetting(
+                    componentName,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP,
+                )
+            }
+        }
     }
 }
-
-interface INotificationEventListener {
-    fun onNotificationEvent(packageName: String?, hasNotification: Boolean = false)
-}
-
-const val NOTIF_PACKAGE_NAME = "package_name"
-const val NOTIF_HAS_NOTIFICATION = "has_notification"
-const val NOTIF_TITLE = "notification_title"
-const val NOTIF_TEXT = "notification_text"

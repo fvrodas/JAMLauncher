@@ -1,7 +1,7 @@
 package io.github.fvrodas.jaml.core.usecases
 
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.core.domain.repositories.IApplicationsRepository
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
@@ -14,12 +14,12 @@ import org.mockito.junit.MockitoJUnitRunner
 class GetApplicationsListUseCaseTest {
 
     @Mock
-    private lateinit var repository: IApplicationsRepository
+    private lateinit var repository: ApplicationsRepository
 
     private lateinit var useCase: GetApplicationsListUseCase
 
     private val expectedResult = listOf(
-        AppInfo(
+        PackageInfo(
             packageName = "com.example.package_name",
             label = "Example App",
             icon = null,

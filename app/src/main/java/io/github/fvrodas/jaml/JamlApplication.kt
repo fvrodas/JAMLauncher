@@ -2,6 +2,7 @@ package io.github.fvrodas.jaml
 
 import android.app.Application
 import io.github.fvrodas.jaml.core.coreModule
+import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -22,6 +23,8 @@ class JamlApplication: Application() {
             androidContext(this@JamlApplication)
             modules(appModule, coreModule)
         }
+
+        JAMLNotificationService.tryReEnableNotificationListener(this)
     }
 }
 

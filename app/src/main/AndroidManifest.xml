@@ -49,22 +49,22 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
-        <receiver
-            android:name=".framework.receivers.NotificationReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="io.github.fvrodas.jaml.NOTIFICATION_EVENT" />
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
         <service
             android:name=".framework.services.JAMLNotificationService"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/service_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
+            <meta-data
+                android:name="android.service.notification.default_filter_types"
+                android:value="conversations|alerting">
+            </meta-data>
+            <meta-data
+                android:name="android.service.notification.disabled_filter_types"
+                android:value="ongoing|silent">
+            </meta-data>
         </service>
     </application>
 

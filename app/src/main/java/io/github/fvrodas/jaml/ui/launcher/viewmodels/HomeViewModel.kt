@@ -5,8 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.BuildConfig
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
-import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
@@ -24,14 +23,14 @@ class HomeViewModel(
     private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
 ) : ViewModel() {
 
-    private var applicationsListCache: Set<AppInfo> = emptySet()
-    private var _appsList: MutableStateFlow<Set<AppInfo>> = MutableStateFlow(applicationsListCache)
-    private var _shortcutList: MutableStateFlow<Pair<AppInfo, Set<AppShortcutInfo>>?> =
+    private var applicationsListCache: Set<PackageInfo> = emptySet()
+    private var _appsList: MutableStateFlow<Set<PackageInfo>> = MutableStateFlow(applicationsListCache)
+    private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
     private var _time: MutableStateFlow<String> = MutableStateFlow("")
 
-    val appsListState: StateFlow<Set<AppInfo>> = _appsList
-    val shortcutsListState: StateFlow<Pair<AppInfo, Set<AppShortcutInfo>>?> = _shortcutList
+    val appsListState: StateFlow<Set<PackageInfo>> = _appsList
+    val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> = _shortcutList
     val clockState: StateFlow<String> = _time
 
     init {
@@ -81,8 +80,8 @@ class HomeViewModel(
     fun markNotification(packageName: String?, hasNotification: Boolean) {
         viewModelScope.launch {
             try {
-                applicationsListCache.
-                find { it.packageName == packageName }?.hasNotification = hasNotification
+                applicationsListCache.find { it.packageName == packageName }?.hasNotification =
+                    hasNotification
                 retrieveApplicationsList()
             } catch (e: Exception) {
                 _appsList.value = emptySet()
@@ -103,7 +102,7 @@ class HomeViewModel(
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
-    fun startShortcut(shortcut: AppShortcutInfo) {
+    fun startShortcut(shortcut: PackageInfo.ShortcutInfo) {
         viewModelScope.launch {
             launchApplicationShortcutUseCase.invoke(shortcut)
         }

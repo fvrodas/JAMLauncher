@@ -1,107 +1,185 @@
 package io.github.fvrodas.jaml.ui.launcher.composables
 
+import android.os.Build
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import io.github.fvrodas.jaml.core.domain.entities.AppInfo
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen72dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ApplicationsSheet(
-    bottomSheetValue: SheetValue,
-    applicationsList: List<AppInfo>,
+    applicationsList: List<PackageInfo>,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    changeListVisibility: (Boolean) -> Unit,
+    changeShortcutVisibility: (Boolean) -> Unit,
     onSettingsPressed: () -> Unit,
-    onApplicationPressed: (AppInfo) -> Unit,
-    onApplicationLongPressed: (AppInfo) -> Unit,
+    onApplicationPressed: (PackageInfo) -> Unit,
+    onApplicationLongPressed: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
-    var searchFieldValue by remember { mutableStateOf("") }
+
+    val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
-    LaunchedEffect(bottomSheetValue) {
-        if (bottomSheetValue != SheetValue.Expanded) {
-            lazyListState.scrollToItem(0)
+    var searchFieldValue by remember { mutableStateOf("") }
+    var shouldHideList by remember { mutableStateOf(true) }
+
+    var startOffset: Offset = Offset.Zero
+
+    LaunchedEffect(Unit) {
+        lazyListState.animateScrollToItem(0)
+    }
+
+    LaunchedEffect(shouldHideList) {
+        if (shouldHideList) {
+            changeListVisibility(false)
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.9f)
-    ) {
-        OutlinedTextField(
-            value = searchFieldValue,
-            onValueChange = {
-                searchFieldValue = it
-                onSearchApplication.invoke(searchFieldValue)
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = ""
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Rounded.Clear,
-                    contentDescription = "",
-                    modifier = Modifier.clickable {
-                        searchFieldValue = ""
-                        onSearchApplication.invoke(searchFieldValue)
-                    }
-                )
-            },
-            shape = RoundedCornerShape(dimen24dp),
+    with(sharedTransitionScope) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    vertical = dimen8dp,
-                    horizontal = dimen16dp
-                ),
-        )
-        LazyColumn(
-            state = lazyListState
+                .fillMaxSize()
+                .background(
+                    MaterialTheme.colorScheme.background,
+                )
+                .padding(top = dimen72dp)
+                .systemBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(dimen8dp)
         ) {
-            items(applicationsList.size) {
-                val item = applicationsList[it]
-                ApplicationItem(
-                    label = item.label,
-                    icon = item.icon,
-                    hasNotification = item.hasNotification,
-                    onApplicationLongPressed = {
-                        onApplicationLongPressed.invoke(item)
-                    }
-                ) {
-                    onApplicationPressed.invoke(item)
-                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = dimen16dp)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragStart = {
+                                startOffset = it
+                            },
+                            onDragEnd = {},
+                            onDragCancel = {
+                                shouldHideList = false
+                            }
+                        ) { change, dragAmount ->
+                            shouldHideList = change.position.y > startOffset.y
+                        }
+                    },
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowDown,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState("arrow"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                        .padding(dimen4dp)
+                        .size(dimen48dp),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
-            item {
-                HorizontalDivider()
-                ApplicationItem(label = "Launcher Settings") {
-                    onSettingsPressed.invoke()
+            OutlinedTextField(
+                value = searchFieldValue,
+                onValueChange = {
+                    searchFieldValue = it
+                    onSearchApplication.invoke(searchFieldValue)
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = ""
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Clear,
+                        contentDescription = "",
+                        modifier = Modifier.clickable {
+                            searchFieldValue = ""
+                            onSearchApplication.invoke(searchFieldValue)
+                        }
+                    )
+                },
+                shape = RoundedCornerShape(dimen24dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = dimen16dp
+                    ),
+            )
+            LazyColumn(
+                state = lazyListState
+            ) {
+                items(applicationsList.size) {
+                    val item = applicationsList[it]
+                    ApplicationItem(
+                        label = item.label,
+                        icon = item.icon,
+                        hasNotification = item.hasNotification,
+                        onApplicationLongPressed = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                coroutineScope.launch {
+                                    onApplicationLongPressed.invoke(item.packageName)
+                                    changeShortcutVisibility(true)
+                                }
+                            }
+                        },
+                        onApplicationPressed = {
+                            coroutineScope.launch {
+                                onApplicationPressed.invoke(item)
+                                changeListVisibility(false)
+                            }
+                        }
+                    )
+                }
+                item {
+                    HorizontalDivider()
+                    ApplicationItem(label = "Launcher Settings") {
+                        onSettingsPressed.invoke()
+                    }
                 }
             }
         }
