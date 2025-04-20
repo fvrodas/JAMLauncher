@@ -12,9 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +43,6 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen72dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import kotlinx.coroutines.launch
 
@@ -52,7 +52,7 @@ fun ApplicationsSheet(
     applicationsList: List<PackageInfo>,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    changeListVisibility: (Boolean) -> Unit,
+    toggleListVisibility: () -> Unit,
     changeShortcutVisibility: (Boolean) -> Unit,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
@@ -64,18 +64,12 @@ fun ApplicationsSheet(
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
-    var shouldHideList by remember { mutableStateOf(true) }
 
     var startOffset: Offset = Offset.Zero
+    var trackedDragAmount = 0f
 
     LaunchedEffect(Unit) {
         lazyListState.animateScrollToItem(0)
-    }
-
-    LaunchedEffect(shouldHideList) {
-        if (shouldHideList) {
-            changeListVisibility(false)
-        }
     }
 
     with(sharedTransitionScope) {
@@ -85,27 +79,28 @@ fun ApplicationsSheet(
                 .background(
                     MaterialTheme.colorScheme.background,
                 )
-                .padding(top = dimen72dp)
-                .systemBarsPadding(),
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragStart = {
+                            startOffset = it
+                        },
+                        onDragEnd = {
+                            if(trackedDragAmount > 0) {
+                                toggleListVisibility()
+                            }
+                        }
+                    ) { change, dragAmount ->
+                        trackedDragAmount = dragAmount
+                    }
+                }
+                .navigationBarsPadding()
+                .statusBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(dimen8dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = dimen16dp)
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(
-                            onDragStart = {
-                                startOffset = it
-                            },
-                            onDragEnd = {},
-                            onDragCancel = {
-                                shouldHideList = false
-                            }
-                        ) { change, dragAmount ->
-                            shouldHideList = change.position.y > startOffset.y
-                        }
-                    },
+                    .padding(bottom = dimen16dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(
@@ -170,7 +165,7 @@ fun ApplicationsSheet(
                         onApplicationPressed = {
                             coroutineScope.launch {
                                 onApplicationPressed.invoke(item)
-                                changeListVisibility(false)
+                                toggleListVisibility()
                             }
                         }
                     )

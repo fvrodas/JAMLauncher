@@ -42,13 +42,10 @@ object BitmapUtils {
         launcherApps: LauncherApps, shortcutInfo: ShortcutInfo, densityDpi: Int = -1
     ): Bitmap? {
         return try {
-            if (iconCache[shortcutInfo.`package` + shortcutInfo.id] != null) {
-                iconCache[shortcutInfo.`package` + shortcutInfo.id]
-            } else {
-                launcherApps.getShortcutIconDrawable(shortcutInfo, densityDpi)?.toBitmap().also {
+            iconCache[shortcutInfo.`package` + shortcutInfo.id]
+                ?: launcherApps.getShortcutIconDrawable(shortcutInfo, densityDpi)?.toBitmap().also {
                     iconCache.put(shortcutInfo.`package` + shortcutInfo.id, it)
                 }
-            }
         } catch (e: SecurityException) {
             null
         }

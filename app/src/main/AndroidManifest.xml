@@ -17,6 +17,7 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:theme="@style/Theme.JAMLauncher"
         android:resumeWhilePausing="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:screenOrientation="nosensor"

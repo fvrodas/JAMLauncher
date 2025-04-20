@@ -114,7 +114,7 @@ fun HomeScreen(
                                 applicationsList.toList(),
                                 this@SharedTransitionLayout,
                                 this@AnimatedContent,
-                                changeListVisibility = { displayList = it },
+                                toggleListVisibility = { displayList = !displayList },
                                 changeShortcutVisibility = { displayShortcuts = it },
                                 onSettingsPressed,
                                 onApplicationPressed = onApplicationPressed,
@@ -138,10 +138,10 @@ fun HomeScreen(
                                 animationSpec = tween(220, delayMillis = 90)
                             ))
                         .togetherWith(
-                            fadeOut(animationSpec = tween(90)) + slideOutVertically(
+                            slideOutVertically(
                                 targetOffsetY = { it / 2 },
                                 animationSpec = tween(90)
-                            )
+                            ) + fadeOut(animationSpec = tween(90))
                         )
                 }
             )
@@ -176,7 +176,7 @@ internal fun HomeScreen(
     clockTime: String,
     sharedTransitionLayout: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    setDisplayList: (Boolean) -> Unit
+    setListVisibility: (Boolean) -> Unit
 ) {
     var startOffset: Offset = Offset.Zero
 
@@ -191,10 +191,10 @@ internal fun HomeScreen(
                         },
                         onDragEnd = {},
                         onDragCancel = {
-                            setDisplayList(false)
+                            setListVisibility(false)
                         }
                     ) { change, _ ->
-                        setDisplayList(change.position.y < startOffset.y)
+                        setListVisibility(change.position.y < startOffset.y)
                     }
                 }
         ) {
