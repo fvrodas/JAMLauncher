@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
@@ -37,6 +38,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 fun ShortcutItem(
     label: String,
     icon: Bitmap?,
+    shouldHideShortcutIcons: Boolean = false,
     onApplicationPressed: () -> Unit
 ) {
     Row(
@@ -49,31 +51,36 @@ fun ShortcutItem(
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.padding(start = dimen16dp)) {
-            icon?.let {
-                Image(
-                    bitmap = icon.asImageBitmap(),
-                    contentScale = ContentScale.Fit,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(dimen36dp)
-                        .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
-                )
-            } ?: run {
-                Icon(
-                    imageVector = Icons.Rounded.Info,
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(dimen36dp)
-                )
+        if(!shouldHideShortcutIcons) {
+            Box(modifier = Modifier.padding(start = dimen16dp)) {
+                icon?.let {
+                    Image(
+                        bitmap = icon.asImageBitmap(),
+                        contentScale = ContentScale.Fit,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .size(dimen36dp)
+                            .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
+                    )
+                } ?: run {
+                    Icon(
+                        imageVector = Icons.Rounded.Info,
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(dimen36dp)
+                    )
+                }
             }
+            Spacer(modifier = Modifier.width(dimen16dp))
         }
-        Spacer(modifier = Modifier.width(dimen16dp))
         Text(
-            text = label, style = MaterialTheme.typography.titleMedium.copy(
+            text = label,
+            style = MaterialTheme.typography.titleLarge.copy(
                 color = MaterialTheme.colorScheme.onBackground
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

@@ -24,11 +24,11 @@ fun SettingSwitch(title: String, description: String, value: Boolean = false, on
         Column(
             modifier = Modifier.padding(horizontal = dimen8dp, vertical = dimen8dp).weight(1f)
         ) {
-            Text(text = title, style = MaterialTheme.typography.bodyMedium.copy(
+            Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onBackground
             ))
             Text(
-                text = description, style = MaterialTheme.typography.bodySmall.copy(
+                text = description, style = MaterialTheme.typography.labelMedium.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.38f)
                 )
             )

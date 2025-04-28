@@ -3,7 +3,6 @@ package io.github.fvrodas.jaml.ui.launcher.views
 import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,25 +14,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -41,7 +38,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 fun ApplicationItem(
     label: String,
     iconBitmap: Bitmap? = null,
-    leadingComposable: (@Composable () -> Unit)? = null,
+    iconVector: ImageVector? = null,
     hasNotification: Boolean = false,
     onApplicationLongPressed: (() -> Unit)? = null,
     onApplicationPressed: () -> Unit
@@ -61,31 +58,29 @@ fun ApplicationItem(
 
         Box(modifier = Modifier.padding(start = dimen16dp)) {
             iconBitmap?.let {
-                Image(
-                    bitmap = iconBitmap.asImageBitmap(),
-                    contentScale = ContentScale.FillBounds,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(dimen48dp)
-                        .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
-                )
-                if (hasNotification) {
-                    Icon(
-                        imageVector = Icons.Rounded.Info,
+                BadgedBox(
+                    badge = {
+                        if (hasNotification) Badge()
+                    }
+                ) {
+                    Image(
+                        bitmap = iconBitmap.asImageBitmap(),
+                        contentScale = ContentScale.FillBounds,
                         contentDescription = "",
-                        tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier
-                            .clip(
-                                shape = RoundedCornerShape(dimen8dp)
-                            )
-                            .size(dimen16dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .align(Alignment.BottomEnd)
+                            .size(dimen48dp)
+                            .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
                     )
                 }
             }
-            leadingComposable?.let{
-               it()
+            iconVector?.let{
+                Icon(
+                    imageVector = it,
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .size(dimen48dp),
+                )
             }
         }
         Spacer(modifier = Modifier.width(dimen16dp))

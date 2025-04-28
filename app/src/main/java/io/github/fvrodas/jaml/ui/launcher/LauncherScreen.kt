@@ -182,6 +182,7 @@ fun LauncherScreen(
             ) {
                 ShortcutsList(
                     listOfShortcuts,
+                    shouldHideApplicationIcons,
                     changeShortcutsVisibility = {
                         shouldDisplayShortcutsList = false
                     },

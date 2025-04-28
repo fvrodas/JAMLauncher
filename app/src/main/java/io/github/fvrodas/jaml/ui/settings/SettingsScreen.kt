@@ -143,13 +143,6 @@ fun SettingsScreen(
                     )
                 )
             }
-            SettingSwitch(
-                title = stringResource(id = R.string.menu_hide_app_icons),
-                description = stringResource(id = R.string.summary_hide_app_icons),
-                value = shouldHideApplicationIcons
-            ) { checked ->
-                shouldHideApplicationIcons = checked
-            }
             SettingItem(
                 title = stringResource(id = R.string.menu_wallpaper),
                 description = stringResource(id = R.string.summary_wallpaper)
@@ -170,6 +163,13 @@ fun SettingsScreen(
                 ) {
                     showDisplayDialog = true
                 }
+            }
+            SettingSwitch(
+                title = stringResource(id = R.string.menu_hide_app_icons),
+                description = stringResource(id = R.string.summary_hide_app_icons),
+                value = shouldHideApplicationIcons
+            ) { checked ->
+                shouldHideApplicationIcons = checked
             }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {

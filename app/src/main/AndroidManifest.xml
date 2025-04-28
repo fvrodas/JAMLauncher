@@ -28,7 +28,7 @@
         android:launchMode="singleTask"
         tools:ignore="DiscouragedApi">
         <activity
-            android:launchMode="singleTask"
+            android:launchMode="singleInstancePerTask"
             android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>

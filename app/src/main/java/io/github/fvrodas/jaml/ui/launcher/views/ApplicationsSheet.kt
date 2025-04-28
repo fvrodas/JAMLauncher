@@ -128,6 +128,7 @@ fun ApplicationsSheet(
             }
             OutlinedTextField(
                 value = searchFieldValue,
+                textStyle = MaterialTheme.typography.bodyLarge,
                 onValueChange = {
                     searchFieldValue = it
                     onSearchApplication.invoke(searchFieldValue)
@@ -182,15 +183,10 @@ fun ApplicationsSheet(
                 }
                 item {
                     HorizontalDivider()
-                    ApplicationItem(label = "Launcher Settings", leadingComposable = {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .size(dimen48dp),
-                        )
-                    }) {
+                    ApplicationItem(
+                        label = "Launcher Settings",
+                        iconVector = if (shouldHideApplicationIcons) null else Icons.Rounded.Settings
+                    ) {
                         onSettingsPressed.invoke()
                     }
                 }
