@@ -9,9 +9,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.ui.launcher.composables.HomeScreen
+import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
-import io.github.fvrodas.jaml.ui.settings.composables.SettingsScreen
+import io.github.fvrodas.jaml.ui.settings.SettingsScreen
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -19,6 +19,7 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeNavigationGraph(
     navHostController: NavHostController,
     settingsViewModel: SettingsViewModel,
+    shouldHideApplicationIcons: Boolean,
     openApplication: (PackageInfo) -> Unit,
     openApplicationInfo: (PackageInfo) -> Unit,
     isDefaultHome: () -> Boolean,
@@ -46,20 +47,21 @@ fun HomeNavigationGraph(
             val shortcutsList by homeViewModel.shortcutsListState.collectAsState()
             val clockTime by homeViewModel.clockState.collectAsState()
 
-            HomeScreen(
+            LauncherScreen(
                 applicationsList,
                 shortcutsList,
+                shouldHideApplicationIcons,
                 clockTime,
                 retrieveApplicationsList = {
                     homeViewModel.retrieveApplicationsList()
                 },
-                filterApplicationsList = {
+                searchApplications = {
                     homeViewModel.filterApplicationsList(it)
                 },
                 retrieveShortcuts = {
                     homeViewModel.retrieveShortcuts(it)
                 },
-                startShortcut = {
+                openShortcut = {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                         homeViewModel.startShortcut(it)
                     }
@@ -67,11 +69,11 @@ fun HomeNavigationGraph(
                 markNotification = { packageName, hasNotification ->
                     homeViewModel.markNotification(packageName, hasNotification)
                 },
-                onSettingsPressed = {
+                openLauncherSettings = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
-                onApplicationInfoPressed = openApplicationInfo,
-                onApplicationPressed = openApplication
+                openApplicationInfo = openApplicationInfo,
+                openApplication = openApplication
             )
         }
 

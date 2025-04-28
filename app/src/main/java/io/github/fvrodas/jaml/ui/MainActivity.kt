@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
@@ -66,6 +67,10 @@ class MainActivity : androidx.activity.ComponentActivity() {
                 mutableStateOf(settingsViewModel.isDynamicColorEnabled)
             }
 
+            var shouldHideApplicationIcons by remember {
+                mutableStateOf(settingsViewModel.shouldHideApplicationIcons)
+            }
+
             JamlTheme(
                 colorScheme = themesByName[selectedTheme] ?: JamlColorScheme.Default,
                 isInDarkMode = darkMode,
@@ -74,6 +79,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
                 HomeNavigationGraph(
                     navHostController = navHostController,
                     settingsViewModel = settingsViewModel,
+                    shouldHideApplicationIcons = shouldHideApplicationIcons,
                     openApplication = this::openApplication,
                     openApplicationInfo = this::openApplicationInfo,
                     isDefaultHome = this::isDefault,
@@ -82,6 +88,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
                     onSettingsSaved = {
                         isDynamicColorsEnabled = settingsViewModel.isDynamicColorEnabled
                         selectedTheme = settingsViewModel.selectedThemeName
+                        shouldHideApplicationIcons = settingsViewModel.shouldHideApplicationIcons
                     },
                     enableNotificationAccess = this::enableNotificationAccess
                 )

@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.launcher.composables
+package io.github.fvrodas.jaml.ui.launcher
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
@@ -21,11 +21,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -33,8 +36,9 @@ import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,41 +48,40 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.window.Dialog
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
-import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen200dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen72dp
+import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
+import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(
-    applicationsList: Set<PackageInfo>,
-    shortcutsList: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
+fun LauncherScreen(
+    listOfApplications: Set<PackageInfo>,
+    listOfShortcuts: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
+    shouldHideApplicationIcons: Boolean = false,
     clockTime: String,
     retrieveApplicationsList: () -> Unit = {},
-    filterApplicationsList: (String) -> Unit = {},
+    searchApplications: (String) -> Unit = {},
     retrieveShortcuts: (String) -> Unit = {},
-    startShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
+    openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     markNotification: (packageName: String, hasNotification: Boolean) -> Unit = { _, _ -> },
-    onSettingsPressed: () -> Unit = {},
-    onApplicationInfoPressed: (PackageInfo) -> Unit = {},
-    onApplicationPressed: (PackageInfo) -> Unit = {}
+    openLauncherSettings: () -> Unit = {},
+    openApplicationInfo: (PackageInfo) -> Unit = {},
+    openApplication: (PackageInfo) -> Unit = {}
 ) {
+    val shortcutsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var displayShortcuts by remember {
+    var shouldDisplayShortcutsList by remember {
         mutableStateOf(false)
     }
 
-    var displayList by remember {
+    var shouldDisplayAppList by remember {
         mutableStateOf(false)
     }
 
@@ -97,37 +100,61 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) {
+        shortcutsBottomSheetState.hide()
         LauncherEventBus.registerListener(launcherEventListener)
     }
 
     Scaffold(
         containerColor = Color.Transparent
     ) { _ ->
+        /** Experimental Status Bar Tint **/
+        val height = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        AnimatedVisibility(
+            visible = !shouldDisplayAppList,
+            enter = slideInVertically(),
+            exit = slideOutVertically()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height)
+                    .background(
+                        MaterialTheme.colorScheme.background.copy(alpha = .25f)
+                    )
+            )
+        }
+        /** End of Experimental Status Bar Tint **/
         SharedTransitionLayout {
             AnimatedContent(
-                targetState = displayList,
+                targetState = shouldDisplayAppList,
                 label = "home",
                 content = { targetState ->
+
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
-                                applicationsList.toList(),
+                                listOfApplications.toList(),
+                                shouldHideApplicationIcons,
                                 this@SharedTransitionLayout,
                                 this@AnimatedContent,
-                                toggleListVisibility = { displayList = !displayList },
-                                changeShortcutVisibility = { displayShortcuts = it },
-                                onSettingsPressed,
-                                onApplicationPressed = onApplicationPressed,
+                                toggleListVisibility = {
+                                    shouldDisplayAppList = !shouldDisplayAppList
+                                },
+                                changeShortcutVisibility = { shouldShow ->
+                                    shouldDisplayShortcutsList = shouldShow
+                                },
+                                openLauncherSettings,
+                                onApplicationPressed = openApplication,
                                 onApplicationLongPressed = retrieveShortcuts
-                            ) { filterApplicationsList(it) }
+                            ) { searchApplications(it) }
                         }
                     } else {
-                        HomeScreen(
+                        Home(
                             clockTime,
                             this@SharedTransitionLayout,
                             this@AnimatedContent
                         ) {
-                            displayList = it
+                            shouldDisplayAppList = it
                         }
                     }
                 },
@@ -138,45 +165,45 @@ fun HomeScreen(
                                 animationSpec = tween(220, delayMillis = 90)
                             ))
                         .togetherWith(
-                            slideOutVertically(
-                                targetOffsetY = { it / 2 },
-                                animationSpec = tween(90)
-                            ) + fadeOut(animationSpec = tween(90))
+                            fadeOut(animationSpec = tween(90))
                         )
                 }
             )
         }
 
-        BackHandler {
-            displayList = false
-        }
-
-        AnimatedVisibility(
-            visible = displayShortcuts,
-            enter = slideInVertically(),
-            exit = slideOutVertically()
-        ) {
-            Dialog(onDismissRequest = {
-                displayShortcuts = false
-            }) {
+        if (shouldDisplayShortcutsList) {
+            ModalBottomSheet(
+                containerColor = MaterialTheme.colorScheme.background,
+                dragHandle = null,
+                onDismissRequest = {
+                    shouldDisplayShortcutsList = false
+                },
+                sheetState = shortcutsBottomSheetState
+            ) {
                 ShortcutsList(
-                    shortcutsList,
-                    changeShortcutsVisibility = { displayShortcuts = it },
-                    startShortcut = startShortcut,
-                    onApplicationInfoPressed = onApplicationInfoPressed
+                    listOfShortcuts,
+                    changeShortcutsVisibility = {
+                        shouldDisplayShortcutsList = false
+                    },
+                    startShortcut = openShortcut,
+                    onApplicationInfoPressed = openApplicationInfo
                 )
             }
+        }
+
+        BackHandler {
+            shouldDisplayAppList = false
         }
     }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-internal fun HomeScreen(
+internal fun Home(
     clockTime: String,
     sharedTransitionLayout: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    setListVisibility: (Boolean) -> Unit
+    displayAppList: (Boolean) -> Unit
 ) {
     var startOffset: Offset = Offset.Zero
 
@@ -191,37 +218,13 @@ internal fun HomeScreen(
                         },
                         onDragEnd = {},
                         onDragCancel = {
-                            setListVisibility(false)
+                            displayAppList(false)
                         }
                     ) { change, _ ->
-                        setListVisibility(change.position.y < startOffset.y)
+                        displayAppList(change.position.y < startOffset.y)
                     }
                 }
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dimen200dp)
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.background,
-                                Color.Transparent
-                            )
-                        )
-                    )
-            ) {
-                Text(
-                    modifier = Modifier.padding(
-                        vertical = dimen72dp,
-                        horizontal = dimen16dp
-                    ),
-                    text = clockTime,
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                )
-            }
             Spacer(modifier = Modifier.weight(1f))
             Row(
                 modifier = Modifier

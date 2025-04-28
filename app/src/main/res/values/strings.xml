@@ -24,4 +24,6 @@
         <item>Gruvbox</item>
         <item>Nord</item>
     </string-array>
+    <string name="summary_hide_app_icons">Hide application icons for a more minimalist style</string>
+    <string name="menu_hide_app_icons">Hide application icons</string>
 </resources>

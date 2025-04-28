@@ -11,11 +11,18 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
             LauncherSettings.DYNAMIC_COLOR_ENABLED,
             false
         )
+
     val selectedThemeName
         get() = prefs.getString(
             LauncherSettings.SELECTED_THEME,
             JamlColorScheme.Default.name
         ) ?: JamlColorScheme.Default.name
+
+    val shouldHideApplicationIcons
+        get() = prefs.getBoolean(
+            LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS,
+            false
+        )
 
     fun saveSetting(key: String, value: Any) {
         prefs.edit().apply {
@@ -31,4 +38,5 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
 object LauncherSettings {
     const val DYNAMIC_COLOR_ENABLED = "dyncolorenabled"
     const val SELECTED_THEME = "selectedtheme"
+    const val SHOULD_HIDE_APPLICATION_ICONS = "shouldHideApplicationIcons"
 }

@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.settings.composables
+package io.github.fvrodas.jaml.ui.settings.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

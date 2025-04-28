@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.launcher.composables
+package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -40,7 +40,8 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 @Composable
 fun ApplicationItem(
     label: String,
-    icon: Bitmap? = null,
+    iconBitmap: Bitmap? = null,
+    leadingComposable: (@Composable () -> Unit)? = null,
     hasNotification: Boolean = false,
     onApplicationLongPressed: (() -> Unit)? = null,
     onApplicationPressed: () -> Unit
@@ -59,9 +60,9 @@ fun ApplicationItem(
     ) {
 
         Box(modifier = Modifier.padding(start = dimen16dp)) {
-            icon?.let {
+            iconBitmap?.let {
                 Image(
-                    bitmap = icon.asImageBitmap(),
+                    bitmap = iconBitmap.asImageBitmap(),
                     contentScale = ContentScale.FillBounds,
                     contentDescription = "",
                     modifier = Modifier
@@ -82,14 +83,9 @@ fun ApplicationItem(
                             .align(Alignment.BottomEnd)
                     )
                 }
-            } ?: run {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(dimen48dp),
-                )
+            }
+            leadingComposable?.let{
+               it()
             }
         }
         Spacer(modifier = Modifier.width(dimen16dp))

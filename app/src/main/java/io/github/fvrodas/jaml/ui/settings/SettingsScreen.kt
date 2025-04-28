@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.settings.composables
+package io.github.fvrodas.jaml.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +33,9 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.common.themes.themesByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
+import io.github.fvrodas.jaml.ui.settings.views.SettingItem
+import io.github.fvrodas.jaml.ui.settings.views.SettingOptionsDialog
+import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,10 +45,10 @@ fun SettingsScreen(
     setAsDefaultHome: () -> Unit = {},
     setWallpaper: () -> Unit = {},
     enableNotificationAccess: () -> Unit = {},
-    onSettingsSaved: () -> Unit,
+    saveSettings: () -> Unit,
     onBackPressed: () -> Unit = {}
 ) {
-    var dynamicColor by remember {
+    var isDynamicColorEnabled by remember {
         mutableStateOf(settingsViewModel.isDynamicColorEnabled)
     }
 
@@ -53,15 +56,26 @@ fun SettingsScreen(
         mutableStateOf(settingsViewModel.selectedThemeName)
     }
 
-    var showDialog by remember {
+    var showDisplayDialog by remember {
         mutableStateOf(false)
+    }
+
+    var shouldHideApplicationIcons by remember {
+        mutableStateOf(settingsViewModel.shouldHideApplicationIcons)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            settingsViewModel.saveSetting(LauncherSettings.DYNAMIC_COLOR_ENABLED, dynamicColor)
+            settingsViewModel.saveSetting(
+                LauncherSettings.DYNAMIC_COLOR_ENABLED,
+                isDynamicColorEnabled
+            )
+            settingsViewModel.saveSetting(
+                LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS,
+                shouldHideApplicationIcons
+            )
             settingsViewModel.saveSetting(LauncherSettings.SELECTED_THEME, selectedTheme)
-            onSettingsSaved()
+            saveSettings()
         }
     }
 
@@ -129,6 +143,13 @@ fun SettingsScreen(
                     )
                 )
             }
+            SettingSwitch(
+                title = stringResource(id = R.string.menu_hide_app_icons),
+                description = stringResource(id = R.string.summary_hide_app_icons),
+                value = shouldHideApplicationIcons
+            ) { checked ->
+                shouldHideApplicationIcons = checked
+            }
             SettingItem(
                 title = stringResource(id = R.string.menu_wallpaper),
                 description = stringResource(id = R.string.summary_wallpaper)
@@ -138,16 +159,16 @@ fun SettingsScreen(
             SettingSwitch(
                 title = stringResource(id = R.string.menu_dynamic_colors),
                 description = stringResource(id = R.string.summary_dynamic_colors),
-                value = dynamicColor
+                value = isDynamicColorEnabled
             ) { checked ->
-                dynamicColor = checked
+                isDynamicColorEnabled = checked
             }
-            AnimatedVisibility(visible = !dynamicColor) {
+            AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_theme),
                     description = selectedTheme
                 ) {
-                    showDialog = true
+                    showDisplayDialog = true
                 }
             }
             Spacer(modifier = Modifier.height(dimen16dp))
@@ -177,11 +198,11 @@ fun SettingsScreen(
                 )
             }
             SettingOptionsDialog(
-                showIf = showDialog,
+                showIf = showDisplayDialog,
                 title = stringResource(id = R.string.menu_theme),
                 options = themesByName.entries.toList().map { item -> item.key },
                 defaultValue = selectedTheme,
-                onDismiss = { showDialog = false },
+                onDismiss = { showDisplayDialog = false },
             ) { selected ->
                 selectedTheme = selected
             }

@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.launcher.composables
+package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -23,12 +23,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ApplicationsSheet(
     applicationsList: List<PackageInfo>,
+    shouldHideApplicationIcons: Boolean = false,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     toggleListVisibility: () -> Unit,
@@ -72,6 +75,13 @@ fun ApplicationsSheet(
         lazyListState.animateScrollToItem(0)
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            searchFieldValue = ""
+            onSearchApplication(searchFieldValue)
+        }
+    }
+
     with(sharedTransitionScope) {
         Column(
             modifier = Modifier
@@ -85,7 +95,7 @@ fun ApplicationsSheet(
                             startOffset = it
                         },
                         onDragEnd = {
-                            if(trackedDragAmount > 0) {
+                            if (trackedDragAmount > 0) {
                                 toggleListVisibility()
                             }
                         }
@@ -152,7 +162,7 @@ fun ApplicationsSheet(
                     val item = applicationsList[it]
                     ApplicationItem(
                         label = item.label,
-                        icon = item.icon,
+                        iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
                         hasNotification = item.hasNotification,
                         onApplicationLongPressed = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -172,7 +182,15 @@ fun ApplicationsSheet(
                 }
                 item {
                     HorizontalDivider()
-                    ApplicationItem(label = "Launcher Settings") {
+                    ApplicationItem(label = "Launcher Settings", leadingComposable = {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(dimen48dp),
+                        )
+                    }) {
                         onSettingsPressed.invoke()
                     }
                 }

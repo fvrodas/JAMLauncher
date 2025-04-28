@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.launcher.composables
+package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -53,7 +53,7 @@ fun ShortcutItem(
             icon?.let {
                 Image(
                     bitmap = icon.asImageBitmap(),
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Fit,
                     contentDescription = "",
                     modifier = Modifier
                         .size(dimen36dp)
