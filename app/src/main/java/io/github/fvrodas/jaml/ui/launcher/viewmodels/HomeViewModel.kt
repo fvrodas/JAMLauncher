@@ -21,12 +21,15 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private var applicationsListCache: Set<PackageInfo> = emptySet()
-    private var _appsList: MutableStateFlow<Set<PackageInfo>> = MutableStateFlow(applicationsListCache)
+
+    private var _appsList: MutableStateFlow<Set<PackageInfo>> =
+        MutableStateFlow(applicationsListCache)
     private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
 
     val appsListState: StateFlow<Set<PackageInfo>> = _appsList
-    val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> = _shortcutList
+    val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
+        _shortcutList
 
     fun retrieveApplicationsList() {
         viewModelScope.launch {
@@ -35,7 +38,6 @@ class HomeViewModel(
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
                 _appsList.value = applicationsListCache
-
             } catch (_: Exception) {
                 _appsList.value = emptySet()
             }
@@ -60,9 +62,15 @@ class HomeViewModel(
     fun markNotification(packageName: String?, hasNotification: Boolean) {
         viewModelScope.launch {
             try {
-                applicationsListCache.find { it.packageName == packageName }?.hasNotification =
+                _appsList.value = _appsList.value.map {
+                    if (packageName == it.packageName) {
+                        it.copy(hasNotification = hasNotification)
+                    } else {
+                        it
+                    }
+                }.toSet()
+                applicationsListCache.find { packageName == it.packageName }?.hasNotification =
                     hasNotification
-                _appsList.value = applicationsListCache
             } catch (_: Exception) {
                 _appsList.value = emptySet()
             }

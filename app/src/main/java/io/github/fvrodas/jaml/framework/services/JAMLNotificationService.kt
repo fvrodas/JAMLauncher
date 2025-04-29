@@ -18,18 +18,18 @@ class JAMLNotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
+        Log.d(this::class.java.name, "Posted: ${sbn?.packageName}")
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
-                hasNotification = false
+                hasNotification = true
             )
         )
         super.onNotificationPosted(sbn)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        Log.d("NOTIFICATION_DELETE", "${sbn?.packageName}")
+        Log.d(this::class.java.name, "Removed: ${sbn?.packageName}")
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,

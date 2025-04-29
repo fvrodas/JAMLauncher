@@ -10,7 +10,11 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
 
-    private val _launcherSettings = MutableStateFlow<LauncherSettings>(LauncherSettings())
+    private val _launcherSettings = MutableStateFlow<LauncherSettings>(LauncherSettings(
+        prefs.getBoolean(LauncherSettings.DYNAMIC_COLOR_ENABLED, false),
+        prefs.getString(LauncherSettings.SELECTED_THEME, JamlColorScheme.Default.name) ?: "",
+        prefs.getBoolean(LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS, false),
+    ))
     val launcherSettings: StateFlow<LauncherSettings> = _launcherSettings
 
     fun retrieveLauncherSettings() {
