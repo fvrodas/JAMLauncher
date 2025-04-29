@@ -9,13 +9,9 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class HomeViewModel(
     private val getApplicationsListUseCase: GetApplicationsListUseCase,
@@ -27,26 +23,9 @@ class HomeViewModel(
     private var _appsList: MutableStateFlow<Set<PackageInfo>> = MutableStateFlow(applicationsListCache)
     private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
-    private var _time: MutableStateFlow<String> = MutableStateFlow("")
 
     val appsListState: StateFlow<Set<PackageInfo>> = _appsList
     val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> = _shortcutList
-    val clockState: StateFlow<String> = _time
-
-    init {
-        retrieveApplicationsList()
-        retrieveCurrentTime()
-    }
-
-    private fun retrieveCurrentTime() {
-        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        viewModelScope.launch {
-            while (true) {
-                _time.value = dateFormat.format(Date())
-                delay(1000)
-            }
-        }
-    }
 
     fun retrieveApplicationsList() {
         viewModelScope.launch {
@@ -56,7 +35,7 @@ class HomeViewModel(
                 applicationsListCache = result.toSet()
                 _appsList.value = applicationsListCache
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _appsList.value = emptySet()
             }
         }
@@ -71,7 +50,7 @@ class HomeViewModel(
                         true
                     )
                 }.toSet()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _appsList.value = emptySet()
             }
         }
@@ -82,8 +61,8 @@ class HomeViewModel(
             try {
                 applicationsListCache.find { it.packageName == packageName }?.hasNotification =
                     hasNotification
-                retrieveApplicationsList()
-            } catch (e: Exception) {
+                _appsList.value = applicationsListCache
+            } catch (_: Exception) {
                 _appsList.value = emptySet()
             }
         }
@@ -95,7 +74,7 @@ class HomeViewModel(
                 val applicationInfo = applicationsListCache.first { it.packageName == packageName }
                 val shortcuts = getShortcutsListForApplicationUseCase(packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _shortcutList.value = null
             }
         }

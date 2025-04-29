@@ -10,17 +10,19 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
@@ -28,6 +30,7 @@ import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.themesByName
+import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -60,35 +63,33 @@ class MainActivity : androidx.activity.ComponentActivity() {
             val navHostController = rememberNavController()
             val darkMode = isSystemInDarkTheme()
 
-            var selectedTheme by remember {
-                mutableStateOf(settingsViewModel.selectedThemeName)
-            }
-            var isDynamicColorsEnabled by remember {
-                mutableStateOf(settingsViewModel.isDynamicColorEnabled)
+            val launcherSettings: LauncherSettings by settingsViewModel.launcherSettings.collectAsState()
+
+            var theme: String by remember {
+                mutableStateOf(launcherSettings.selectedThemeName)
             }
 
-            var shouldHideApplicationIcons by remember {
-                mutableStateOf(settingsViewModel.shouldHideApplicationIcons)
+            var dynamicColorEnabled: Boolean by remember {
+                mutableStateOf(launcherSettings.isDynamicColorEnabled)
             }
 
             JamlTheme(
-                colorScheme = themesByName[selectedTheme] ?: JamlColorScheme.Default,
+                colorScheme = themesByName[theme] ?: JamlColorScheme.Default,
                 isInDarkMode = darkMode,
-                isDynamicColorsEnabled = isDynamicColorsEnabled
+                isDynamicColorsEnabled = dynamicColorEnabled
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    settingsViewModel = settingsViewModel,
-                    shouldHideApplicationIcons = shouldHideApplicationIcons,
+                    launcherSettings = launcherSettings,
                     openApplication = this::openApplication,
                     openApplicationInfo = this::openApplicationInfo,
                     isDefaultHome = this::isDefault,
                     requestDefaultHome = this::requestDefaultHome,
                     setWallpaper = this::setWallpaper,
                     onSettingsSaved = {
-                        isDynamicColorsEnabled = settingsViewModel.isDynamicColorEnabled
-                        selectedTheme = settingsViewModel.selectedThemeName
-                        shouldHideApplicationIcons = settingsViewModel.shouldHideApplicationIcons
+                        settingsViewModel.saveSetting(it)
+                        theme = it.selectedThemeName
+                        dynamicColorEnabled = it.isDynamicColorEnabled
                     },
                     enableNotificationAccess = this::enableNotificationAccess
                 )

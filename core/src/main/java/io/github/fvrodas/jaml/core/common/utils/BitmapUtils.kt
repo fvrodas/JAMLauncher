@@ -5,13 +5,13 @@ import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.AdaptiveIconDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
 import android.util.LruCache
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
     private val iconCache: LruCache<String, Bitmap> = LruCache(1024 * 1024 * 80)
@@ -27,7 +27,7 @@ object BitmapUtils {
                 } else {
                     val scaled = InsetDrawable(drawable, 0.24f)
                     scaled.bounds = drawable.bounds
-                    AdaptiveIconDrawable(ColorDrawable(Color.WHITE), scaled).toBitmap()
+                    AdaptiveIconDrawable(Color.WHITE.toDrawable(), scaled).toBitmap()
                 }
             } else {
                 drawable.toBitmap().also {

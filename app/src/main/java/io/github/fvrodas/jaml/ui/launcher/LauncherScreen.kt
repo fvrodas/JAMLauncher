@@ -65,7 +65,6 @@ fun LauncherScreen(
     listOfApplications: Set<PackageInfo>,
     listOfShortcuts: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
-    clockTime: String,
     retrieveApplicationsList: () -> Unit = {},
     searchApplications: (String) -> Unit = {},
     retrieveShortcuts: (String) -> Unit = {},
@@ -150,7 +149,6 @@ fun LauncherScreen(
                         }
                     } else {
                         Home(
-                            clockTime,
                             this@SharedTransitionLayout,
                             this@AnimatedContent
                         ) {
@@ -201,7 +199,6 @@ fun LauncherScreen(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun Home(
-    clockTime: String,
     sharedTransitionLayout: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     displayAppList: (Boolean) -> Unit

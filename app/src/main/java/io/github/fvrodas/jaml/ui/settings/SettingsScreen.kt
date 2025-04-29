@@ -32,7 +32,6 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.common.themes.themesByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
-import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import io.github.fvrodas.jaml.ui.settings.views.SettingItem
 import io.github.fvrodas.jaml.ui.settings.views.SettingOptionsDialog
 import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
@@ -40,42 +39,37 @@ import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    settingsViewModel: SettingsViewModel,
+    launcherSettings: LauncherSettings,
     isDefaultHome: () -> Boolean = { false },
     setAsDefaultHome: () -> Unit = {},
     setWallpaper: () -> Unit = {},
     enableNotificationAccess: () -> Unit = {},
-    saveSettings: () -> Unit,
+    saveSettings: (LauncherSettings) -> Unit,
     onBackPressed: () -> Unit = {}
 ) {
-    var isDynamicColorEnabled by remember {
-        mutableStateOf(settingsViewModel.isDynamicColorEnabled)
+
+    var isDynamicColorEnabled: Boolean by remember {
+        mutableStateOf(launcherSettings.isDynamicColorEnabled)
+    }
+    var selectedThemeName: String by remember {
+        mutableStateOf(launcherSettings.selectedThemeName)
     }
 
-    var selectedTheme by remember {
-        mutableStateOf(settingsViewModel.selectedThemeName)
+    var shouldHideApplicationIcons: Boolean by remember {
+        mutableStateOf(launcherSettings.shouldHideApplicationIcons)
     }
 
     var showDisplayDialog by remember {
         mutableStateOf(false)
     }
 
-    var shouldHideApplicationIcons by remember {
-        mutableStateOf(settingsViewModel.shouldHideApplicationIcons)
-    }
-
     DisposableEffect(Unit) {
         onDispose {
-            settingsViewModel.saveSetting(
-                LauncherSettings.DYNAMIC_COLOR_ENABLED,
-                isDynamicColorEnabled
-            )
-            settingsViewModel.saveSetting(
-                LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS,
+            saveSettings(LauncherSettings(
+                isDynamicColorEnabled,
+                selectedThemeName,
                 shouldHideApplicationIcons
-            )
-            settingsViewModel.saveSetting(LauncherSettings.SELECTED_THEME, selectedTheme)
-            saveSettings()
+            ))
         }
     }
 
@@ -159,7 +153,7 @@ fun SettingsScreen(
             AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_theme),
-                    description = selectedTheme
+                    description = selectedThemeName
                 ) {
                     showDisplayDialog = true
                 }
@@ -201,10 +195,10 @@ fun SettingsScreen(
                 showIf = showDisplayDialog,
                 title = stringResource(id = R.string.menu_theme),
                 options = themesByName.entries.toList().map { item -> item.key },
-                defaultValue = selectedTheme,
+                defaultValue = selectedThemeName,
                 onDismiss = { showDisplayDialog = false },
             ) { selected ->
-                selectedTheme = selected
+                selectedThemeName = selected
             }
         }
     }

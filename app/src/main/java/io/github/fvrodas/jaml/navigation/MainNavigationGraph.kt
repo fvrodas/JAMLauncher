@@ -12,20 +12,19 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
-import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
+import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
-    settingsViewModel: SettingsViewModel,
-    shouldHideApplicationIcons: Boolean,
+    launcherSettings: LauncherSettings,
     openApplication: (PackageInfo) -> Unit,
     openApplicationInfo: (PackageInfo) -> Unit,
     isDefaultHome: () -> Boolean,
     requestDefaultHome: () -> Unit,
     setWallpaper: () -> Unit,
-    onSettingsSaved: () -> Unit,
+    onSettingsSaved: (LauncherSettings) -> Unit,
     enableNotificationAccess: () -> Unit
 ) {
     NavHost(
@@ -45,13 +44,11 @@ fun HomeNavigationGraph(
 
             val applicationsList by homeViewModel.appsListState.collectAsState()
             val shortcutsList by homeViewModel.shortcutsListState.collectAsState()
-            val clockTime by homeViewModel.clockState.collectAsState()
 
             LauncherScreen(
                 applicationsList,
                 shortcutsList,
-                shouldHideApplicationIcons,
-                clockTime,
+                launcherSettings.shouldHideApplicationIcons,
                 retrieveApplicationsList = {
                     homeViewModel.retrieveApplicationsList()
                 },
@@ -79,7 +76,7 @@ fun HomeNavigationGraph(
 
         composable(Routes.SETTINGS_SCREEN) {
             SettingsScreen(
-                settingsViewModel,
+                launcherSettings,
                 isDefaultHome,
                 requestDefaultHome,
                 setWallpaper,
