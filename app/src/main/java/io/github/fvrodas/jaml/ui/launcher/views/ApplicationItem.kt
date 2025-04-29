@@ -86,7 +86,8 @@ fun ApplicationItem(
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(
             text = label, style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onBackground
+                color = if(hasNotification) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onBackground
             )
         )
     }

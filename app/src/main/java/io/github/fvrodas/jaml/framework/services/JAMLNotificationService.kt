@@ -12,6 +12,11 @@ import io.github.fvrodas.jaml.framework.LauncherEvents
 
 class JAMLNotificationService : NotificationListenerService() {
 
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        getActiveNotifications()
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         Log.d("NOTIFICATION_ADDED", "${sbn?.packageName}")
         LauncherEventBus.postEvent(
@@ -32,6 +37,11 @@ class JAMLNotificationService : NotificationListenerService() {
             )
         )
         super.onNotificationRemoved(sbn)
+    }
+
+    override fun onListenerDisconnected() {
+        super.onListenerDisconnected()
+        tryReEnableNotificationListener(this)
     }
 
     companion object {

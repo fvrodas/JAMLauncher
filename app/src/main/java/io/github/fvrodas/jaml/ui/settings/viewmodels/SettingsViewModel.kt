@@ -13,7 +13,7 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
     private val _launcherSettings = MutableStateFlow<LauncherSettings>(LauncherSettings())
     val launcherSettings: StateFlow<LauncherSettings> = _launcherSettings
 
-    private fun retrieveLauncherSettings() {
+    fun retrieveLauncherSettings() {
         viewModelScope.launch {
             _launcherSettings.value = LauncherSettings(
                 prefs.getBoolean(LauncherSettings.DYNAMIC_COLOR_ENABLED, false),

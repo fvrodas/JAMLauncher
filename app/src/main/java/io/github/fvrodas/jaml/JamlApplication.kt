@@ -24,7 +24,7 @@ class JamlApplication: Application() {
             modules(appModule, coreModule)
         }
 
-        JAMLNotificationService.tryReEnableNotificationListener(this)
+        //JAMLNotificationService.tryReEnableNotificationListener(this)
     }
 }
 

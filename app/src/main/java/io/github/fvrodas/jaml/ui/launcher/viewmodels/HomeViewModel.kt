@@ -9,6 +9,7 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
+import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -45,7 +46,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 _appsList.value = applicationsListCache.filter {
-                    it.label.contains(
+                    it.label.simplify().contains(
                         query,
                         true
                     )

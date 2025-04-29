@@ -22,10 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
+import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
@@ -40,6 +40,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
                 this.recreate()
+                JAMLNotificationService.tryReEnableNotificationListener(this)
             }
         }
 
@@ -71,6 +72,10 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
             var dynamicColorEnabled: Boolean by remember {
                 mutableStateOf(launcherSettings.isDynamicColorEnabled)
+            }
+
+            LaunchedEffect(Unit) {
+                settingsViewModel.retrieveLauncherSettings()
             }
 
             JamlTheme(
