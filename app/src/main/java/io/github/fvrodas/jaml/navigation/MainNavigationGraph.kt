@@ -83,7 +83,7 @@ fun HomeNavigationGraph(
                 enableNotificationAccess,
                 onSettingsSaved,
             ) {
-                navHostController.navigateUp()
+                navHostController.popBackStack()
             }
         }
     }

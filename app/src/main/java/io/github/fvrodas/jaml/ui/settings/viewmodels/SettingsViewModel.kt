@@ -1,6 +1,7 @@
 package io.github.fvrodas.jaml.ui.settings.viewmodels
 
 import android.content.SharedPreferences
+import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -47,6 +48,7 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
     }
 }
 
+@Stable
 data class LauncherSettings(
     var isDynamicColorEnabled: Boolean = false,
     var selectedThemeName: String = JamlColorScheme.Default.name,

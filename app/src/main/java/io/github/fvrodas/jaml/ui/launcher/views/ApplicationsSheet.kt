@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
@@ -81,6 +82,8 @@ fun ApplicationsSheet(
             onSearchApplication(searchFieldValue)
         }
     }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     with(sharedTransitionScope) {
         Column(
@@ -146,6 +149,7 @@ fun ApplicationsSheet(
                         modifier = Modifier.clickable {
                             searchFieldValue = ""
                             onSearchApplication.invoke(searchFieldValue)
+                            keyboardController?.hide()
                         }
                     )
                 },

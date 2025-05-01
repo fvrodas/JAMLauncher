@@ -51,7 +51,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        actionBar?.hide()
+        //actionBar?.hide()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
         window.setBackgroundDrawable(0x00000000.toDrawable())
