@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.ui.launcher.viewmodels
 
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -12,14 +13,17 @@ import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseC
 import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
+import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class HomeViewModel(
     private val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
     private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
+    private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
     private var applicationsListCache: Set<PackageInfo> = emptySet()
@@ -40,6 +44,17 @@ class HomeViewModel(
                 val result = getApplicationsListUseCase(null)
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
+
+                sharedPreferences.getString(LauncherSettings.PINNED_APPS, null)?.let {
+                    pinnedApplications.clear()
+                    val packageNames: List<String> = Json.decodeFromString(it)
+                    pinnedApplications.addAll(
+                        packageNames.mapNotNull { p ->
+                            applicationsListCache.firstOrNull { p == it.packageName }
+                        }.toList()
+                    )
+                }
+
                 _applicationsState.value = ApplicationSheetState(
                     pinnedApplications = pinnedApplications.toSet(),
                     applicationsList = applicationsListCache.exclude(pinnedApplications)
@@ -68,14 +83,23 @@ class HomeViewModel(
         }
     }
 
-    fun pintToTop(packageInfo: PackageInfo) {
-        if (pinnedApplications.size < 5
-            && pinnedApplications.find { it.packageName == packageInfo.packageName } == null
-        ) {
-            viewModelScope.launch {
+    fun toggleAppPinning(packageInfo: PackageInfo) {
+        viewModelScope.launch {
+            if (pinnedApplications.find { it.packageName == packageInfo.packageName } == null) {
+                if (pinnedApplications.size >= 5) return@launch
+
                 pinnedApplications.add(packageInfo)
-                retrieveApplicationsList()
+            } else {
+                pinnedApplications.removeAll { it.packageName == packageInfo.packageName }
             }
+            sharedPreferences.edit().apply {
+                putString(
+                    LauncherSettings.PINNED_APPS,
+                    Json.encodeToString(pinnedApplications.map { it.packageName })
+                )
+                commit()
+            }
+            retrieveApplicationsList()
         }
     }
 
@@ -129,4 +153,6 @@ class HomeViewModel(
 data class ApplicationSheetState(
     val pinnedApplications: Set<PackageInfo> = setOf(),
     val applicationsList: Set<PackageInfo> = setOf()
-)
+) {
+    val canPinApps: Boolean get() = pinnedApplications.size < 5
+}

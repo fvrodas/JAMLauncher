@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontwarn io.github.fvrodas.jaml.core.ModulesKt
+-dontwarn io.github.fvrodas.jaml.core.domain.entities.PackageInfo$ShortcutInfo
+-dontwarn io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+-dontwarn io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
+-dontwarn io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
+-dontwarn io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase

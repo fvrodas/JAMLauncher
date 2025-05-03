@@ -58,5 +58,6 @@ data class LauncherSettings(
         const val DYNAMIC_COLOR_ENABLED = "dyncolorenabled"
         const val SELECTED_THEME = "selectedtheme"
         const val SHOULD_HIDE_APPLICATION_ICONS = "shouldhideapplicationicons"
+        const val PINNED_APPS = "pinnedapplications"
     }
 }

@@ -2,6 +2,8 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "org.jetbrains.kotlin.kapt"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.1.20'
+    id "org.jetbrains.kotlin.plugin.compose" version "2.0.0"
 }
 
 android {
@@ -18,8 +20,14 @@ android {
     }
 
     buildTypes {
-        release {
+
+        debug {
             minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+
+        release {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
@@ -70,8 +78,9 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:$nav_version"
 
     implementation "androidx.preference:preference-ktx:1.2.1"
+    api 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0'
 
-    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
+    //implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
     implementation 'androidx.core:core-role:1.1.0'
 
     testImplementation "junit:junit:4.13.2"

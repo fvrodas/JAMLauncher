@@ -12,13 +12,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -38,6 +38,8 @@ import kotlinx.coroutines.launch
 fun ShortcutsList(
     shortcutsList: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
+    shouldLetPinApps: Boolean = true,
+    pinningMode: Boolean = true,
     changeShortcutsVisibility: (Boolean) -> Unit,
     startShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     pinAppToTop: (PackageInfo) -> Unit = {},
@@ -72,17 +74,19 @@ fun ShortcutsList(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = {
-                    shortcutsList?.first?.let {
-                        pinAppToTop(it)
+                if(shouldLetPinApps || !pinningMode) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = {
+                        shortcutsList?.first?.let {
+                            pinAppToTop(it)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = if (pinningMode) Icons.Rounded.Star else Icons.Rounded.Delete,
+                            contentDescription = null,
+                            modifier = Modifier.size(dimen24dp)
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(dimen24dp)
-                    )
                 }
             }
             HorizontalDivider(

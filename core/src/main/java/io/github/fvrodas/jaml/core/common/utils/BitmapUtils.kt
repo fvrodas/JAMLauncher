@@ -47,6 +47,7 @@ object BitmapUtils {
                     iconCache.put(shortcutInfo.`package` + shortcutInfo.id, it)
                 }
         } catch (e: SecurityException) {
+            e.printStackTrace()
             null
         }
     }

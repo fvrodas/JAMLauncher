@@ -72,7 +72,7 @@ fun HomeNavigationGraph(
                     homeViewModel.retrieveShortcuts(it)
                 },
                 pinToTop = {
-                    homeViewModel.pintToTop(it)
+                    homeViewModel.toggleAppPinning(it)
                 },
                 openShortcut = {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

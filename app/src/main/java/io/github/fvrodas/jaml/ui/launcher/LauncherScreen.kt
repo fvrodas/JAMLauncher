@@ -78,6 +78,10 @@ fun LauncherScreen(
         mutableStateOf(false)
     }
 
+    var shortcutListPinningMode by remember {
+        mutableStateOf(false)
+    }
+
     var shouldDisplayAppList by remember {
         mutableStateOf(false)
     }
@@ -122,8 +126,9 @@ fun LauncherScreen(
                                 toggleListVisibility = {
                                     shouldDisplayAppList = !shouldDisplayAppList
                                 },
-                                changeShortcutVisibility = { shouldShow ->
+                                changeShortcutVisibility = { shouldShow, pinningMode ->
                                     shouldDisplayShortcutsList = shouldShow
+                                    shortcutListPinningMode = pinningMode
                                 },
                                 openLauncherSettings,
                                 onApplicationPressed = openApplication,
@@ -164,11 +169,16 @@ fun LauncherScreen(
                 ShortcutsList(
                     listOfShortcuts,
                     shouldHideApplicationIcons,
+                    applicationSheetState.canPinApps,
+                    shortcutListPinningMode,
                     changeShortcutsVisibility = {
                         shouldDisplayShortcutsList = false
                     },
                     startShortcut = openShortcut,
-                    pinAppToTop = pinToTop,
+                    pinAppToTop = {
+                        shouldDisplayShortcutsList = false
+                        pinToTop(it)
+                    },
                     onApplicationInfoPressed = openApplicationInfo
                 )
             }

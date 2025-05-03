@@ -59,7 +59,7 @@ fun ApplicationsSheet(
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     toggleListVisibility: () -> Unit,
-    changeShortcutVisibility: (Boolean) -> Unit,
+    changeShortcutVisibility: (Boolean, Boolean) -> Unit,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
     onApplicationLongPressed: (PackageInfo) -> Unit,
@@ -187,7 +187,7 @@ fun ApplicationsSheet(
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                     coroutineScope.launch {
                                         onApplicationLongPressed.invoke(item)
-                                        changeShortcutVisibility(true)
+                                        changeShortcutVisibility(true, false)
                                     }
                                 }
                             },
@@ -213,7 +213,7 @@ fun ApplicationsSheet(
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                 coroutineScope.launch {
                                     onApplicationLongPressed.invoke(item)
-                                    changeShortcutVisibility(true)
+                                    changeShortcutVisibility(true, true)
                                 }
                             }
                         },
