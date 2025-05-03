@@ -2,15 +2,14 @@ package io.github.fvrodas.jaml
 
 import android.app.Application
 import io.github.fvrodas.jaml.core.coreModule
-import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 class JamlApplication: Application() {
@@ -24,7 +23,6 @@ class JamlApplication: Application() {
             modules(appModule, coreModule)
         }
 
-        //JAMLNotificationService.tryReEnableNotificationListener(this)
     }
 }
 

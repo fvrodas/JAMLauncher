@@ -3,12 +3,14 @@ package io.github.fvrodas.jaml.navigation
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.framework.LauncherEventBus
+import io.github.fvrodas.jaml.framework.LauncherEventListener
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
@@ -35,36 +37,47 @@ fun HomeNavigationGraph(
         composable(Routes.HOME_SCREEN) {
             val homeViewModel: HomeViewModel = koinViewModel()
 
+            val launcherEventListener = object : LauncherEventListener {
+                override fun onPackageChanged() {
+                    homeViewModel.retrieveApplicationsList()
+                }
+
+                override fun onNotificationChanged(
+                    packageName: String?,
+                    hasNotification: Boolean
+                ) {
+                    homeViewModel.markNotification(packageName, hasNotification)
+                }
+            }
+
             LaunchedEffect(Unit) {
                 if (!isDefaultHome()) {
                     requestDefaultHome()
                 }
                 homeViewModel.retrieveApplicationsList()
+                LauncherEventBus.registerListener(launcherEventListener)
             }
 
-            val applicationsList by homeViewModel.appsListState.collectAsState()
-            val shortcutsList by homeViewModel.shortcutsListState.collectAsState()
+            val applicationListState by homeViewModel.applicationsState.collectAsStateWithLifecycle()
+            val shortcutsList by homeViewModel.shortcutsListState.collectAsStateWithLifecycle()
 
             LauncherScreen(
-                applicationsList,
+                applicationListState,
                 shortcutsList,
                 launcherSettings.shouldHideApplicationIcons,
-                retrieveApplicationsList = {
-                    homeViewModel.retrieveApplicationsList()
-                },
                 searchApplications = {
                     homeViewModel.filterApplicationsList(it)
                 },
                 retrieveShortcuts = {
                     homeViewModel.retrieveShortcuts(it)
                 },
+                pinToTop = {
+                    homeViewModel.pintToTop(it)
+                },
                 openShortcut = {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                         homeViewModel.startShortcut(it)
                     }
-                },
-                markNotification = { packageName, hasNotification ->
-                    homeViewModel.markNotification(packageName, hasNotification)
                 },
                 openLauncherSettings = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)

@@ -29,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,12 +48,13 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ApplicationsSheet(
-    applicationsList: List<PackageInfo>,
+    state: ApplicationSheetState,
     shouldHideApplicationIcons: Boolean = false,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -60,7 +62,7 @@ fun ApplicationsSheet(
     changeShortcutVisibility: (Boolean) -> Unit,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
-    onApplicationLongPressed: (String) -> Unit,
+    onApplicationLongPressed: (PackageInfo) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
 
@@ -163,8 +165,46 @@ fun ApplicationsSheet(
             LazyColumn(
                 state = lazyListState
             ) {
-                items(applicationsList.size) {
-                    val item = applicationsList[it]
+                if (state.pinnedApplications.isNotEmpty()) {
+                    item {
+                        Text(
+                            "Favorites",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                color = MaterialTheme.colorScheme.primary
+                            ),
+                            modifier = Modifier
+                                .padding(horizontal = dimen16dp)
+                                .padding(top = dimen8dp)
+                        )
+                    }
+                    items(state.pinnedApplications.size) {
+                        val item = state.pinnedApplications.elementAt(it)
+                        ApplicationItem(
+                            label = item.label,
+                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                            hasNotification = item.hasNotification,
+                            onApplicationLongPressed = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                    coroutineScope.launch {
+                                        onApplicationLongPressed.invoke(item)
+                                        changeShortcutVisibility(true)
+                                    }
+                                }
+                            },
+                            onApplicationPressed = {
+                                coroutineScope.launch {
+                                    onApplicationPressed.invoke(item)
+                                    toggleListVisibility()
+                                }
+                            }
+                        )
+                    }
+                    item {
+                        HorizontalDivider()
+                    }
+                }
+                items(state.applicationsList.size) {
+                    val item = state.applicationsList.elementAt(it)
                     ApplicationItem(
                         label = item.label,
                         iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
@@ -172,7 +212,7 @@ fun ApplicationsSheet(
                         onApplicationLongPressed = {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                 coroutineScope.launch {
-                                    onApplicationLongPressed.invoke(item.packageName)
+                                    onApplicationLongPressed.invoke(item)
                                     changeShortcutVisibility(true)
                                 }
                             }

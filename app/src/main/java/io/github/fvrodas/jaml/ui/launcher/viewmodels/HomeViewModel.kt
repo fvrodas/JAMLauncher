@@ -9,7 +9,9 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
+import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
+import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,13 +23,14 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private var applicationsListCache: Set<PackageInfo> = emptySet()
+    private val pinnedApplications: ArrayList<PackageInfo> = arrayListOf()
 
-    private var _appsList: MutableStateFlow<Set<PackageInfo>> =
-        MutableStateFlow(applicationsListCache)
+    private var _applicationsState: MutableStateFlow<ApplicationSheetState> =
+        MutableStateFlow(ApplicationSheetState())
     private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
 
-    val appsListState: StateFlow<Set<PackageInfo>> = _appsList
+    val applicationsState: StateFlow<ApplicationSheetState> = _applicationsState
     val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         _shortcutList
 
@@ -37,9 +40,12 @@ class HomeViewModel(
                 val result = getApplicationsListUseCase(null)
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
-                _appsList.value = applicationsListCache
+                _applicationsState.value = ApplicationSheetState(
+                    pinnedApplications = pinnedApplications.toSet(),
+                    applicationsList = applicationsListCache.exclude(pinnedApplications)
+                )
             } catch (_: Exception) {
-                _appsList.value = emptySet()
+                _applicationsState.value = ApplicationSheetState()
             }
         }
     }
@@ -47,14 +53,28 @@ class HomeViewModel(
     fun filterApplicationsList(query: String = "") {
         viewModelScope.launch {
             try {
-                _appsList.value = applicationsListCache.filter {
-                    it.label.simplify().contains(
-                        query,
-                        true
-                    )
-                }.toSet()
+                _applicationsState.value = _applicationsState.value.copy(
+                    applicationsList = applicationsListCache.filter { c ->
+                        pinnedApplications.none { c.packageName == it.packageName } &&
+                                c.label.simplify().contains(
+                                    query,
+                                    true
+                                )
+                    }.toSet()
+                )
             } catch (_: Exception) {
-                _appsList.value = emptySet()
+                _applicationsState.value = ApplicationSheetState()
+            }
+        }
+    }
+
+    fun pintToTop(packageInfo: PackageInfo) {
+        if (pinnedApplications.size < 5
+            && pinnedApplications.find { it.packageName == packageInfo.packageName } == null
+        ) {
+            viewModelScope.launch {
+                pinnedApplications.add(packageInfo)
+                retrieveApplicationsList()
             }
         }
     }
@@ -62,26 +82,35 @@ class HomeViewModel(
     fun markNotification(packageName: String?, hasNotification: Boolean) {
         viewModelScope.launch {
             try {
-                _appsList.value = _appsList.value.map {
-                    if (packageName == it.packageName) {
-                        it.copy(hasNotification = hasNotification)
-                    } else {
-                        it
-                    }
-                }.toSet()
-                applicationsListCache.find { packageName == it.packageName }?.hasNotification =
-                    hasNotification
+                packageName?.let {
+                    _applicationsState.value = _applicationsState.value.copy(
+                        pinnedApplications = _applicationsState.value.pinnedApplications.updateAppEntry(
+                            packageName,
+                            hasNotification
+                        ),
+                        applicationsList = _applicationsState.value.applicationsList.updateAppEntry(
+                            packageName,
+                            hasNotification
+                        )
+                    )
+                    applicationsListCache.find { packageName == it.packageName }?.hasNotification =
+                        hasNotification
+                    pinnedApplications.find { packageName == it.packageName }?.hasNotification =
+                        hasNotification
+                }
             } catch (_: Exception) {
-                _appsList.value = emptySet()
+                _applicationsState.value = ApplicationSheetState()
             }
         }
     }
 
-    fun retrieveShortcuts(packageName: String) {
+    fun retrieveShortcuts(packageInfo: PackageInfo) {
         viewModelScope.launch {
             try {
-                val applicationInfo = applicationsListCache.first { it.packageName == packageName }
-                val shortcuts = getShortcutsListForApplicationUseCase(packageName).toSet()
+                val applicationInfo =
+                    applicationsListCache.first { it.packageName == packageInfo.packageName }
+                val shortcuts =
+                    getShortcutsListForApplicationUseCase(packageInfo.packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
             } catch (_: Exception) {
                 _shortcutList.value = null
@@ -96,3 +125,8 @@ class HomeViewModel(
         }
     }
 }
+
+data class ApplicationSheetState(
+    val pinnedApplications: Set<PackageInfo> = setOf(),
+    val applicationsList: Set<PackageInfo> = setOf()
+)

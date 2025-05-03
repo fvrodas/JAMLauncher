@@ -51,10 +51,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.framework.LauncherEventBus
-import io.github.fvrodas.jaml.framework.LauncherEventListener
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
 import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
 
@@ -62,14 +61,13 @@ import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LauncherScreen(
-    listOfApplications: Set<PackageInfo>,
+    applicationSheetState: ApplicationSheetState,
     listOfShortcuts: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
-    retrieveApplicationsList: () -> Unit = {},
     searchApplications: (String) -> Unit = {},
-    retrieveShortcuts: (String) -> Unit = {},
+    retrieveShortcuts: (PackageInfo) -> Unit = {},
+    pinToTop: (PackageInfo) -> Unit = {},
     openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
-    markNotification: (packageName: String, hasNotification: Boolean) -> Unit = { _, _ -> },
     openLauncherSettings: () -> Unit = {},
     openApplicationInfo: (PackageInfo) -> Unit = {},
     openApplication: (PackageInfo) -> Unit = {}
@@ -84,23 +82,8 @@ fun LauncherScreen(
         mutableStateOf(false)
     }
 
-    val launcherEventListener = object : LauncherEventListener {
-        override fun onPackageChanged() {
-            retrieveApplicationsList()
-        }
-
-        override fun onNotificationChanged(
-            packageName: String?,
-            hasNotification: Boolean
-        ) {
-            markNotification(packageName ?: "", hasNotification)
-        }
-
-    }
-
     LaunchedEffect(Unit) {
         shortcutsBottomSheetState.hide()
-        LauncherEventBus.registerListener(launcherEventListener)
     }
 
     Scaffold(
@@ -132,7 +115,7 @@ fun LauncherScreen(
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
-                                listOfApplications.toList(),
+                                applicationSheetState,
                                 shouldHideApplicationIcons,
                                 this@SharedTransitionLayout,
                                 this@AnimatedContent,
@@ -185,6 +168,7 @@ fun LauncherScreen(
                         shouldDisplayShortcutsList = false
                     },
                     startShortcut = openShortcut,
+                    pinAppToTop = pinToTop,
                     onApplicationInfoPressed = openApplicationInfo
                 )
             }

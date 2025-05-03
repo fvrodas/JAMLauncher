@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.ui.settings.views
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,16 +9,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.window.Dialog
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
@@ -31,12 +31,14 @@ fun SettingOptionsDialog(
     onDismiss: () -> Unit,
     onSelected: (String) -> Unit
 ) {
-    if (showIf) {
-        Dialog(onDismissRequest = {
-            onDismiss()
-        }) {
+    AnimatedVisibility(visible = showIf) {
+        Dialog(
+            onDismissRequest = {
+                onDismiss()
+            }) {
             LazyColumn(
                 modifier = Modifier
+                    .clip(RoundedCornerShape(dimen16dp))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(dimen16dp)
                     .fillMaxWidth(0.9F)
@@ -61,22 +63,16 @@ fun SettingOptionsDialog(
                                 onDismiss()
                             },
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+                        horizontalArrangement = Arrangement.spacedBy(dimen16dp),
+
+                        ) {
+                        RadioButton(selected = optionName == defaultValue, onClick = {})
                         Text(
                             text = optionName,
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         )
-                        if (optionName == defaultValue) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = "",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(dimen16dp)
-                            )
-                        }
                     }
                 }
             }
