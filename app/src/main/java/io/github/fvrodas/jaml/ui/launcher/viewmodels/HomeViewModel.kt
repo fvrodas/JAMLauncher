@@ -69,6 +69,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 _applicationsState.value = _applicationsState.value.copy(
+                    pinnedApplications = if (query.isEmpty()) pinnedApplications.toSet() else setOf(),
                     applicationsList = applicationsListCache.filter { c ->
                         pinnedApplications.none { c.packageName == it.packageName } &&
                                 c.label.simplify().contains(
