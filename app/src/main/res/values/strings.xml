@@ -19,11 +19,9 @@
     <string name="menu_other_settings">General</string>
     <string name="summary_default_launcher">Select this launcher as your default launcher</string>
     <string name="menu_default_launcher">Set as Default Launcher</string>
-    <string-array name="theme_names">
-        <item>Default</item>
-        <item>Gruvbox</item>
-        <item>Nord</item>
-    </string-array>
+    <string name="theme_default">Default</string>
+    <string name="theme_gruvbox">Gruvbox</string>
     <string name="summary_hide_app_icons">Hide application icons for a more minimalist style</string>
     <string name="menu_hide_app_icons">Hide application icons</string>
+    <string name="label_favorites">Favorites</string>
 </resources>

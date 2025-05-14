@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +31,7 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import kotlinx.coroutines.launch
@@ -49,7 +51,7 @@ fun ShortcutsList(
 
     LazyColumn(
         modifier = Modifier
-            .padding(dimen16dp)
+            .padding(horizontal = dimen32dp, vertical = dimen16dp)
     ) {
         item {
             Row(
@@ -98,6 +100,9 @@ fun ShortcutsList(
         shortcutsList?.second?.let { shortcuts ->
             items(shortcuts.size) { i ->
                 shortcuts.elementAt(i).run {
+                    if (this.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
+                        Spacer(modifier = Modifier.height(dimen8dp))
+                    }
                     ShortcutItem(
                         label = label,
                         icon = icon,

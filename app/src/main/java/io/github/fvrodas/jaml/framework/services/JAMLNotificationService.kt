@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEvents
@@ -18,7 +17,6 @@ class JAMLNotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
-        Log.d(this::class.java.name, "Posted: ${sbn?.packageName}")
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
@@ -29,7 +27,6 @@ class JAMLNotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        Log.d(this::class.java.name, "Removed: ${sbn?.packageName}")
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
@@ -51,24 +48,29 @@ class JAMLNotificationService : NotificationListenerService() {
         }
 
         fun tryReEnableNotificationListener(context: Context) {
-            if (isNotificationListenerServiceEnabled(context)) {
-                // Rebind the service if it's already enabled
-                val componentName =
-                    ComponentName(
-                        context,
-                        JAMLNotificationService::class.java,
+
+            try {
+                if (isNotificationListenerServiceEnabled(context)) {
+                    // Rebind the service if it's already enabled
+                    val componentName =
+                        ComponentName(
+                            context,
+                            JAMLNotificationService::class.java,
+                        )
+                    val pm = context.packageManager
+                    pm.setComponentEnabledSetting(
+                        componentName,
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP,
                     )
-                val pm = context.packageManager
-                pm.setComponentEnabledSetting(
-                    componentName,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP,
-                )
-                pm.setComponentEnabledSetting(
-                    componentName,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP,
-                )
+                    pm.setComponentEnabledSetting(
+                        componentName,
+                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                        PackageManager.DONT_KILL_APP,
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +19,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,7 +41,6 @@ class MainActivity : androidx.activity.ComponentActivity() {
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
-                this.recreate()
                 JAMLNotificationService.tryReEnableNotificationListener(this)
             }
         }
@@ -51,7 +52,6 @@ class MainActivity : androidx.activity.ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        //actionBar?.hide()
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
         window.setBackgroundDrawable(0x00000000.toDrawable())
@@ -62,25 +62,21 @@ class MainActivity : androidx.activity.ComponentActivity() {
             val settingsViewModel: SettingsViewModel = koinViewModel()
 
             val navHostController = rememberNavController()
-            val darkMode = isSystemInDarkTheme()
+                //val darkMode =
 
             val launcherSettings: LauncherSettings by settingsViewModel.launcherSettings.collectAsState()
 
-            var theme: String by remember {
-                mutableStateOf(launcherSettings.selectedThemeName)
+            var theme: Int by remember {
+                mutableIntStateOf(launcherSettings.selectedThemeName)
             }
 
             var dynamicColorEnabled: Boolean by remember {
                 mutableStateOf(launcherSettings.isDynamicColorEnabled)
             }
 
-            LaunchedEffect(Unit) {
-                settingsViewModel.retrieveLauncherSettings()
-            }
-
             JamlTheme(
                 colorScheme = themesByName[theme] ?: JamlColorScheme.Default,
-                isInDarkMode = darkMode,
+                isInDarkMode = isSystemInDarkTheme(),
                 isDynamicColorsEnabled = dynamicColorEnabled
             ) {
                 HomeNavigationGraph(

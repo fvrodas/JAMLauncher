@@ -2,10 +2,9 @@ package io.github.fvrodas.jaml.ui.common.themes
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import io.github.fvrodas.jaml.R
 
 sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
-
-    val name: String get() = this::class.java.simpleName
 
     data object Default : JamlColorScheme(
         lightColorScheme = ColorScheme(
@@ -139,7 +138,7 @@ sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorSch
 }
 
 val themesByName = mapOf(
-    JamlColorScheme.Default.name to JamlColorScheme.Default,
-    JamlColorScheme.Gruvbox.name to JamlColorScheme.Gruvbox
+    R.string.theme_default to JamlColorScheme.Default,
+    R.string.theme_gruvbox to JamlColorScheme.Gruvbox
 )
 

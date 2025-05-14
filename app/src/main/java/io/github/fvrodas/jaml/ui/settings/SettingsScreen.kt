@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,8 +53,8 @@ fun SettingsScreen(
     var isDynamicColorEnabled: Boolean by remember {
         mutableStateOf(launcherSettings.isDynamicColorEnabled)
     }
-    var selectedThemeName: String by remember {
-        mutableStateOf(launcherSettings.selectedThemeName)
+    var selectedThemeName: Int by remember {
+        mutableIntStateOf(launcherSettings.selectedThemeName)
     }
 
     var shouldHideApplicationIcons: Boolean by remember {
@@ -167,7 +168,7 @@ fun SettingsScreen(
             AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_theme),
-                    description = selectedThemeName
+                    description = stringResource(selectedThemeName)
                 ) {
                     showDisplayDialog = true
                 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -39,9 +41,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
@@ -133,7 +138,7 @@ fun ApplicationsSheet(
             }
             OutlinedTextField(
                 value = searchFieldValue,
-                textStyle = MaterialTheme.typography.bodyLarge,
+                textStyle = MaterialTheme.typography.titleMedium,
                 onValueChange = {
                     searchFieldValue = it
                     onSearchApplication.invoke(searchFieldValue)
@@ -155,7 +160,7 @@ fun ApplicationsSheet(
                         }
                     )
                 },
-                shape = RoundedCornerShape(dimen24dp),
+                shape = RoundedCornerShape(dimen8dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -168,7 +173,7 @@ fun ApplicationsSheet(
                 if (state.pinnedApplications.isNotEmpty()) {
                     item {
                         Text(
-                            "Favorites",
+                            stringResource(R.string.label_favorites),
                             style = MaterialTheme.typography.labelLarge.copy(
                                 color = MaterialTheme.colorScheme.primary
                             ),
@@ -183,11 +188,12 @@ fun ApplicationsSheet(
                             label = item.label,
                             iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
                             hasNotification = item.hasNotification,
-                            onApplicationLongPressed = {
+                            isFavorite = true,
+                            onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                     coroutineScope.launch {
                                         onApplicationLongPressed.invoke(item)
-                                        changeShortcutVisibility(true, false)
+                                        changeShortcutVisibility(true, !isFavorite)
                                     }
                                 }
                             },
@@ -209,11 +215,11 @@ fun ApplicationsSheet(
                         label = item.label,
                         iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
                         hasNotification = item.hasNotification,
-                        onApplicationLongPressed = {
+                        onApplicationLongPressed = { isFavorite ->
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                 coroutineScope.launch {
                                     onApplicationLongPressed.invoke(item)
-                                    changeShortcutVisibility(true, true)
+                                    changeShortcutVisibility(true, !isFavorite)
                                 }
                             }
                         },
@@ -226,12 +232,26 @@ fun ApplicationsSheet(
                     )
                 }
                 item {
-                    HorizontalDivider()
-                    ApplicationItem(
-                        label = "Launcher Settings",
-                        iconVector = if (shouldHideApplicationIcons) null else Icons.Rounded.Settings
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimen16dp),
+                        horizontalArrangement = Arrangement.End,
                     ) {
-                        onSettingsPressed.invoke()
+                        IconButton(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.background),
+                            onClick = { onSettingsPressed.invoke() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(dimen24dp),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
             }

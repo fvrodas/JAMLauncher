@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,9 +40,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 
@@ -53,7 +56,8 @@ fun ApplicationItem(
     iconBitmap: Bitmap? = null,
     iconVector: ImageVector? = null,
     hasNotification: Boolean = false,
-    onApplicationLongPressed: (() -> Unit)? = null,
+    isFavorite: Boolean = false,
+    onApplicationLongPressed: ((isFavorite: Boolean) -> Unit)? = null,
     onApplicationPressed: () -> Unit
 ) {
 
@@ -70,17 +74,16 @@ fun ApplicationItem(
             .fillMaxWidth()
             .height(dimen64dp)
             .combinedClickable(
-                onLongClick = { onApplicationLongPressed?.invoke() }
+                onLongClick = { onApplicationLongPressed?.invoke(isFavorite) }
             ) {
                 onApplicationPressed.invoke()
             },
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Box(modifier = Modifier.padding(start = dimen16dp)) {
             iconBitmap?.let {
-                Box{
+                Box {
                     Image(
                         bitmap = iconBitmap.asImageBitmap(),
                         contentScale = ContentScale.FillBounds,
@@ -89,7 +92,7 @@ fun ApplicationItem(
                             .size(dimen48dp)
                             .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
                     )
-                   if(hasNotificationState) {
+                    if (hasNotificationState) {
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)
@@ -100,7 +103,7 @@ fun ApplicationItem(
                     }
                 }
             }
-            iconVector?.let{
+            iconVector?.let {
                 Icon(
                     imageVector = it,
                     contentDescription = "",
@@ -113,8 +116,8 @@ fun ApplicationItem(
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(
             text = label, style = MaterialTheme.typography.titleLarge.copy(
-                color = if(hasNotificationState) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onBackground
+                color = if (hasNotificationState) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onBackground
             )
         )
     }

@@ -18,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 
@@ -26,10 +28,10 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 fun SettingOptionsDialog(
     showIf: Boolean,
     title: String,
-    options: List<String>,
-    defaultValue: String = "",
+    options: List<Int>,
+    defaultValue: Int = R.string.theme_default,
     onDismiss: () -> Unit,
-    onSelected: (String) -> Unit
+    onSelected: (Int) -> Unit
 ) {
     AnimatedVisibility(visible = showIf) {
         Dialog(
@@ -53,22 +55,22 @@ fun SettingOptionsDialog(
                     Spacer(modifier = Modifier.height(dimen16dp))
                 }
                 items(options.size) { index ->
-                    val optionName = options[index]
+                    val optionId = options[index]
                     Row(
                         modifier = Modifier
                             .height(dimen48dp)
                             .fillMaxWidth()
                             .clickable {
-                                onSelected(optionName)
+                                onSelected(optionId)
                                 onDismiss()
                             },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(dimen16dp),
 
                         ) {
-                        RadioButton(selected = optionName == defaultValue, onClick = {})
+                        RadioButton(selected = optionId == defaultValue, onClick = {})
                         Text(
-                            text = optionName,
+                            text = stringResource(optionId),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             )

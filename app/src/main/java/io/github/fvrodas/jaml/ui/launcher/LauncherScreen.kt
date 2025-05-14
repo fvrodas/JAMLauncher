@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -224,10 +225,11 @@ internal fun Home(
                     .systemBarsPadding(),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                Box(
+                IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.background)
+                        .background(MaterialTheme.colorScheme.background),
+                    onClick = { displayAppList(true) }
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.KeyboardArrowUp,
@@ -237,7 +239,6 @@ internal fun Home(
                                 rememberSharedContentState("arrow"),
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
-                            .padding(dimen4dp)
                             .size(dimen48dp),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
