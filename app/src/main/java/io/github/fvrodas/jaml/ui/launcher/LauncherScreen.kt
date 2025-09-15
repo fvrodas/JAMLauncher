@@ -42,6 +42,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,9 +52,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
 import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
@@ -89,6 +94,10 @@ fun LauncherScreen(
 
     LaunchedEffect(Unit) {
         shortcutsBottomSheetState.hide()
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+       shouldDisplayAppList = false
     }
 
     Scaffold(
@@ -175,7 +184,10 @@ fun LauncherScreen(
                     changeShortcutsVisibility = {
                         shouldDisplayShortcutsList = false
                     },
-                    startShortcut = openShortcut,
+                    startShortcut = {
+                        shouldDisplayShortcutsList = false
+                        openShortcut(it)
+                    },
                     pinAppToTop = {
                         shouldDisplayShortcutsList = false
                         pinToTop(it)
@@ -222,12 +234,14 @@ internal fun Home(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .systemBarsPadding(),
+                    .systemBarsPadding()
+                    .padding(bottom = dimen8dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
                 IconButton(
                     modifier = Modifier
                         .clip(CircleShape)
+                        .size(dimen64dp)
                         .background(MaterialTheme.colorScheme.background),
                     onClick = { displayAppList(true) }
                 ) {

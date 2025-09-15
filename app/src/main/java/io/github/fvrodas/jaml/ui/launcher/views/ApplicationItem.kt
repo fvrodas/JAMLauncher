@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,10 +20,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,19 +41,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
+import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ApplicationItem(
     label: String,
+    searchText: String? = null,
     iconBitmap: Bitmap? = null,
     iconVector: ImageVector? = null,
     hasNotification: Boolean = false,
@@ -74,10 +75,11 @@ fun ApplicationItem(
             .fillMaxWidth()
             .height(dimen64dp)
             .combinedClickable(
-                onLongClick = { onApplicationLongPressed?.invoke(isFavorite) }
-            ) {
-                onApplicationPressed.invoke()
-            },
+                onLongClick = { onApplicationLongPressed?.invoke(isFavorite) },
+                onClick = { onApplicationPressed.invoke() },
+                indication = ripple(color = MaterialTheme.colorScheme.primary),
+                interactionSource = remember { MutableInteractionSource() }
+            ),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -115,7 +117,8 @@ fun ApplicationItem(
         }
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(
-            text = label, style = MaterialTheme.typography.titleLarge.copy(
+            text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.primary),
+            style = MaterialTheme.typography.titleLarge.copy(
                 color = if (hasNotificationState) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onBackground
             )

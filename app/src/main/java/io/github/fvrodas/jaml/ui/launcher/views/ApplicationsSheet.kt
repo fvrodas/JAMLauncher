@@ -138,7 +138,8 @@ fun ApplicationsSheet(
             }
             OutlinedTextField(
                 value = searchFieldValue,
-                textStyle = MaterialTheme.typography.titleMedium,
+                textStyle = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
                 onValueChange = {
                     searchFieldValue = it
                     onSearchApplication.invoke(searchFieldValue)
@@ -213,6 +214,7 @@ fun ApplicationsSheet(
                     val item = state.applicationsList.elementAt(it)
                     ApplicationItem(
                         label = item.label,
+                        searchText = searchFieldValue,
                         iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
                         hasNotification = item.hasNotification,
                         onApplicationLongPressed = { isFavorite ->

@@ -3,7 +3,8 @@ package io.github.fvrodas.jaml.ui.launcher.views
 import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,20 +15,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen36dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
@@ -45,13 +49,15 @@ fun ShortcutItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimen48dp)
-            .combinedClickable {
-                onApplicationPressed.invoke()
-            },
+            .clickable(
+                onClick = { onApplicationPressed.invoke() },
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = MaterialTheme.colorScheme.primary)
+            ),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if(!shouldHideShortcutIcons) {
+        if (!shouldHideShortcutIcons) {
             Box(modifier = Modifier.padding(start = dimen16dp)) {
                 icon?.let {
                     Image(
@@ -63,13 +69,16 @@ fun ShortcutItem(
                             .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
                     )
                 } ?: run {
-                    Icon(
-                        imageVector = Icons.Rounded.Info,
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(dimen36dp)
-                    )
+                    Box(modifier = Modifier.size(dimen36dp)) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_push_pin_24),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(dimen24dp)
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.width(dimen16dp))

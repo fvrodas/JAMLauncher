@@ -1,20 +1,15 @@
 package io.github.fvrodas.jaml.ui.common.themes
 
 
+//import androidx.compose.material.ripple.RippleTheme
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.ripple.LocalRippleTheme
-import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
@@ -38,6 +33,7 @@ fun JamlTheme(
                     dynamicLightColorScheme(context)
                 }
             }
+
             isInDarkMode -> colorScheme.darkColorScheme
             else -> colorScheme.lightColorScheme
         }
@@ -46,18 +42,7 @@ fun JamlTheme(
     MaterialTheme(
         colorScheme = currentScheme.value,
     ) {
-        CompositionLocalProvider(
-            LocalRippleTheme provides JamlRippleTheme,
-            content = content
-        )
+        //TODO Use Indication API to apply dynamic colored ripple effect
+        content()
     }
-}
-
-private object JamlRippleTheme : RippleTheme {
-    @Composable
-    override fun defaultColor(): Color = MaterialTheme.colorScheme.secondary
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha =
-        RippleTheme.defaultRippleAlpha(Color.Black, lightTheme = !isSystemInDarkTheme())
 }

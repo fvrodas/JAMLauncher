@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.ui.settings
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -158,12 +159,14 @@ fun SettingsScreen(
             ) {
                 setWallpaper()
             }
-            SettingSwitch(
-                title = stringResource(id = R.string.menu_dynamic_colors),
-                description = stringResource(id = R.string.summary_dynamic_colors),
-                value = isDynamicColorEnabled
-            ) { checked ->
-                isDynamicColorEnabled = checked
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                SettingSwitch(
+                    title = stringResource(id = R.string.menu_dynamic_colors),
+                    description = stringResource(id = R.string.summary_dynamic_colors),
+                    value = isDynamicColorEnabled
+                ) { checked ->
+                    isDynamicColorEnabled = checked
+                }
             }
             AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(

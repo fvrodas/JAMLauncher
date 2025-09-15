@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.HorizontalDivider
@@ -27,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import io.github.fvrodas.jaml.core.data.repositories.ACTION_PIN_UNPIN_APP
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
@@ -80,11 +83,12 @@ fun ShortcutsList(
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = {
                         shortcutsList?.first?.let {
-                            pinAppToTop(it)
+                            onApplicationInfoPressed(shortcutsList.first)
+                            changeShortcutsVisibility(false)
                         }
                     }) {
                         Icon(
-                            imageVector = if (pinningMode) Icons.Rounded.Star else Icons.Rounded.Delete,
+                            imageVector = Icons.Outlined.Info,
                             contentDescription = null,
                             modifier = Modifier.size(dimen24dp)
                         )
@@ -100,24 +104,30 @@ fun ShortcutsList(
         shortcutsList?.second?.let { shortcuts ->
             items(shortcuts.size) { i ->
                 shortcuts.elementAt(i).run {
-                    if (this.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
-                        Spacer(modifier = Modifier.height(dimen8dp))
-                    }
-                    ShortcutItem(
-                        label = label,
-                        icon = icon,
-                        shouldHideShortcutIcons = shouldHideApplicationIcons
-                    ) {
-                        if (this.packageName == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
-                            onApplicationInfoPressed(shortcutsList.first)
-                        } else {
+                    if (this.packageName == ACTION_PIN_UNPIN_APP) {
+                        if (shortcuts.size > 1) {
+                            Spacer(modifier = Modifier.height(dimen12dp))
+                        }
+                        ShortcutItem(
+                            label = if (pinningMode) "Pin to Favorites" else "Unpin",
+                            icon = icon,
+                            shouldHideShortcutIcons = shouldHideApplicationIcons
+                        ) {
+                            pinAppToTop(shortcutsList.first)
+                        }
+                    } else {
+                        ShortcutItem(
+                            label = label,
+                            icon = icon,
+                            shouldHideShortcutIcons = shouldHideApplicationIcons
+                        ) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                 coroutineScope.launch {
                                     startShortcut(this@run)
+                                    changeShortcutsVisibility(false)
                                 }
                             }
                         }
-                        changeShortcutsVisibility(false)
                     }
                 }
             }

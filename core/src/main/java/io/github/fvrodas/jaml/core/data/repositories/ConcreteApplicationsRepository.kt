@@ -79,8 +79,8 @@ class ConcreteApplicationsRepository(
         shortcuts.add(
             PackageInfo.ShortcutInfo(
                 "package:${packageName}",
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                "App Info",
+                ACTION_PIN_UNPIN_APP,
+                "",
                 null
             )
         )
@@ -98,3 +98,5 @@ class ConcreteApplicationsRepository(
         )
     }
 }
+
+const val ACTION_PIN_UNPIN_APP = "ACTION_PIN_UNPIN_APP"
