@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,52 +13,31 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
+import io.github.fvrodas.jaml.ui.launcher.views.HomeScreen
 import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -97,7 +74,7 @@ fun LauncherScreen(
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
-       shouldDisplayAppList = false
+        shouldDisplayAppList = false
     }
 
     Scaffold(
@@ -146,7 +123,7 @@ fun LauncherScreen(
                             ) { searchApplications(it) }
                         }
                     } else {
-                        Home(
+                        HomeScreen(
                             this@SharedTransitionLayout,
                             this@AnimatedContent
                         ) {
@@ -202,63 +179,3 @@ fun LauncherScreen(
         }
     }
 }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Composable
-internal fun Home(
-    sharedTransitionLayout: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    displayAppList: (Boolean) -> Unit
-) {
-    var startOffset: Offset = Offset.Zero
-
-    with(sharedTransitionLayout) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragStart = {
-                            startOffset = it
-                        },
-                        onDragEnd = {},
-                        onDragCancel = {
-                            displayAppList(false)
-                        }
-                    ) { change, _ ->
-                        displayAppList(change.position.y < startOffset.y)
-                    }
-                }
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .systemBarsPadding()
-                    .padding(bottom = dimen8dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                IconButton(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(dimen64dp)
-                        .background(MaterialTheme.colorScheme.background),
-                    onClick = { displayAppList(true) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowUp,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .sharedElement(
-                                rememberSharedContentState("arrow"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .size(dimen48dp),
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
-        }
-    }
-}
-

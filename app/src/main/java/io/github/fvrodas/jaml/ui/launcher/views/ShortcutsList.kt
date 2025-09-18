@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.os.Build
-import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,10 +29,11 @@ import io.github.fvrodas.jaml.core.data.repositories.ACTION_PIN_UNPIN_APP
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen36dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import kotlinx.coroutines.launch
 
@@ -67,8 +65,9 @@ fun ShortcutsList(
                             contentScale = ContentScale.FillBounds,
                             contentDescription = "",
                             modifier = Modifier
-                                .size(dimen48dp)
-                                .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
+                                .padding(start = dimen16dp)
+                                .size(dimen36dp)
+                                .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
                         )
                         Spacer(modifier = Modifier.width(dimen16dp))
                     }
@@ -79,7 +78,7 @@ fun ShortcutsList(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
-                if(shouldLetPinApps || !pinningMode) {
+                if (shouldLetPinApps || !pinningMode) {
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(onClick = {
                         shortcutsList?.first?.let {

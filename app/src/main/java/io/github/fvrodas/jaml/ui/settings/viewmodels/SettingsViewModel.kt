@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.R
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,21 +35,25 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
 
     fun saveSetting(newSettings: LauncherSettings) {
         viewModelScope.launch {
-            prefs.edit().apply {
-                putBoolean(
-                    LauncherSettings.DYNAMIC_COLOR_ENABLED,
-                    newSettings.isDynamicColorEnabled
-                )
-                putInt(LauncherSettings.SELECTED_THEME, newSettings.selectedThemeName)
-                putBoolean(
-                    LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS,
-                    newSettings.shouldHideApplicationIcons
-                )
-                apply()
+            async {
+                prefs.edit().apply {
+                    putBoolean(
+                        LauncherSettings.DYNAMIC_COLOR_ENABLED,
+                        newSettings.isDynamicColorEnabled
+                    )
+                    putInt(LauncherSettings.SELECTED_THEME, newSettings.selectedThemeName)
+                    putBoolean(
+                        LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS,
+                        newSettings.shouldHideApplicationIcons
+                    )
+                    apply()
+                }
             }
+
+            retrieveLauncherSettings()
         }
 
-        retrieveLauncherSettings()
+
     }
 }
 

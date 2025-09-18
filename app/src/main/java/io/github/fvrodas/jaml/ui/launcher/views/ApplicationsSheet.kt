@@ -147,7 +147,7 @@ fun ApplicationsSheet(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Rounded.Search,
-                        contentDescription = ""
+                        contentDescription = "Search"
                     )
                 },
                 trailingIcon = {
@@ -161,7 +161,7 @@ fun ApplicationsSheet(
                         }
                     )
                 },
-                shape = RoundedCornerShape(dimen8dp),
+                shape = RoundedCornerShape(dimen16dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
