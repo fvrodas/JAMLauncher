@@ -26,12 +26,10 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -45,8 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
-import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
@@ -171,45 +167,6 @@ fun ApplicationsSheet(
             LazyColumn(
                 state = lazyListState
             ) {
-                if (state.pinnedApplications.isNotEmpty()) {
-                    item {
-                        Text(
-                            stringResource(R.string.label_favorites),
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                color = MaterialTheme.colorScheme.primary
-                            ),
-                            modifier = Modifier
-                                .padding(horizontal = dimen16dp)
-                                .padding(top = dimen8dp)
-                        )
-                    }
-                    items(state.pinnedApplications.size) {
-                        val item = state.pinnedApplications.elementAt(it)
-                        ApplicationItem(
-                            label = item.label,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
-                            hasNotification = item.hasNotification,
-                            isFavorite = true,
-                            onApplicationLongPressed = { isFavorite ->
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                    coroutineScope.launch {
-                                        onApplicationLongPressed.invoke(item)
-                                        changeShortcutVisibility(true, !isFavorite)
-                                    }
-                                }
-                            },
-                            onApplicationPressed = {
-                                coroutineScope.launch {
-                                    onApplicationPressed.invoke(item)
-                                    toggleListVisibility()
-                                }
-                            }
-                        )
-                    }
-                    item {
-                        HorizontalDivider()
-                    }
-                }
                 items(state.applicationsList.size) {
                     val item = state.applicationsList.elementAt(it)
                     ApplicationItem(

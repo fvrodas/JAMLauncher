@@ -125,7 +125,18 @@ fun LauncherScreen(
                     } else {
                         HomeScreen(
                             this@SharedTransitionLayout,
-                            this@AnimatedContent
+                            this@AnimatedContent,
+                            applicationSheetState,
+                            shouldHideApplicationIcons,
+                            toggleListVisibility = {
+                                shouldDisplayAppList = !shouldDisplayAppList
+                            },
+                            changeShortcutVisibility = { shouldShow, pinningMode ->
+                                shouldDisplayShortcutsList = shouldShow
+                                shortcutListPinningMode = pinningMode
+                            },
+                            onApplicationPressed = openApplication,
+                            onApplicationLongPressed = retrieveShortcuts
                         ) {
                             shouldDisplayAppList = it
                         }

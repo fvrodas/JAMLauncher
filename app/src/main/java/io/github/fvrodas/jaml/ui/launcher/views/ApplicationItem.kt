@@ -34,9 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
@@ -119,8 +123,18 @@ fun ApplicationItem(
         Text(
             text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.primary),
             style = MaterialTheme.typography.titleLarge.copy(
-                color = if (hasNotificationState) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onBackground
+                color = if (hasNotificationState) {
+                    MaterialTheme.colorScheme.primary
+                } else if (isFavorite) {
+                    Color.White
+                } else {
+                    MaterialTheme.colorScheme.onBackground
+                },
+                shadow = if (isFavorite) Shadow(
+                    Color.Black,
+                    Offset(2f, 2f),
+                    3f
+                ) else null
             )
         )
     }
