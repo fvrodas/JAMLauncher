@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
@@ -121,7 +120,7 @@ fun ApplicationItem(
         }
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(
-            text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.primary),
+            text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
             style = MaterialTheme.typography.titleLarge.copy(
                 color = if (hasNotificationState) {
                     MaterialTheme.colorScheme.primary
@@ -130,15 +129,17 @@ fun ApplicationItem(
                 } else {
                     MaterialTheme.colorScheme.onBackground
                 },
-                shadow = if (isFavorite) Shadow(
-                    Color.Black,
-                    Offset(2f, 2f),
-                    3f
-                ) else null
+                shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
             )
         )
     }
 }
+
+internal val FAVORITE_DROP_SHADOW: Shadow = Shadow(
+    Color.Black,
+    Offset(2f, 3f),
+    3f
+)
 
 @Preview(showBackground = true)
 @Composable

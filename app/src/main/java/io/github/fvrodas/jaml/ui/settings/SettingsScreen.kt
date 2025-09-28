@@ -113,6 +113,7 @@ fun SettingsScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    subtitleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             )
         }

@@ -55,6 +55,15 @@ class ConcreteApplicationsRepository(
     override suspend fun getShortcutsListForApplication(packageName: String): List<PackageInfo.ShortcutInfo> {
         val shortcuts = ArrayList<PackageInfo.ShortcutInfo>()
 
+        shortcuts.add(
+            PackageInfo.ShortcutInfo(
+                "package:${packageName}",
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                "App Info",
+                null
+            )
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             shortcuts.addAll(
                 launcherApps.getShortcuts(
@@ -73,7 +82,7 @@ class ConcreteApplicationsRepository(
                         it.shortLabel.toString(),
                         BitmapUtils.loadShortcutIcon(launcherApps, it)
                     )
-                }.toList()
+                }.toList().take(MAX_SHORTCUTS_TO_DISPLAY)
             )
         }
         shortcuts.add(
@@ -100,3 +109,4 @@ class ConcreteApplicationsRepository(
 }
 
 const val ACTION_PIN_UNPIN_APP = "ACTION_PIN_UNPIN_APP"
+const val MAX_SHORTCUTS_TO_DISPLAY = 5

@@ -1,3 +1,5 @@
+
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -7,13 +9,13 @@ plugins {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = libs.versions.sdk.target.get().toInt()
 
     defaultConfig {
         applicationId = "io.github.fvrodas.jaml"
-        minSdk = 24
-        lint.targetSdk = 36
-        versionCode = 6
+        minSdk = libs.versions.sdk.min.get().toInt()
+        lint.targetSdk = libs.versions.sdk.target.get().toInt()
+        versionCode = 8
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -44,8 +46,9 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        kotlinCompilerExtensionVersion = libs.versions.compose.ui.get()
     }
+
     namespace = "io.github.fvrodas.jaml"
 }
 
@@ -70,6 +73,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.core.role)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.test.junit)

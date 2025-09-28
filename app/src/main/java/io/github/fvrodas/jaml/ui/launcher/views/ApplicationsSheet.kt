@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
@@ -30,6 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +46,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
@@ -160,6 +166,7 @@ fun ApplicationsSheet(
                 shape = RoundedCornerShape(dimen16dp),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(bottom = dimen16dp)
                     .padding(
                         horizontal = dimen16dp
                     ),
@@ -197,19 +204,29 @@ fun ApplicationsSheet(
                             .padding(horizontal = dimen16dp),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        IconButton(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.background),
-                            onClick = { onSettingsPressed.invoke() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = null,
+
+                        if (shouldHideApplicationIcons) {
+                            TextButton(onClick = { onSettingsPressed.invoke() }) {
+                                Text(
+                                    stringResource(R.string.settings_button),
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            }
+                        } else {
+                            IconButton(
                                 modifier = Modifier
-                                    .size(dimen24dp),
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.background),
+                                onClick = { onSettingsPressed.invoke() }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = stringResource(R.string.settings_button),
+                                    modifier = Modifier
+                                        .size(dimen24dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }

@@ -1,8 +1,11 @@
 package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.graphics.Bitmap
+import android.graphics.drawable.Icon
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,16 +18,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,55 +49,63 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 @Composable
 fun ShortcutItem(
     label: String,
-    icon: Bitmap?,
+    bitmapIcon: Bitmap?,
+    vectorIcon: ImageVector? = null,
     shouldHideShortcutIcons: Boolean = false,
     onApplicationPressed: () -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(dimen48dp)
+            .clip(RoundedCornerShape(dimen16dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(
                 onClick = { onApplicationPressed.invoke() },
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(color = MaterialTheme.colorScheme.primary)
-            ),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+            )
     ) {
-        if (!shouldHideShortcutIcons) {
-            Box(modifier = Modifier.padding(start = dimen16dp)) {
-                icon?.let {
-                    Image(
-                        bitmap = icon.asImageBitmap(),
-                        contentScale = ContentScale.Fit,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(dimen36dp)
-                            .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
-                    )
-                } ?: run {
-                    Box(modifier = Modifier.size(dimen36dp)) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_push_pin_24),
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.primary,
+        Row(
+            modifier = Modifier
+                .padding(horizontal = dimen16dp)
+                .fillMaxWidth()
+                .height(dimen48dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!shouldHideShortcutIcons) {
+                Box {
+                    bitmapIcon?.let {
+                        Image(
+                            bitmap = bitmapIcon.asImageBitmap(),
+                            contentScale = ContentScale.Fit,
+                            contentDescription = label,
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(dimen24dp)
+                                .size(dimen36dp)
+                                .shadow(dimen2dp, shape = RoundedCornerShape(dimen18dp)),
                         )
+                    } ?: run {
+                        Box(modifier = Modifier.size(dimen36dp)) {
+                            Icon(
+                                imageVector = vectorIcon ?: Icons.Default.Error,
+                                contentDescription = label,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(dimen24dp)
+                            )
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.width(dimen16dp))
             }
-            Spacer(modifier = Modifier.width(dimen16dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onBackground
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onBackground
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }

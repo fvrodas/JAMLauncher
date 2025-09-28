@@ -135,7 +135,7 @@ class HomeViewModel(
                 val applicationInfo =
                     applicationsListCache.first { it.packageName == packageInfo.packageName }
                 val shortcuts =
-                    getShortcutsListForApplicationUseCase(packageInfo.packageName).take(5).toSet()
+                    getShortcutsListForApplicationUseCase(packageInfo.packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
             } catch (_: Exception) {
                 _shortcutList.value = null

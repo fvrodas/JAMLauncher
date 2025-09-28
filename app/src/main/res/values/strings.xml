@@ -24,4 +24,7 @@
     <string name="summary_hide_app_icons">Hide application icons for a more minimalist style</string>
     <string name="menu_hide_app_icons">Hide application icons</string>
     <string name="label_favorites">Favorites</string>
+    <string name="shortcut_pin">Pin to Homescreen</string>
+    <string name="shortcut_unpin">Unpin</string>
+    <string name="settings_button">Go to Launcher Settings</string>
 </resources>
