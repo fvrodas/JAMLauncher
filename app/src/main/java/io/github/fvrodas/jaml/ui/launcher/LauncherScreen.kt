@@ -158,7 +158,6 @@ fun LauncherScreen(
         if (shouldDisplayShortcutsList) {
             ModalBottomSheet(
                 containerColor = MaterialTheme.colorScheme.background,
-                dragHandle = null,
                 onDismissRequest = {
                     shouldDisplayShortcutsList = false
                 },

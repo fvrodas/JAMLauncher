@@ -28,11 +28,13 @@ import androidx.compose.ui.res.stringResource
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.data.repositories.ACTION_PIN_UNPIN_APP
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen36dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import kotlinx.coroutines.launch
 
@@ -51,7 +53,8 @@ fun ShortcutsList(
 
     LazyColumn(
         modifier = Modifier
-            .padding(horizontal = dimen32dp, vertical = dimen16dp)
+            .padding(horizontal = dimen32dp)
+            .padding(bottom = dimen32dp)
     ) {
         item {
             Row(
@@ -81,7 +84,7 @@ fun ShortcutsList(
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = dimen8dp)
+                    .padding(vertical = dimen12dp)
             )
         }
         shortcutsList?.second?.let { shortcuts ->
@@ -90,7 +93,7 @@ fun ShortcutsList(
                     when (this.packageName) {
                         ACTION_PIN_UNPIN_APP -> {
                             if (pinningMode && !shouldLetPinApps) return@run
-                            Spacer(modifier = Modifier.height(dimen8dp))
+                            Spacer(modifier = Modifier.height(dimen12dp))
                             ShortcutItem(
                                 label = if (pinningMode) {
                                     stringResource(id = R.string.shortcut_pin)
@@ -115,7 +118,7 @@ fun ShortcutsList(
                                 onApplicationInfoPressed(shortcutsList.first)
                                 changeShortcutsVisibility(false)
                             }
-                            Spacer(modifier = Modifier.height(dimen8dp))
+                            Spacer(modifier = Modifier.height(dimen12dp))
                         }
 
                         else -> {
@@ -133,7 +136,7 @@ fun ShortcutsList(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(dimen8dp))
+                    Spacer(modifier = Modifier.height(dimen4dp))
                 }
             }
         }

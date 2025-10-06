@@ -12,11 +12,13 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
 
-    private val _launcherSettings = MutableStateFlow<LauncherSettings>(LauncherSettings(
-        prefs.getBoolean(LauncherSettings.DYNAMIC_COLOR_ENABLED, false),
-        prefs.getInt(LauncherSettings.SELECTED_THEME, R.string.theme_default),
-        prefs.getBoolean(LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS, false),
-    ))
+    private val _launcherSettings = MutableStateFlow(
+        LauncherSettings(
+            prefs.getBoolean(LauncherSettings.DYNAMIC_COLOR_ENABLED, false),
+            prefs.getInt(LauncherSettings.SELECTED_THEME, R.string.theme_default),
+            prefs.getBoolean(LauncherSettings.SHOULD_HIDE_APPLICATION_ICONS, false),
+        )
+    )
     val launcherSettings: StateFlow<LauncherSettings> = _launcherSettings
 
     init {
@@ -49,11 +51,8 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
                     apply()
                 }
             }
-
             retrieveLauncherSettings()
         }
-
-
     }
 }
 

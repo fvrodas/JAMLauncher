@@ -42,7 +42,6 @@ fun JamlTheme(
     MaterialTheme(
         colorScheme = currentScheme.value,
     ) {
-        //TODO Use Indication API to apply dynamic colored ripple effect
         content()
     }
 }
