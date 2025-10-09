@@ -1,5 +1,8 @@
 # JAMLauncher
 
+![GitHub Release](https://img.shields.io/github/v/release/fvrodas/JAMLauncher?style=flat)
+
+
 Just Another Minimal Launcher, made as simple as possible.
 
 It doesn't require any special permission to be fully functional.
@@ -12,7 +15,7 @@ Notification Access is optional; allows the launcher to display notification dot
 
 ## Download
 
-Available Soon.
+[Latest version](https://github.com/fvrodas/JAMLauncher/releases/latest)
 
 ## License
 
