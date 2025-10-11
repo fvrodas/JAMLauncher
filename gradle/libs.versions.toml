@@ -20,6 +20,7 @@ agp-version = "8.13.0"
 kotlin-version = "2.2.20"
 material-icons = "1.7.8"
 detekt-version = "1.23.6"
+mockito-version = "3.11.1"
 
 [libraries]
 androidx-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
@@ -46,6 +47,7 @@ koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", versi
 test-junit = { group = "junit", name = "junit", version.ref = "junit" }
 test-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
 test-androidx-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidx-espresso" }
+test-mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito-version" }
 
 
 [plugins]

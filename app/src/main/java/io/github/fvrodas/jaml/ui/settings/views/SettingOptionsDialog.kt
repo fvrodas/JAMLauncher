@@ -38,7 +38,6 @@ fun SettingOptionsDialog(
     onDismiss: () -> Unit,
     onSelected: (Int) -> Unit
 ) {
-    val MAX_WIDTH_FACTOR = 0.9F
     val themesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
@@ -99,3 +98,5 @@ fun SettingOptionsDialog(
         }
     }
 }
+
+internal const val MAX_WIDTH_FACTOR = 0.9F
