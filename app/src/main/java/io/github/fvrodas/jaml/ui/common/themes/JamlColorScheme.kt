@@ -165,8 +165,13 @@ sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorSch
     )
 }
 
-val themesByName = mapOf(
-    R.string.theme_default to JamlColorScheme.Default,
-    R.string.theme_gruvbox to JamlColorScheme.Gruvbox
+val colorSchemeByName = mapOf(
+    R.string.colorscheme_default to JamlColorScheme.Default,
+    R.string.colorscheme_gruvbox to JamlColorScheme.Gruvbox
 )
 
+val launcherThemeByName = mapOf(
+    R.string.theme_light to LauncherTheme.Light,
+    R.string.theme_dark to LauncherTheme.Dark,
+    R.string.theme_system to LauncherTheme.System
+)

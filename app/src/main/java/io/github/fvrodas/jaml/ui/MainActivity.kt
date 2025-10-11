@@ -30,8 +30,10 @@ import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
-import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.LauncherTheme
+import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
+import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -70,7 +72,11 @@ class MainActivity : androidx.activity.ComponentActivity() {
             val launcherSettings: LauncherSettings by settingsViewModel.launcherSettings.collectAsState()
 
             var theme: Int by remember {
-                mutableIntStateOf(launcherSettings.selectedThemeName)
+                mutableIntStateOf(launcherSettings.launcherTheme)
+            }
+
+            var colorScheme: Int by remember {
+                mutableIntStateOf(launcherSettings.launcherColorScheme)
             }
 
             var dynamicColorEnabled: Boolean by remember {
@@ -78,8 +84,12 @@ class MainActivity : androidx.activity.ComponentActivity() {
             }
 
             JamlTheme(
-                colorScheme = themesByName[theme] ?: JamlColorScheme.Default,
-                isInDarkMode = isSystemInDarkTheme(),
+                colorScheme = colorSchemeByName[colorScheme] ?: JamlColorScheme.Default,
+                isInDarkMode = when(launcherThemeByName[theme]) {
+                    LauncherTheme.Light -> false
+                    LauncherTheme.Dark -> true
+                    else -> isSystemInDarkTheme()
+                },
                 isDynamicColorsEnabled = dynamicColorEnabled
             ) {
                 HomeNavigationGraph(
@@ -92,8 +102,9 @@ class MainActivity : androidx.activity.ComponentActivity() {
                     setWallpaper = this::setWallpaper,
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
-                        theme = it.selectedThemeName
+                        colorScheme = it.launcherColorScheme
                         dynamicColorEnabled = it.isDynamicColorEnabled
+                        theme = it.launcherTheme
                     },
                     enableNotificationAccess = this::enableNotificationAccess
                 )

@@ -15,8 +15,8 @@ android {
         applicationId = "io.github.fvrodas.jaml"
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
-        versionCode = 10
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.0-beta2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

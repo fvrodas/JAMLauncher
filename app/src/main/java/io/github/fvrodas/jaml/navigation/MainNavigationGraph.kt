@@ -11,10 +11,10 @@ import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
+import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

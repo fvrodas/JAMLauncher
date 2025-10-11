@@ -33,10 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.LauncherTheme
+import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
-import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.views.SettingItem
 import io.github.fvrodas.jaml.ui.settings.views.SettingOptionsDialog
 import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
@@ -53,38 +55,52 @@ fun SettingsScreen(
     onBackPressed: () -> Unit = {}
 ) {
 
+    var selectedLauncherTheme: Int by remember {
+        mutableIntStateOf(launcherSettings.launcherTheme)
+    }
+
     var isDynamicColorEnabled: Boolean by remember {
         mutableStateOf(launcherSettings.isDynamicColorEnabled)
     }
-    var selectedThemeName: Int by remember {
-        mutableIntStateOf(launcherSettings.selectedThemeName)
+    var selectedColorScheme: Int by remember {
+        mutableIntStateOf(launcherSettings.launcherColorScheme)
     }
 
     var shouldHideApplicationIcons: Boolean by remember {
         mutableStateOf(launcherSettings.shouldHideApplicationIcons)
     }
 
-    var showDisplayDialog by remember {
+    var showThemeSelection by remember {
+        mutableStateOf(false)
+    }
+
+    var showColorSchemeSelection by remember {
         mutableStateOf(false)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            saveSettings(LauncherSettings(
-                isDynamicColorEnabled,
-                selectedThemeName,
-                shouldHideApplicationIcons
-            ))
+            saveSettings(
+                LauncherSettings(
+                    selectedLauncherTheme,
+                    isDynamicColorEnabled,
+                    selectedColorScheme,
+                    shouldHideApplicationIcons
+                )
+            )
         }
     }
 
-    LaunchedEffect(isDynamicColorEnabled, selectedThemeName) {
+    LaunchedEffect(isDynamicColorEnabled, selectedColorScheme, selectedLauncherTheme) {
         if (launcherSettings.isDynamicColorEnabled != isDynamicColorEnabled ||
-            launcherSettings.selectedThemeName != selectedThemeName) {
+            launcherSettings.launcherColorScheme != selectedColorScheme ||
+            launcherSettings.launcherTheme != selectedLauncherTheme
+        ) {
             saveSettings(
                 LauncherSettings(
+                    selectedLauncherTheme,
                     isDynamicColorEnabled,
-                    selectedThemeName,
+                    selectedColorScheme,
                     shouldHideApplicationIcons
                 )
             )
@@ -163,7 +179,15 @@ fun SettingsScreen(
             ) {
                 setWallpaper()
             }
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            SettingItem(
+                title = stringResource(id = R.string.menu_theme),
+                description = stringResource(selectedLauncherTheme)
+            ) {
+                showThemeSelection = true
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 SettingSwitch(
                     title = stringResource(id = R.string.menu_dynamic_colors),
                     description = stringResource(id = R.string.summary_dynamic_colors),
@@ -174,10 +198,10 @@ fun SettingsScreen(
             }
             AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(
-                    title = stringResource(id = R.string.menu_theme),
-                    description = stringResource(selectedThemeName)
+                    title = stringResource(id = R.string.menu_color_scheme),
+                    description = stringResource(selectedColorScheme)
                 ) {
-                    showDisplayDialog = true
+                    showColorSchemeSelection = true
                 }
             }
             SettingSwitch(
@@ -214,13 +238,22 @@ fun SettingsScreen(
                 )
             }
             SettingOptionsDialog(
-                showIf = showDisplayDialog,
+                showIf = showThemeSelection,
                 title = stringResource(id = R.string.menu_theme),
-                options = themesByName.entries.toList().map { item -> item.key },
-                defaultValue = selectedThemeName,
-                onDismiss = { showDisplayDialog = false },
+                options = launcherThemeByName.entries.toList().map { item -> item.key },
+                defaultValue = selectedLauncherTheme,
+                onDismiss = { showThemeSelection = false },
             ) { selected ->
-                selectedThemeName = selected
+                selectedLauncherTheme = selected
+            }
+            SettingOptionsDialog(
+                showIf = showColorSchemeSelection,
+                title = stringResource(id = R.string.menu_color_scheme),
+                options = colorSchemeByName.entries.toList().map { item -> item.key },
+                defaultValue = selectedColorScheme,
+                onDismiss = { showColorSchemeSelection = false },
+            ) { selected ->
+                selectedColorScheme = selected
             }
         }
     }

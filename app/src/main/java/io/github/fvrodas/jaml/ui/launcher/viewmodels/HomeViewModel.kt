@@ -13,7 +13,7 @@ import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseC
 import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

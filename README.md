@@ -15,8 +15,9 @@ Notification Access is optional; allows the launcher to display notification dot
 
 ## Download
 
-[Latest version](https://github.com/fvrodas/JAMLauncher/releases/latest)
+[Get the latest version from here >>>](https://github.com/fvrodas/JAMLauncher/releases/latest)
 
+___
 ## License
 
 MIT License

@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.ui.settings.views
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +34,7 @@ fun SettingOptionsDialog(
     showIf: Boolean,
     title: String,
     options: List<Int>,
-    defaultValue: Int = R.string.theme_default,
+    defaultValue: Int = R.string.colorscheme_default,
     onDismiss: () -> Unit,
     onSelected: (Int) -> Unit
 ) {
