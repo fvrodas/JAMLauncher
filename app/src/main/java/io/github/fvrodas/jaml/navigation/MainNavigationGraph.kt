@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.navigation
 
+import android.net.Uri
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +18,7 @@ import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
 import org.koin.androidx.compose.koinViewModel
 
+@Suppress("LongParameterList")
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
@@ -27,7 +29,9 @@ fun HomeNavigationGraph(
     requestDefaultHome: () -> Unit,
     setWallpaper: () -> Unit,
     onSettingsSaved: (LauncherSettings) -> Unit,
-    enableNotificationAccess: () -> Unit
+    enableNotificationAccess: () -> Unit,
+    performWebSearch: (String) -> Unit,
+    openWebPage: (Uri) -> Unit
 ) {
     NavHost(
         navController = navHostController,
@@ -83,7 +87,8 @@ fun HomeNavigationGraph(
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
                 openApplicationInfo = openApplicationInfo,
-                openApplication = openApplication
+                openApplication = openApplication,
+                performWebSearch = performWebSearch
             )
         }
 
@@ -95,6 +100,7 @@ fun HomeNavigationGraph(
                 setWallpaper,
                 enableNotificationAccess,
                 onSettingsSaved,
+                openWebPage
             ) {
                 navHostController.popBackStack()
             }

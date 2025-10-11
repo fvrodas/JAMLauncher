@@ -25,7 +25,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
@@ -70,8 +70,11 @@ fun ApplicationsSheet(
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
     onApplicationLongPressed: (PackageInfo) -> Unit,
+    performWebSearch: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
+
+    val context = LocalContext.current
 
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
@@ -174,28 +177,46 @@ fun ApplicationsSheet(
             LazyColumn(
                 state = lazyListState
             ) {
-                items(state.applicationsList.size) {
-                    val item = state.applicationsList.elementAt(it)
-                    ApplicationItem(
-                        label = item.label,
-                        searchText = searchFieldValue,
-                        iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
-                        hasNotification = item.hasNotification,
-                        onApplicationLongPressed = { isFavorite ->
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                if (state.applicationsList.isEmpty()) {
+                    item {
+                        ApplicationItem(
+                            label = "Search $searchFieldValue on the web...",
+                            searchText = searchFieldValue,
+                            iconBitmap = null,
+                            hasNotification = false,
+                            onApplicationLongPressed = null,
+                            onApplicationPressed = {
+                                performWebSearch(searchFieldValue)
                                 coroutineScope.launch {
-                                    onApplicationLongPressed.invoke(item)
-                                    changeShortcutVisibility(true, !isFavorite)
+                                    toggleListVisibility()
                                 }
                             }
-                        },
-                        onApplicationPressed = {
-                            coroutineScope.launch {
-                                onApplicationPressed.invoke(item)
-                                toggleListVisibility()
+                        )
+                    }
+                } else {
+                    items(state.applicationsList.size) {
+                        val item = state.applicationsList.elementAt(it)
+                        ApplicationItem(
+                            label = item.label,
+                            searchText = searchFieldValue,
+                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                            hasNotification = item.hasNotification,
+                            onApplicationLongPressed = { isFavorite ->
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                    coroutineScope.launch {
+                                        onApplicationLongPressed.invoke(item)
+                                        changeShortcutVisibility(true, !isFavorite)
+                                    }
+                                }
+                            },
+                            onApplicationPressed = {
+                                coroutineScope.launch {
+                                    onApplicationPressed.invoke(item)
+                                    toggleListVisibility()
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
                 item {
                     Row(

@@ -1,5 +1,6 @@
 package io.github.fvrodas.jaml.ui.settings
 
+import android.net.Uri
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -31,10 +32,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
-import io.github.fvrodas.jaml.ui.common.themes.LauncherTheme
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
@@ -52,8 +54,10 @@ fun SettingsScreen(
     setWallpaper: () -> Unit = {},
     enableNotificationAccess: () -> Unit = {},
     saveSettings: (LauncherSettings) -> Unit,
+    openWebPage: (Uri) -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
+    val projectUrl = stringResource(id = R.string.about_github_url)
 
     var selectedLauncherTheme: Int by remember {
         mutableIntStateOf(launcherSettings.launcherTheme)
@@ -221,10 +225,11 @@ fun SettingsScreen(
                 )
             }
             SettingItem(
-                title = stringResource(id = R.string.menu_about),
-                description = stringResource(id = R.string.about_github_url)
+                title = stringResource(id = R.string.about_neutral),
+                description = projectUrl
             ) {
-
+                openWebPage(projectUrl.toUri())
+                onBackPressed()
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),

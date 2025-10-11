@@ -1,6 +1,7 @@
 package io.github.fvrodas.jaml.ui
 
 import android.annotation.SuppressLint
+import android.app.SearchManager
 import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Intent
@@ -85,7 +86,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
             JamlTheme(
                 colorScheme = colorSchemeByName[colorScheme] ?: JamlColorScheme.Default,
-                isInDarkMode = when(launcherThemeByName[theme]) {
+                isInDarkMode = when (launcherThemeByName[theme]) {
                     LauncherTheme.Light -> false
                     LauncherTheme.Dark -> true
                     else -> isSystemInDarkTheme()
@@ -106,7 +107,9 @@ class MainActivity : androidx.activity.ComponentActivity() {
                         dynamicColorEnabled = it.isDynamicColorEnabled
                         theme = it.launcherTheme
                     },
-                    enableNotificationAccess = this::enableNotificationAccess
+                    enableNotificationAccess = this::enableNotificationAccess,
+                    performWebSearch = this::performWebSearch,
+                    openWebPage = this::openWebPage
                 )
             }
         }
@@ -214,6 +217,24 @@ class MainActivity : androidx.activity.ComponentActivity() {
             data = Uri.fromParts("package", packageInfo.packageName, null)
         }.also {
             startActivity(it)
+        }
+    }
+
+    private fun performWebSearch(query: String) {
+        Intent().apply {
+            action = Intent.ACTION_WEB_SEARCH
+            putExtra(SearchManager.QUERY, query)
+        }.also { intent ->
+            startActivity(intent)
+        }
+    }
+
+    private fun openWebPage(uri: Uri) {
+        Intent().apply {
+            action = Intent.ACTION_VIEW
+            data = uri
+        }.also { intent ->
+            startActivity(intent)
         }
     }
 }

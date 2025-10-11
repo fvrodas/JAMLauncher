@@ -14,6 +14,7 @@ import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
 import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState.Companion.MAX_PINNED_APPS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -87,7 +88,7 @@ class HomeViewModel(
     fun toggleAppPinning(packageInfo: PackageInfo) {
         viewModelScope.launch {
             if (pinnedApplications.find { it.packageName == packageInfo.packageName } == null) {
-                if (pinnedApplications.size >= 5) return@launch
+                if (pinnedApplications.size >= MAX_PINNED_APPS) return@launch
 
                 pinnedApplications.add(packageInfo)
             } else {
@@ -155,5 +156,9 @@ data class ApplicationSheetState(
     val pinnedApplications: Set<PackageInfo> = setOf(),
     val applicationsList: Set<PackageInfo> = setOf()
 ) {
-    val canPinApps: Boolean get() = pinnedApplications.size < 5
+    val canPinApps: Boolean get() = pinnedApplications.size < MAX_PINNED_APPS
+
+    companion object {
+        const val MAX_PINNED_APPS = 5
+    }
 }

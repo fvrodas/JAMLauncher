@@ -53,7 +53,8 @@ fun LauncherScreen(
     openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     openLauncherSettings: () -> Unit = {},
     openApplicationInfo: (PackageInfo) -> Unit = {},
-    openApplication: (PackageInfo) -> Unit = {}
+    openApplication: (PackageInfo) -> Unit = {},
+    performWebSearch: (String) -> Unit = {}
 ) {
     val shortcutsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -119,7 +120,8 @@ fun LauncherScreen(
                                 },
                                 openLauncherSettings,
                                 onApplicationPressed = openApplication,
-                                onApplicationLongPressed = retrieveShortcuts
+                                onApplicationLongPressed = retrieveShortcuts,
+                                performWebSearch = performWebSearch
                             ) { searchApplications(it) }
                         }
                     } else {

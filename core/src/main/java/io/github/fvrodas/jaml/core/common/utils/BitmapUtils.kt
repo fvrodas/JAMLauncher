@@ -14,7 +14,9 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
-    private val iconCache: LruCache<String, Bitmap> = LruCache(1024 * 1024 * 80)
+    private const val MAX_CACHE_SIZE = 83886080
+    private const val INSET = 0.24f
+    private val iconCache: LruCache<String, Bitmap> = LruCache(MAX_CACHE_SIZE)
 
     fun loadIcon(packageName: String, drawable: Drawable): Bitmap {
         if (iconCache[packageName] != null) {
@@ -25,7 +27,7 @@ object BitmapUtils {
                     iconCache.put(packageName, drawable.toBitmap())
                     drawable.toBitmap()
                 } else {
-                    val scaled = InsetDrawable(drawable, 0.24f)
+                    val scaled = InsetDrawable(drawable, INSET)
                     scaled.bounds = drawable.bounds
                     AdaptiveIconDrawable(Color.WHITE.toDrawable(), scaled).toBitmap()
                 }

@@ -8,7 +8,9 @@ object LauncherEventBus {
         for (listener in listeners) {
             when (event) {
                 is LauncherEvents.OnPackageChanged -> listener.onPackageChanged()
-                is LauncherEvents.OnNotificationChanged -> listener.onNotificationChanged(event.packageName, event.hasNotification)
+                is LauncherEvents.OnNotificationChanged -> listener.onNotificationChanged(
+                    event.packageName, event.hasNotification
+                )
             }
         }
     }

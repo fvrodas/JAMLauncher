@@ -35,7 +35,6 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen36dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import kotlinx.coroutines.launch
 
 @Composable

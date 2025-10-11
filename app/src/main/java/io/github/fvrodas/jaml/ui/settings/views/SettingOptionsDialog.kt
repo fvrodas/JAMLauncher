@@ -38,6 +38,7 @@ fun SettingOptionsDialog(
     onDismiss: () -> Unit,
     onSelected: (Int) -> Unit
 ) {
+    val MAX_WIDTH_FACTOR = 0.9F
     val themesBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
@@ -57,7 +58,7 @@ fun SettingOptionsDialog(
                     .clip(RoundedCornerShape(dimen16dp))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(bottom = dimen32dp)
-                    .fillMaxWidth(0.9F)
+                    .fillMaxWidth()
             ) {
                 item {
                     Text(
@@ -80,7 +81,7 @@ fun SettingOptionsDialog(
                             modifier = Modifier
                                 .padding(horizontal = dimen32dp)
                                 .height(dimen48dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth(MAX_WIDTH_FACTOR),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(dimen16dp)
                         ) {
