@@ -29,6 +29,7 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
 import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
+import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
@@ -38,7 +39,8 @@ import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
-class MainActivity : androidx.activity.ComponentActivity() {
+@Suppress("TooManyFunctions")
+class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -98,18 +100,14 @@ class MainActivity : androidx.activity.ComponentActivity() {
                     launcherSettings = launcherSettings,
                     openApplication = this::openApplication,
                     openApplicationInfo = this::openApplicationInfo,
-                    isDefaultHome = this::isDefault,
-                    requestDefaultHome = this::requestDefaultHome,
-                    setWallpaper = this::setWallpaper,
+                    performWebSearch = this::performWebSearch,
+                    settingsActions = this,
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
                         colorScheme = it.launcherColorScheme
                         dynamicColorEnabled = it.isDynamicColorEnabled
                         theme = it.launcherTheme
-                    },
-                    enableNotificationAccess = this::enableNotificationAccess,
-                    performWebSearch = this::performWebSearch,
-                    openWebPage = this::openWebPage
+                    }
                 )
             }
         }
@@ -133,7 +131,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         unregisterReceiver(packageReceiver)
     }
 
-    private fun setWallpaper() {
+    override fun setWallpaper() {
         Intent().apply {
             action = SET_WALLPAPER_ACTION
         }.also {
@@ -141,7 +139,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun enableNotificationAccess() {
+    override fun enableNotificationAccess() {
         Intent().apply {
             action = ENABLE_NOTIFICATION_ACTION
         }.also {
@@ -149,9 +147,9 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun requestDefaultHome() {
+    override fun setAsDefaultHome() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (!isDefault()) {
+            if (!isDefaultHome()) {
                 val componentName =
                     ComponentName(this, MainActivity::class.java)
                 packageManager.setComponentEnabledSetting(
@@ -183,7 +181,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun isDefault(): Boolean {
+    override fun isDefaultHome(): Boolean {
         val localPackageManager = packageManager
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
@@ -229,10 +227,10 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun openWebPage(uri: Uri) {
+    override fun openWebPage(url: Uri) {
         Intent().apply {
             action = Intent.ACTION_VIEW
-            data = uri
+            data = url
         }.also { intent ->
             startActivity(intent)
         }

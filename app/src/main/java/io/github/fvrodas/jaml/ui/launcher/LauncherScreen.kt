@@ -145,13 +145,13 @@ fun LauncherScreen(
                     }
                 },
                 transitionSpec = {
-                    (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                    (fadeIn(animationSpec = tween(ANIMATION_DURATION, delayMillis = DELAY_DURATION)) +
                             slideInVertically(
                                 initialOffsetY = { it / 2 },
-                                animationSpec = tween(220, delayMillis = 90)
+                                animationSpec = tween(ANIMATION_DURATION, delayMillis = DELAY_DURATION)
                             ))
                         .togetherWith(
-                            fadeOut(animationSpec = tween(90))
+                            fadeOut(animationSpec = tween(DELAY_DURATION))
                         )
                 }
             )
@@ -191,3 +191,6 @@ fun LauncherScreen(
         }
     }
 }
+
+internal const val ANIMATION_DURATION = 220
+internal const val DELAY_DURATION = 90

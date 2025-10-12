@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.navigation
 
-import android.net.Uri
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +11,7 @@ import androidx.navigation.compose.composable
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
+import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
 import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
@@ -25,13 +25,9 @@ fun HomeNavigationGraph(
     launcherSettings: LauncherSettings,
     openApplication: (PackageInfo) -> Unit,
     openApplicationInfo: (PackageInfo) -> Unit,
-    isDefaultHome: () -> Boolean,
-    requestDefaultHome: () -> Unit,
-    setWallpaper: () -> Unit,
-    onSettingsSaved: (LauncherSettings) -> Unit,
-    enableNotificationAccess: () -> Unit,
     performWebSearch: (String) -> Unit,
-    openWebPage: (Uri) -> Unit
+    settingsActions: SettingsActions,
+    onSettingsSaved: (LauncherSettings) -> Unit,
 ) {
     NavHost(
         navController = navHostController,
@@ -55,8 +51,8 @@ fun HomeNavigationGraph(
             }
 
             LaunchedEffect(Unit) {
-                if (!isDefaultHome()) {
-                    requestDefaultHome()
+                if (!settingsActions.isDefaultHome()) {
+                    settingsActions.setAsDefaultHome()
                 }
                 homeViewModel.retrieveApplicationsList()
                 LauncherEventBus.registerListener(launcherEventListener)
@@ -95,12 +91,8 @@ fun HomeNavigationGraph(
         composable(Routes.SETTINGS_SCREEN) {
             SettingsScreen(
                 launcherSettings,
-                isDefaultHome,
-                requestDefaultHome,
-                setWallpaper,
-                enableNotificationAccess,
-                onSettingsSaved,
-                openWebPage
+                settingsActions,
+                onSettingsSaved
             ) {
                 navHostController.popBackStack()
             }

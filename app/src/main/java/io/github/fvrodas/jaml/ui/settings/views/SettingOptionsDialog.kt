@@ -34,7 +34,7 @@ fun SettingOptionsDialog(
     showIf: Boolean,
     title: String,
     options: List<Int>,
-    defaultValue: Int = R.string.colorscheme_default,
+    defaultValue: Int,
     onDismiss: () -> Unit,
     onSelected: (Int) -> Unit
 ) {

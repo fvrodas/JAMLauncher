@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.ui.settings
 
-import android.net.Uri
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -32,10 +31,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
 import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
@@ -49,12 +48,8 @@ import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 @Composable
 fun SettingsScreen(
     launcherSettings: LauncherSettings,
-    isDefaultHome: () -> Boolean = { false },
-    setAsDefaultHome: () -> Unit = {},
-    setWallpaper: () -> Unit = {},
-    enableNotificationAccess: () -> Unit = {},
+    settingsActions: SettingsActions,
     saveSettings: (LauncherSettings) -> Unit,
-    openWebPage: (Uri) -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
@@ -154,19 +149,19 @@ fun SettingsScreen(
                     )
                 )
             }
-            if (!isDefaultHome()) {
+            if (!settingsActions.isDefaultHome()) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_default_launcher),
                     description = stringResource(id = R.string.summary_default_launcher)
                 ) {
-                    setAsDefaultHome()
+                    settingsActions.setAsDefaultHome()
                 }
             }
             SettingItem(
                 title = stringResource(id = R.string.menu_notification_access),
                 description = stringResource(id = R.string.summary_notification_access)
             ) {
-                enableNotificationAccess()
+                settingsActions.enableNotificationAccess()
             }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {
@@ -181,7 +176,7 @@ fun SettingsScreen(
                 title = stringResource(id = R.string.menu_wallpaper),
                 description = stringResource(id = R.string.summary_wallpaper)
             ) {
-                setWallpaper()
+                settingsActions.setWallpaper()
             }
 
             SettingItem(
@@ -228,7 +223,7 @@ fun SettingsScreen(
                 title = stringResource(id = R.string.about_neutral),
                 description = projectUrl
             ) {
-                openWebPage(projectUrl.toUri())
+                settingsActions.openWebPage(projectUrl.toUri())
                 onBackPressed()
             }
             Row(

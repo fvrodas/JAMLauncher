@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEvents
@@ -69,8 +70,8 @@ class JAMLNotificationService : NotificationListenerService() {
                         PackageManager.DONT_KILL_APP,
                     )
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: PackageManager.NameNotFoundException) {
+                Log.e(this::class.java.name, e.message ?: e.toString())
             }
         }
     }

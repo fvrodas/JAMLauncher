@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -73,15 +74,11 @@ fun ApplicationsSheet(
     performWebSearch: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
-
-    val context = LocalContext.current
-
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
 
-    var startOffset: Offset = Offset.Zero
     var trackedDragAmount = 0f
 
     LaunchedEffect(Unit) {
@@ -106,9 +103,7 @@ fun ApplicationsSheet(
                 )
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
-                        onDragStart = {
-                            startOffset = it
-                        },
+                        onDragStart = {},
                         onDragEnd = {
                             if (trackedDragAmount > 0) {
                                 toggleListVisibility()
@@ -180,9 +175,10 @@ fun ApplicationsSheet(
                 if (state.applicationsList.isEmpty()) {
                     item {
                         ApplicationItem(
-                            label = "Search $searchFieldValue on the web...",
+                            label = "\"$searchFieldValue\" on the web...",
                             searchText = searchFieldValue,
                             iconBitmap = null,
+                            iconVector = Icons.Default.Search,
                             hasNotification = false,
                             onApplicationLongPressed = null,
                             onApplicationPressed = {

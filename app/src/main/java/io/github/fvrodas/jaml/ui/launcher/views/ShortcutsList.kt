@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.os.Build
-import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +25,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.core.data.repositories.ACTION_PIN_UNPIN_APP
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
@@ -89,54 +87,56 @@ fun ShortcutsList(
         shortcutsList?.second?.let { shortcuts ->
             items(shortcuts.size) { i ->
                 shortcuts.elementAt(i).run {
-                    when (this.packageName) {
-                        ACTION_PIN_UNPIN_APP -> {
-                            if (pinningMode && !shouldLetPinApps) return@run
-                            Spacer(modifier = Modifier.height(dimen12dp))
-                            ShortcutItem(
-                                label = if (pinningMode) {
-                                    stringResource(id = R.string.shortcut_pin)
-                                } else {
-                                    stringResource(id = R.string.shortcut_unpin)
-                                },
-                                bitmapIcon = null,
-                                vectorIcon = Icons.Outlined.PushPin,
-                                shouldHideShortcutIcons = shouldHideApplicationIcons
-                            ) {
-                                pinAppToTop(shortcutsList.first)
-                            }
-                        }
 
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS -> {
-                            ShortcutItem(
-                                label = this.label,
-                                bitmapIcon = null,
-                                vectorIcon = Icons.Outlined.Info,
-                                shouldHideShortcutIcons = shouldHideApplicationIcons
-                            ) {
-                                onApplicationInfoPressed(shortcutsList.first)
+
+                    ShortcutItem(
+                        label = label,
+                        bitmapIcon = icon,
+                        shouldHideShortcutIcons = shouldHideApplicationIcons
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                            coroutineScope.launch {
+                                startShortcut(this@run)
                                 changeShortcutsVisibility(false)
-                            }
-                            Spacer(modifier = Modifier.height(dimen12dp))
-                        }
-
-                        else -> {
-                            ShortcutItem(
-                                label = label,
-                                bitmapIcon = icon,
-                                shouldHideShortcutIcons = shouldHideApplicationIcons
-                            ) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                    coroutineScope.launch {
-                                        startShortcut(this@run)
-                                        changeShortcutsVisibility(false)
-                                    }
-                                }
                             }
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(dimen4dp))
+            }
+        }
+        item {
+            shortcutsList?.first?.let {
+                Spacer(modifier = Modifier.height(dimen12dp))
+
+                with(it) {
+                    if (pinningMode && !shouldLetPinApps) return@with
+                    ShortcutItem(
+                        label = if (pinningMode) {
+                            stringResource(id = R.string.shortcut_pin)
+                        } else {
+                            stringResource(id = R.string.shortcut_unpin)
+                        },
+                        bitmapIcon = null,
+                        vectorIcon = Icons.Outlined.PushPin,
+                        shouldHideShortcutIcons = shouldHideApplicationIcons
+                    ) {
+                        pinAppToTop(shortcutsList.first)
+                    }
                     Spacer(modifier = Modifier.height(dimen4dp))
                 }
+                ShortcutItem(
+                    label = stringResource(R.string.shortcut_app_info),
+                    bitmapIcon = null,
+                    vectorIcon = Icons.Outlined.Info,
+                    shouldHideShortcutIcons = shouldHideApplicationIcons
+                ) {
+                    onApplicationInfoPressed(it)
+                    changeShortcutsVisibility(false)
+                }
+                Spacer(modifier = Modifier.height(dimen12dp))
+
             }
         }
     }

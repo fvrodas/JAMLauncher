@@ -15,5 +15,13 @@ data class PackageInfo(
         val packageName: String,
         val label: String,
         val icon: Bitmap?
-    ) : Serializable
+    ) : Serializable {
+        companion object {
+            private const val serialVersionUID: Long = 1L
+        }
+    }
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
 }

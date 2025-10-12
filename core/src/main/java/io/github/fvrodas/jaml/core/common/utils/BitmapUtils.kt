@@ -8,6 +8,7 @@ import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
+import android.util.Log
 import android.util.LruCache
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
@@ -49,7 +50,7 @@ object BitmapUtils {
                     iconCache.put(shortcutInfo.`package` + shortcutInfo.id, it)
                 }
         } catch (e: SecurityException) {
-            e.printStackTrace()
+            Log.e(this::class.java.name, e.message ?: e.toString())
             null
         }
     }
