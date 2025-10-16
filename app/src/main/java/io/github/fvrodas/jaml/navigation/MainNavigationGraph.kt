@@ -87,7 +87,7 @@ fun HomeNavigationGraph(
                 settingsActions,
                 onSettingsSaved
             ) {
-                navHostController.popBackStack()
+                navHostController.popBackStack(route = Routes.HOME_SCREEN, inclusive = false)
             }
         }
     }
