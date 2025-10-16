@@ -1,4 +1,4 @@
-package io.github.fvrodas.jaml.ui.common.settings
+package io.github.fvrodas.jaml.ui.common.interfaces
 
 import android.net.Uri
 

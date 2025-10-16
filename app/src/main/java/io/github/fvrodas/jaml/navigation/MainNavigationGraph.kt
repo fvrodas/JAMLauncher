@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.navigation
 
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -8,11 +7,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
-import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
-import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
+import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
@@ -22,12 +21,10 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun HomeNavigationGraph(
     navHostController: NavHostController,
-    launcherSettings: LauncherSettings,
-    openApplication: (PackageInfo) -> Unit,
-    openApplicationInfo: (PackageInfo) -> Unit,
-    performWebSearch: (String) -> Unit,
+    launcherSettings: LauncherPreferences,
+    launcherActions: LauncherActions,
     settingsActions: SettingsActions,
-    onSettingsSaved: (LauncherSettings) -> Unit,
+    onSettingsSaved: (LauncherPreferences) -> Unit,
 ) {
     NavHost(
         navController = navHostController,
@@ -75,16 +72,12 @@ fun HomeNavigationGraph(
                     homeViewModel.toggleAppPinning(it)
                 },
                 openShortcut = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                        homeViewModel.startShortcut(it)
-                    }
+                    homeViewModel.startShortcut(it)
                 },
                 openLauncherSettings = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
-                openApplicationInfo = openApplicationInfo,
-                openApplication = openApplication,
-                performWebSearch = performWebSearch
+                launcherActions = launcherActions
             )
         }
 

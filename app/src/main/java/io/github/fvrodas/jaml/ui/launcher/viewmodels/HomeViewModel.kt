@@ -13,7 +13,7 @@ import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseC
 import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
-import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState.Companion.MAX_PINNED_APPS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +46,7 @@ class HomeViewModel(
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
 
-                sharedPreferences.getString(LauncherSettings.PINNED_APPS, null)?.let {
+                sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
                     pinnedApplications.clear()
                     val packageNames: List<String> = Json.decodeFromString(it)
                     pinnedApplications.addAll(
@@ -72,11 +72,18 @@ class HomeViewModel(
                 _applicationsState.value = _applicationsState.value.copy(
                     pinnedApplications = if (query.isEmpty()) pinnedApplications.toSet() else setOf(),
                     applicationsList = applicationsListCache.filter { c ->
-                        pinnedApplications.none { c.packageName == it.packageName } &&
-                                c.label.simplify().contains(
-                                    query,
-                                    true
-                                )
+                        if (query.isNotEmpty()) {
+                            c.label.simplify().contains(
+                                query,
+                                true
+                            )
+                        } else {
+                            pinnedApplications.none { c.packageName == it.packageName } &&
+                                    c.label.simplify().contains(
+                                        query,
+                                        true
+                                    )
+                        }
                     }.toSet()
                 )
             } catch (_: Exception) {
@@ -96,7 +103,7 @@ class HomeViewModel(
             }
             sharedPreferences.edit().apply {
                 putString(
-                    LauncherSettings.PINNED_APPS,
+                    LauncherPreferences.PINNED_APPS,
                     Json.encodeToString(pinnedApplications.map { it.packageName })
                 )
                 commit()

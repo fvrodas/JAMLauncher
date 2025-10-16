@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
-import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
@@ -47,26 +47,26 @@ import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    launcherSettings: LauncherSettings,
+    launcherPreferences: LauncherPreferences,
     settingsActions: SettingsActions,
-    saveSettings: (LauncherSettings) -> Unit,
+    saveSettings: (LauncherPreferences) -> Unit,
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
 
     var selectedLauncherTheme: Int by remember {
-        mutableIntStateOf(launcherSettings.launcherTheme)
+        mutableIntStateOf(launcherPreferences.launcherTheme)
     }
 
     var isDynamicColorEnabled: Boolean by remember {
-        mutableStateOf(launcherSettings.isDynamicColorEnabled)
+        mutableStateOf(launcherPreferences.isDynamicColorEnabled)
     }
     var selectedColorScheme: Int by remember {
-        mutableIntStateOf(launcherSettings.launcherColorScheme)
+        mutableIntStateOf(launcherPreferences.launcherColorScheme)
     }
 
     var shouldHideApplicationIcons: Boolean by remember {
-        mutableStateOf(launcherSettings.shouldHideApplicationIcons)
+        mutableStateOf(launcherPreferences.shouldHideApplicationIcons)
     }
 
     var showThemeSelection by remember {
@@ -80,7 +80,7 @@ fun SettingsScreen(
     DisposableEffect(Unit) {
         onDispose {
             saveSettings(
-                LauncherSettings(
+                LauncherPreferences(
                     selectedLauncherTheme,
                     isDynamicColorEnabled,
                     selectedColorScheme,
@@ -91,12 +91,12 @@ fun SettingsScreen(
     }
 
     LaunchedEffect(isDynamicColorEnabled, selectedColorScheme, selectedLauncherTheme) {
-        if (launcherSettings.isDynamicColorEnabled != isDynamicColorEnabled ||
-            launcherSettings.launcherColorScheme != selectedColorScheme ||
-            launcherSettings.launcherTheme != selectedLauncherTheme
+        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
+            launcherPreferences.launcherColorScheme != selectedColorScheme ||
+            launcherPreferences.launcherTheme != selectedLauncherTheme
         ) {
             saveSettings(
-                LauncherSettings(
+                LauncherPreferences(
                     selectedLauncherTheme,
                     isDynamicColorEnabled,
                     selectedColorScheme,

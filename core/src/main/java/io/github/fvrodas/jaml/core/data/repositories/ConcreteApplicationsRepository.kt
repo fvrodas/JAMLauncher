@@ -6,7 +6,6 @@ import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Process
-import android.provider.Settings
 import androidx.annotation.RequiresApi
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
@@ -91,4 +90,5 @@ class ConcreteApplicationsRepository(
         )
     }
 }
+
 const val MAX_SHORTCUTS_TO_DISPLAY = 5

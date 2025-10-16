@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
 import io.github.fvrodas.jaml.ui.launcher.views.HomeScreen
@@ -52,9 +53,7 @@ fun LauncherScreen(
     pinToTop: (PackageInfo) -> Unit = {},
     openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     openLauncherSettings: () -> Unit = {},
-    openApplicationInfo: (PackageInfo) -> Unit = {},
-    openApplication: (PackageInfo) -> Unit = {},
-    performWebSearch: (String) -> Unit = {}
+    launcherActions: LauncherActions
 ) {
     val shortcutsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -119,9 +118,9 @@ fun LauncherScreen(
                                     shortcutListPinningMode = pinningMode
                                 },
                                 openLauncherSettings,
-                                onApplicationPressed = openApplication,
+                                onApplicationPressed = launcherActions::openApplication,
                                 onApplicationLongPressed = retrieveShortcuts,
-                                performWebSearch = performWebSearch
+                                performWebSearch = launcherActions::performWebSearch
                             ) { searchApplications(it) }
                         }
                     } else {
@@ -137,7 +136,7 @@ fun LauncherScreen(
                                 shouldDisplayShortcutsList = shouldShow
                                 shortcutListPinningMode = pinningMode
                             },
-                            onApplicationPressed = openApplication,
+                            onApplicationPressed = launcherActions::openApplication,
                             onApplicationLongPressed = retrieveShortcuts
                         ) {
                             shouldDisplayAppList = it
@@ -145,10 +144,18 @@ fun LauncherScreen(
                     }
                 },
                 transitionSpec = {
-                    (fadeIn(animationSpec = tween(ANIMATION_DURATION, delayMillis = DELAY_DURATION)) +
+                    (fadeIn(
+                        animationSpec = tween(
+                            ANIMATION_DURATION,
+                            delayMillis = DELAY_DURATION
+                        )
+                    ) +
                             slideInVertically(
                                 initialOffsetY = { it / 2 },
-                                animationSpec = tween(ANIMATION_DURATION, delayMillis = DELAY_DURATION)
+                                animationSpec = tween(
+                                    ANIMATION_DURATION,
+                                    delayMillis = DELAY_DURATION
+                                )
                             ))
                         .togetherWith(
                             fadeOut(animationSpec = tween(DELAY_DURATION))
@@ -181,7 +188,7 @@ fun LauncherScreen(
                         shouldDisplayShortcutsList = false
                         pinToTop(it)
                     },
-                    onApplicationInfoPressed = openApplicationInfo
+                    onApplicationInfoPressed = launcherActions::openApplicationInfo
                 )
             }
         }

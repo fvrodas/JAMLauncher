@@ -29,18 +29,19 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
 import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
-import io.github.fvrodas.jaml.ui.common.settings.SettingsActions
+import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
+import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
+import io.github.fvrodas.jaml.ui.common.settings.LauncherTheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
-import io.github.fvrodas.jaml.ui.common.themes.LauncherSettings
-import io.github.fvrodas.jaml.ui.common.themes.LauncherTheme
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Suppress("TooManyFunctions")
-class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
+class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, SettingsActions {
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -72,18 +73,18 @@ class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
 
             val navHostController = rememberNavController()
 
-            val launcherSettings: LauncherSettings by settingsViewModel.launcherSettings.collectAsState()
+            val launcherPreferences: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
 
             var theme: Int by remember {
-                mutableIntStateOf(launcherSettings.launcherTheme)
+                mutableIntStateOf(launcherPreferences.launcherTheme)
             }
 
             var colorScheme: Int by remember {
-                mutableIntStateOf(launcherSettings.launcherColorScheme)
+                mutableIntStateOf(launcherPreferences.launcherColorScheme)
             }
 
             var dynamicColorEnabled: Boolean by remember {
-                mutableStateOf(launcherSettings.isDynamicColorEnabled)
+                mutableStateOf(launcherPreferences.isDynamicColorEnabled)
             }
 
             JamlTheme(
@@ -97,10 +98,8 @@ class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    launcherSettings = launcherSettings,
-                    openApplication = this::openApplication,
-                    openApplicationInfo = this::openApplicationInfo,
-                    performWebSearch = this::performWebSearch,
+                    launcherSettings = launcherPreferences,
+                    launcherActions = this,
                     settingsActions = this,
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
@@ -201,7 +200,7 @@ class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
 
     }
 
-    private fun openApplication(packageInfo: PackageInfo) {
+    override fun openApplication(packageInfo: PackageInfo) {
         packageManager?.getLaunchIntentForPackage(packageInfo.packageName)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
@@ -209,7 +208,7 @@ class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
         }
     }
 
-    private fun openApplicationInfo(packageInfo: PackageInfo) {
+    override fun openApplicationInfo(packageInfo: PackageInfo) {
         Intent().apply {
             action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
             data = Uri.fromParts("package", packageInfo.packageName, null)
@@ -218,7 +217,7 @@ class MainActivity : androidx.activity.ComponentActivity(), SettingsActions {
         }
     }
 
-    private fun performWebSearch(query: String) {
+    override fun performWebSearch(query: String) {
         Intent().apply {
             action = Intent.ACTION_WEB_SEARCH
             putExtra(SearchManager.QUERY, query)

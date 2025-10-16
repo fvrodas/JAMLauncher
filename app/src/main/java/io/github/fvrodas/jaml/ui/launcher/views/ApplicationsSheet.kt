@@ -172,7 +172,30 @@ fun ApplicationsSheet(
             LazyColumn(
                 state = lazyListState
             ) {
-                if (state.applicationsList.isEmpty()) {
+                items(state.applicationsList.size) {
+                    val item = state.applicationsList.elementAt(it)
+                    ApplicationItem(
+                        label = item.label,
+                        searchText = searchFieldValue,
+                        iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                        hasNotification = item.hasNotification,
+                        onApplicationLongPressed = { isFavorite ->
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                coroutineScope.launch {
+                                    onApplicationLongPressed.invoke(item)
+                                    changeShortcutVisibility(true, !isFavorite)
+                                }
+                            }
+                        },
+                        onApplicationPressed = {
+                            coroutineScope.launch {
+                                onApplicationPressed.invoke(item)
+                                toggleListVisibility()
+                            }
+                        }
+                    )
+                }
+                if (searchFieldValue.isNotEmpty()) {
                     item {
                         ApplicationItem(
                             label = "\"$searchFieldValue\" on the web...",
@@ -184,30 +207,6 @@ fun ApplicationsSheet(
                             onApplicationPressed = {
                                 performWebSearch(searchFieldValue)
                                 coroutineScope.launch {
-                                    toggleListVisibility()
-                                }
-                            }
-                        )
-                    }
-                } else {
-                    items(state.applicationsList.size) {
-                        val item = state.applicationsList.elementAt(it)
-                        ApplicationItem(
-                            label = item.label,
-                            searchText = searchFieldValue,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
-                            hasNotification = item.hasNotification,
-                            onApplicationLongPressed = { isFavorite ->
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                    coroutineScope.launch {
-                                        onApplicationLongPressed.invoke(item)
-                                        changeShortcutVisibility(true, !isFavorite)
-                                    }
-                                }
-                            },
-                            onApplicationPressed = {
-                                coroutineScope.launch {
-                                    onApplicationPressed.invoke(item)
                                     toggleListVisibility()
                                 }
                             }

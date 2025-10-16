@@ -5,6 +5,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.ui.common.settings.LauncherTheme
+
 @Suppress("MagicNumber")
 sealed class JamlColorScheme(val lightColorScheme: ColorScheme, val darkColorScheme: ColorScheme) {
 
