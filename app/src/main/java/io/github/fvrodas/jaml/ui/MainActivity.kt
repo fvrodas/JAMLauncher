@@ -21,7 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.compose.rememberNavController
@@ -60,7 +60,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
             navigationBarStyle = SystemBarStyle.auto(
                 0x00000000,
                 0x00000000
-            ) { true }
+            )
         )
 
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER)
@@ -75,15 +75,15 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val launcherPreferences: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
 
-            var theme: Int by remember {
+            var theme: Int by rememberSaveable {
                 mutableIntStateOf(launcherPreferences.launcherTheme)
             }
 
-            var colorScheme: Int by remember {
+            var colorScheme: Int by rememberSaveable {
                 mutableIntStateOf(launcherPreferences.launcherColorScheme)
             }
 
-            var dynamicColorEnabled: Boolean by remember {
+            var dynamicColorEnabled: Boolean by rememberSaveable {
                 mutableStateOf(launcherPreferences.isDynamicColorEnabled)
             }
 

@@ -43,9 +43,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
@@ -136,6 +134,7 @@ fun ApplicationsSheet(
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
+
             OutlinedTextField(
                 value = searchFieldValue,
                 textStyle = MaterialTheme.typography.titleLarge,

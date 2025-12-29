@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.ui.launcher.viewmodels
 
-import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -10,25 +9,29 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
+import io.github.fvrodas.jaml.domain.entity.LauncherItem
+import io.github.fvrodas.jaml.domain.usecases.AddApplicationToGroupUseCase
+import io.github.fvrodas.jaml.domain.usecases.GetGroupedApplicationsListUseCase
+import io.github.fvrodas.jaml.domain.usecases.RemoveApplicationFromGroupUseCase
 import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
-import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState.Companion.MAX_PINNED_APPS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class HomeViewModel(
     private val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
     private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
-    private val sharedPreferences: SharedPreferences
+    private val getGroupedApplicationsListUseCase: GetGroupedApplicationsListUseCase,
+    private val addApplicationToGroupUseCase: AddApplicationToGroupUseCase,
+    private val removeApplicationFromGroupUseCase: RemoveApplicationFromGroupUseCase
 ) : ViewModel() {
 
     private var applicationsListCache: Set<PackageInfo> = emptySet()
-    private val pinnedApplications: ArrayList<PackageInfo> = arrayListOf()
+    private val groupedApplications: ArrayList<PackageInfo> = arrayListOf()
 
     private var _applicationsState: MutableStateFlow<ApplicationSheetState> =
         MutableStateFlow(ApplicationSheetState())
@@ -46,19 +49,14 @@ class HomeViewModel(
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
 
-                sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
-                    pinnedApplications.clear()
-                    val packageNames: List<String> = Json.decodeFromString(it)
-                    pinnedApplications.addAll(
-                        packageNames.mapNotNull { p ->
-                            applicationsListCache.firstOrNull { p == it.packageName }
-                        }.toList()
-                    )
+                with(getGroupedApplicationsListUseCase.invoke(null)) {
+                    groupedApplications.clear()
+                    groupedApplications.addAll(this)
                 }
 
                 _applicationsState.value = ApplicationSheetState(
-                    pinnedApplications = pinnedApplications.toSet(),
-                    applicationsList = applicationsListCache.exclude(pinnedApplications)
+                    pinnedApplications = groupedApplications.toSet(),
+                    applicationsList = applicationsListCache.exclude(groupedApplications)
                 )
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
@@ -70,7 +68,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 _applicationsState.value = _applicationsState.value.copy(
-                    pinnedApplications = if (query.isEmpty()) pinnedApplications.toSet() else setOf(),
+                    pinnedApplications = if (query.isEmpty()) groupedApplications.toSet() else setOf(),
                     applicationsList = applicationsListCache.filter { c ->
                         if (query.isNotEmpty()) {
                             c.label.simplify().contains(
@@ -78,7 +76,7 @@ class HomeViewModel(
                                 true
                             )
                         } else {
-                            pinnedApplications.none { c.packageName == it.packageName } &&
+                            groupedApplications.none { c.packageName == it.packageName } &&
                                     c.label.simplify().contains(
                                         query,
                                         true
@@ -92,21 +90,16 @@ class HomeViewModel(
         }
     }
 
-    fun toggleAppPinning(packageInfo: PackageInfo) {
+    fun toggleAppPinning(packageInfo: PackageInfo, groupName: String = LauncherItem.Group.HOME_GROUP) {
         viewModelScope.launch {
-            if (pinnedApplications.find { it.packageName == packageInfo.packageName } == null) {
-                if (pinnedApplications.size >= MAX_PINNED_APPS) return@launch
-
-                pinnedApplications.add(packageInfo)
+            if (groupedApplications.find { it.packageName == packageInfo.packageName } == null) {
+                if (groupedApplications.size >= MAX_PINNED_APPS) return@launch
+                packageInfo.groupName = groupName
+                groupedApplications.clear()
+                groupedApplications.addAll(addApplicationToGroupUseCase.invoke(packageInfo))
             } else {
-                pinnedApplications.removeAll { it.packageName == packageInfo.packageName }
-            }
-            sharedPreferences.edit().apply {
-                putString(
-                    LauncherPreferences.PINNED_APPS,
-                    Json.encodeToString(pinnedApplications.map { it.packageName })
-                )
-                commit()
+                groupedApplications.clear()
+                groupedApplications.addAll(removeApplicationFromGroupUseCase.invoke(packageInfo))
             }
             retrieveApplicationsList()
         }
@@ -128,7 +121,7 @@ class HomeViewModel(
                     )
                     applicationsListCache.find { packageName == it.packageName }?.hasNotification =
                         hasNotification
-                    pinnedApplications.find { packageName == it.packageName }?.hasNotification =
+                    groupedApplications.find { packageName == it.packageName }?.hasNotification =
                         hasNotification
                 }
             } catch (_: Exception) {

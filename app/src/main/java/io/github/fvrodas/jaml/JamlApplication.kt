@@ -2,6 +2,9 @@ package io.github.fvrodas.jaml
 
 import android.app.Application
 import io.github.fvrodas.jaml.core.coreModule
+import io.github.fvrodas.jaml.domain.usecases.AddApplicationToGroupUseCase
+import io.github.fvrodas.jaml.domain.usecases.GetGroupedApplicationsListUseCase
+import io.github.fvrodas.jaml.domain.usecases.RemoveApplicationFromGroupUseCase
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
@@ -11,13 +14,13 @@ import org.koin.core.logger.Level
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-class JamlApplication: Application() {
+class JamlApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
 
         startKoin {
-            androidLogger(if(BuildConfig.DEBUG) Level.ERROR else Level.NONE)
+            androidLogger(if (BuildConfig.DEBUG) Level.ERROR else Level.NONE)
             androidContext(this@JamlApplication)
             modules(appModule, coreModule)
         }
@@ -26,7 +29,25 @@ class JamlApplication: Application() {
 }
 
 val appModule = module {
-    single { androidContext().getSharedPreferences("preferences", android.content.Context.MODE_PRIVATE)}
-    viewModel { HomeViewModel(get(), get(), get(), get()) }
+    single {
+        androidContext().getSharedPreferences(
+            "preferences",
+            android.content.Context.MODE_PRIVATE
+        )
+    }
+    single { GetGroupedApplicationsListUseCase(get()) }
+    single { AddApplicationToGroupUseCase(get()) }
+    single { RemoveApplicationFromGroupUseCase(get()) }
+
+    viewModel {
+        HomeViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+        )
+    }
     viewModel { SettingsViewModel(get()) }
 }

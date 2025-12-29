@@ -49,7 +49,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
-import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
+import io.github.fvrodas.jaml.ui.launcher.views.extensions.highlightCoincidence
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -120,7 +120,7 @@ fun ApplicationItem(
         }
         Spacer(modifier = Modifier.width(dimen16dp))
         Text(
-            text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
+            text = label.highlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
             style = MaterialTheme.typography.titleLarge.copy(
                 color = if (hasNotificationState) {
                     MaterialTheme.colorScheme.primary

@@ -7,15 +7,15 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 
-fun String.hightlightCoincidence(value: String?, color: Color): AnnotatedString =
+fun String.highlightCoincidence(value: String?, color: Color): AnnotatedString =
     buildAnnotatedString {
-        append(this@hightlightCoincidence)
-        if (!value.isNullOrBlank() && this@hightlightCoincidence.contains(
+        append(this@highlightCoincidence)
+        if (!value.isNullOrBlank() && this@highlightCoincidence.contains(
                 value,
                 ignoreCase = true
             )
         ) {
-            val start = this@hightlightCoincidence.indexOf(value, ignoreCase = true)
+            val start = this@highlightCoincidence.indexOf(value, ignoreCase = true)
             this.addStyle(
                 SpanStyle(
                     color = color,
