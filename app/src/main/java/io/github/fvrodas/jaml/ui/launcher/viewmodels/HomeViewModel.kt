@@ -16,7 +16,10 @@ import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState.Companion.MAX_PINNED_APPS
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -35,7 +38,13 @@ class HomeViewModel(
     private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
 
-    val applicationsState: StateFlow<ApplicationSheetState> = _applicationsState
+    val applicationsState: StateFlow<ApplicationSheetState> = _applicationsState.onStart {
+        retrieveApplicationsList()
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        ApplicationSheetState()
+    )
     val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         _shortcutList
 
@@ -51,7 +60,7 @@ class HomeViewModel(
                     val packageNames: List<String> = Json.decodeFromString(it)
                     pinnedApplications.addAll(
                         packageNames.mapNotNull { p ->
-                            applicationsListCache.firstOrNull { p == it.packageName }
+                            applicationsListCache.firstOrNull { e -> p == e.packageName }
                         }.toList()
                     )
                 }
@@ -112,24 +121,30 @@ class HomeViewModel(
         }
     }
 
-    fun markNotification(packageName: String?, hasNotification: Boolean) {
+    fun markNotification(packageName: String?, hasNotification: Boolean, notificationTitle: String?) {
         viewModelScope.launch {
             try {
                 packageName?.let {
                     _applicationsState.value = _applicationsState.value.copy(
                         pinnedApplications = _applicationsState.value.pinnedApplications.updateAppEntry(
                             packageName,
-                            hasNotification
+                            hasNotification,
+                            notificationTitle
                         ),
                         applicationsList = _applicationsState.value.applicationsList.updateAppEntry(
                             packageName,
-                            hasNotification
+                            hasNotification,
+                            notificationTitle
                         )
                     )
-                    applicationsListCache.find { packageName == it.packageName }?.hasNotification =
-                        hasNotification
-                    pinnedApplications.find { packageName == it.packageName }?.hasNotification =
-                        hasNotification
+                    applicationsListCache.find { packageName == it.packageName }?.let {
+                        it.hasNotification = hasNotification
+                        it.notificationTitle = notificationTitle
+                    }
+                    pinnedApplications.find { packageName == it.packageName }?.let {
+                        it.hasNotification = hasNotification
+                        it.notificationTitle = notificationTitle
+                    }
                 }
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()

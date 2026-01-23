@@ -41,9 +41,10 @@ fun HomeNavigationGraph(
 
                 override fun onNotificationChanged(
                     packageName: String?,
-                    hasNotification: Boolean
+                    hasNotification: Boolean,
+                    notificationTitle: String?
                 ) {
-                    homeViewModel.markNotification(packageName, hasNotification)
+                    homeViewModel.markNotification(packageName, hasNotification, notificationTitle)
                 }
             }
 
@@ -51,7 +52,6 @@ fun HomeNavigationGraph(
                 if (!settingsActions.isDefaultHome()) {
                     settingsActions.setAsDefaultHome()
                 }
-                homeViewModel.retrieveApplicationsList()
                 LauncherEventBus.registerListener(launcherEventListener)
             }
 

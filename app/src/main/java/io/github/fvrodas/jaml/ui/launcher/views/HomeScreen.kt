@@ -33,6 +33,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
@@ -57,6 +58,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(horizontal = dimen8dp)
                 .pointerInput(Unit) {
                     detectTapGestures {
 
@@ -82,7 +84,8 @@ fun HomeScreen(
                 val lazyListState = rememberLazyListState()
 
                 LazyColumn(
-                    state = lazyListState
+                    state = lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(dimen4dp)
                 ) {
                     items(state.pinnedApplications.size) {
                         val item = state.pinnedApplications.elementAt(it)
@@ -90,6 +93,7 @@ fun HomeScreen(
                             label = item.label,
                             iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
                             hasNotification = item.hasNotification,
+                            notificationText = item.notificationTitle,
                             isFavorite = true,
                             onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

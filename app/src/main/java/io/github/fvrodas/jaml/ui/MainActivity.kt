@@ -17,11 +17,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.compose.rememberNavController
@@ -75,16 +77,22 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val launcherPreferences: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
 
-            var theme: Int by remember {
+            var theme: Int by rememberSaveable {
                 mutableIntStateOf(launcherPreferences.launcherTheme)
             }
 
-            var colorScheme: Int by remember {
+            var colorScheme: Int by rememberSaveable {
                 mutableIntStateOf(launcherPreferences.launcherColorScheme)
             }
 
-            var dynamicColorEnabled: Boolean by remember {
+            var dynamicColorEnabled: Boolean by rememberSaveable {
                 mutableStateOf(launcherPreferences.isDynamicColorEnabled)
+            }
+
+            LaunchedEffect(launcherPreferences) {
+                theme = launcherPreferences.launcherTheme
+                colorScheme = launcherPreferences.launcherColorScheme
+                dynamicColorEnabled = launcherPreferences.isDynamicColorEnabled
             }
 
             JamlTheme(
@@ -103,9 +111,6 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                     settingsActions = this,
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
-                        colorScheme = it.launcherColorScheme
-                        dynamicColorEnabled = it.isDynamicColorEnabled
-                        theme = it.launcherTheme
                     }
                 )
             }

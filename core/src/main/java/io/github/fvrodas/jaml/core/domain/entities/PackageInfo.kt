@@ -7,7 +7,8 @@ data class PackageInfo(
     val packageName: String,
     val label: String,
     val icon: Bitmap? = null,
-    var hasNotification: Boolean = false
+    var hasNotification: Boolean = false,
+    var notificationTitle: String? = null
 ) : Serializable {
 
     class ShortcutInfo(

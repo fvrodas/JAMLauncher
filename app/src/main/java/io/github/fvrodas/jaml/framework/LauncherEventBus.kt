@@ -9,7 +9,7 @@ object LauncherEventBus {
             when (event) {
                 is LauncherEvents.OnPackageChanged -> listener.onPackageChanged()
                 is LauncherEvents.OnNotificationChanged -> listener.onNotificationChanged(
-                    event.packageName, event.hasNotification
+                    event.packageName, event.hasNotification, event.notificationTitle
                 )
             }
         }
@@ -26,10 +26,10 @@ object LauncherEventBus {
 
 sealed interface LauncherEvents {
     object OnPackageChanged : LauncherEvents
-    data class OnNotificationChanged(val packageName: String?, val hasNotification: Boolean) : LauncherEvents
+    data class OnNotificationChanged(val packageName: String?, val hasNotification: Boolean, val notificationTitle: String?) : LauncherEvents
 }
 
 interface LauncherEventListener {
     fun onPackageChanged()
-    fun onNotificationChanged(packageName: String?, hasNotification: Boolean)
+    fun onNotificationChanged(packageName: String?, hasNotification: Boolean, notificationTitle: String? = null)
 }
