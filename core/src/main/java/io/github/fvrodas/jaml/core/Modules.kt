@@ -11,7 +11,7 @@ import org.koin.dsl.module
 @Keep
 val coreModule = module {
     single<ApplicationsRepository> { ConcreteApplicationsRepository(get()) }
-    single { GetApplicationsListUseCase(get()) }
-    single { GetShortcutsListForApplicationUseCase(get()) }
-    single { LaunchApplicationShortcutUseCase(get()) }
+    factory { GetApplicationsListUseCase(get()) }
+    factory { GetShortcutsListForApplicationUseCase(get()) }
+    factory { LaunchApplicationShortcutUseCase(get()) }
 }

@@ -15,9 +15,11 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
-    private const val MAX_CACHE_SIZE = 83886080
     private const val INSET = 0.16f
-    private val iconCache: LruCache<String, Bitmap> = LruCache(MAX_CACHE_SIZE)
+
+    private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
+    private val cacheSize = maxMemory / 8
+    private val iconCache: LruCache<String, Bitmap> = LruCache(cacheSize)
 
     fun loadIcon(packageName: String, drawable: Drawable): Bitmap {
         if (iconCache[packageName] != null) {

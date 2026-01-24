@@ -6,7 +6,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
@@ -52,7 +51,6 @@ fun HomeScreen(
     onApplicationLongPressed: (PackageInfo) -> Unit,
     displayAppList: (Boolean) -> Unit
 ) {
-    var startOffset: Offset = Offset.Zero
 
     with(sharedTransitionLayout) {
         Column(
@@ -65,16 +63,17 @@ fun HomeScreen(
                     }
                 }
                 .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragStart = {
-                            startOffset = it
-                        },
-                        onDragEnd = {},
-                        onDragCancel = {
-                            displayAppList(false)
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event =
+                                awaitPointerEvent(PointerEventPass.Initial)
+                            if (event.changes.any { it.pressed }) {
+                                val change = event.changes.first()
+                                if (change.previousPosition.y - change.position.y > MIN_DISPLACEMENT) {
+                                    displayAppList(true)
+                                }
+                            }
                         }
-                    ) { change, _ ->
-                        displayAppList(change.position.y < startOffset.y)
                     }
                 }
         ) {
@@ -144,3 +143,5 @@ fun HomeScreen(
         }
     }
 }
+
+internal const val MIN_DISPLACEMENT = 10f

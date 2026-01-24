@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,6 +61,9 @@ fun ShortcutsList(
             .padding(bottom = dimen32dp)
     ) {
         Row(
+            modifier = Modifier
+                .padding(bottom = dimen12dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!shouldHideApplicationIcons) {
@@ -89,7 +91,6 @@ fun ShortcutsList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = dimen8dp)
                     .clip(RoundedCornerShape(dimen16dp))
                     .background(MaterialTheme.colorScheme.surfaceContainer),
                 verticalAlignment = Alignment.CenterVertically
@@ -105,7 +106,7 @@ fun ShortcutsList(
                 Text(
                     modifier = Modifier
                         .padding(end = dimen16dp)
-                        .padding(vertical = dimen8dp),
+                        .padding(vertical = dimen16dp),
                     text = notification,
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
@@ -156,7 +157,7 @@ fun ShortcutsList(
                             stringResource(id = R.string.shortcut_unpin)
                         },
                         bitmapIcon = null,
-                        vectorIcon = if(pinningMode)
+                        vectorIcon = if (pinningMode)
                             Icons.Outlined.Home
                         else
                             Icons.Outlined.Apps,
