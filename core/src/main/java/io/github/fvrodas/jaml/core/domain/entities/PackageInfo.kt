@@ -6,7 +6,7 @@ import java.io.Serializable
 data class PackageInfo(
     val packageName: String,
     val label: String,
-    val icon: Bitmap? = null,
+    @Transient val icon: Bitmap? = null,
     var hasNotification: Boolean = false,
     var notificationTitle: String? = null
 ) : Serializable {
@@ -15,7 +15,7 @@ data class PackageInfo(
         val id: String,
         val packageName: String,
         val label: String,
-        val icon: Bitmap?
+        @Transient val icon: Bitmap?
     ) : Serializable {
         companion object {
             private const val serialVersionUID: Long = 1L

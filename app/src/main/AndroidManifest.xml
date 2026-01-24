@@ -28,7 +28,7 @@
             android:taskAffinity=""
             android:clearTaskOnLaunch="true"
             android:stateNotNeeded="true"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:resumeWhilePausing="true"
             android:screenOrientation="nosensor"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|navigation|orientation|screenSize|screenLayout|smallestScreenSize"

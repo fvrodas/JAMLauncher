@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,10 +33,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
+import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
+import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
@@ -107,8 +111,9 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.settings_activity)
@@ -123,12 +128,12 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    scrolledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    subtitleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                    subtitleContentColor = MaterialTheme.colorScheme.primary,
                 )
             )
         }
@@ -256,5 +261,36 @@ fun SettingsScreen(
                 selectedColorScheme = selected
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    JamlTheme(
+        colorScheme = JamlColorScheme.Default,
+        isInDarkMode = false,
+        isDynamicColorsEnabled = false
+    ) {
+        SettingsScreen(
+            launcherPreferences = LauncherPreferences(),
+            settingsActions = object : SettingsActions {
+                override fun isDefaultHome(): Boolean = false
+                override fun setAsDefaultHome() {
+                    /** No - Op **/
+                }
+                override fun setWallpaper() {
+                    /** No - Op **/
+                }
+                override fun enableNotificationAccess() {
+                    /** No - Op **/
+                }
+                override fun openWebPage(url: android.net.Uri) {
+                    /** No - Op **/
+                }
+            },
+            saveSettings = {},
+            onBackPressed = {}
+        )
     }
 }

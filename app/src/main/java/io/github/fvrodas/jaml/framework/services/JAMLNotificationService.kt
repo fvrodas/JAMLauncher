@@ -52,7 +52,7 @@ class JAMLNotificationService : NotificationListenerService() {
 
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
-        tryReEnableNotificationListener(this)
+        //tryReEnableNotificationListener(this)
     }
 
     companion object {
@@ -61,6 +61,7 @@ class JAMLNotificationService : NotificationListenerService() {
                 .contains(context.packageName)
         }
 
+        @Deprecated("Modern Android versions may not need this method")
         fun tryReEnableNotificationListener(context: Context) {
 
             try {

@@ -22,14 +22,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
-import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
@@ -48,7 +46,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
-                JAMLNotificationService.tryReEnableNotificationListener(this)
+                finish()
             }
         }
 
@@ -180,6 +178,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                 )
             ) {
                 val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                intent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                 startForResult.launch(intent)
             }
         }

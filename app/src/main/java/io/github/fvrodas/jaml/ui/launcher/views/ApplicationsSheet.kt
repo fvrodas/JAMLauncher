@@ -176,7 +176,9 @@ fun ApplicationsSheet(
                         ),
                 )
                 LazyColumn(
-                    state = lazyListState
+                    state = lazyListState,
+                    modifier = Modifier.padding(horizontal = dimen8dp),
+                    verticalArrangement = Arrangement.spacedBy(dimen8dp)
                 ) {
                     items(state.applicationsList.size) {
                         val item = state.applicationsList.elementAt(it)

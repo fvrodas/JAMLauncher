@@ -3,6 +3,8 @@ package io.github.fvrodas.jaml.ui.launcher.viewmodels
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.BuildConfig
@@ -182,5 +184,15 @@ data class ApplicationSheetState(
 
     companion object {
         const val MAX_PINNED_APPS = 5
+
+        val Saver: Saver<ApplicationSheetState, Any> = listSaver(
+            save = { listOf(it.pinnedApplications.toList(), it.applicationsList.toList()) },
+            restore = {
+                ApplicationSheetState(
+                    pinnedApplications = it[0].toSet(),
+                    applicationsList = it[1].toSet()
+                )
+            }
+        )
     }
 }

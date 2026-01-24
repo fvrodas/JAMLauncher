@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -51,7 +50,6 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.applyIf
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
 
@@ -83,13 +81,24 @@ fun ApplicationItem(
         notificationTextState = notificationText
     }
 
+    val gradient = if (isFavorite) {
+        GRADIENT
+    } else {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.0f)
+            )
+        )
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimen64dp)
             .clip(RoundedCornerShape(dimen16dp))
             .applyIf(hasNotificationState) {
-                background(GRADIENT)
+                background(gradient)
             }
             .combinedClickable(
                 onLongClick = { onApplicationLongPressed?.invoke(isFavorite) },
@@ -111,15 +120,6 @@ fun ApplicationItem(
                             .size(dimen48dp)
                             .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
                     )
-                    if (hasNotificationState && !isFavorite) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary)
-                                .size(dimen8dp)
-                        )
-                    }
                 }
             }
             iconVector?.let {
@@ -151,11 +151,11 @@ fun ApplicationItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if(iconBitmap != null || iconVector != null) {
+                    if (iconBitmap != null || iconVector != null) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "",
-                            tint = MaterialTheme.colorScheme.onBackground.copy(.9f),
+                            tint = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
                             modifier = Modifier
                                 .size(dimen16dp),
                         )
@@ -165,7 +165,7 @@ fun ApplicationItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(.9f),
+                            color = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
                         )
                     )
                 }
@@ -173,6 +173,8 @@ fun ApplicationItem(
         }
     }
 }
+
+internal const val DEFAULT_ALPHA = 0.9f
 
 internal val FAVORITE_DROP_SHADOW: Shadow = Shadow(
     Color.Black.copy(.9f),

@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +58,10 @@ fun LauncherScreen(
 ) {
     val shortcutsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    var sheetState by rememberSaveable(stateSaver = ApplicationSheetState.Saver) {
+        mutableStateOf(applicationSheetState)
+    }
+
     var shouldDisplayShortcutsList by remember {
         mutableStateOf(false)
     }
@@ -71,6 +76,10 @@ fun LauncherScreen(
 
     LaunchedEffect(Unit) {
         shortcutsBottomSheetState.hide()
+    }
+
+    LaunchedEffect(applicationSheetState) {
+        sheetState = applicationSheetState
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
@@ -106,7 +115,7 @@ fun LauncherScreen(
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
-                                applicationSheetState,
+                                sheetState,
                                 shouldHideApplicationIcons,
                                 this@SharedTransitionLayout,
                                 this@AnimatedContent,
@@ -127,7 +136,7 @@ fun LauncherScreen(
                         HomeScreen(
                             this@SharedTransitionLayout,
                             this@AnimatedContent,
-                            applicationSheetState,
+                            sheetState,
                             shouldHideApplicationIcons,
                             toggleListVisibility = {
                                 shouldDisplayAppList = !shouldDisplayAppList
@@ -175,7 +184,7 @@ fun LauncherScreen(
                 ShortcutsList(
                     listOfShortcuts,
                     shouldHideApplicationIcons,
-                    applicationSheetState.canPinApps,
+                    sheetState.canPinApps,
                     shortcutListPinningMode,
                     changeShortcutsVisibility = {
                         shouldDisplayShortcutsList = false
