@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -15,8 +16,8 @@ android {
         applicationId = "io.github.fvrodas.jaml"
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
-        versionCode = 10
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.0-beta2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,11 +25,17 @@ android {
     buildTypes {
 
         debug {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources =  true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
 
         release {
             isMinifyEnabled = true
+            isShrinkResources =  true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

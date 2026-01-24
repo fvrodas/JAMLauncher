@@ -1,6 +1,5 @@
 package io.github.fvrodas.jaml.ui.settings.views
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +34,7 @@ fun SettingOptionsDialog(
     showIf: Boolean,
     title: String,
     options: List<Int>,
-    defaultValue: Int = R.string.theme_default,
+    defaultValue: Int,
     onDismiss: () -> Unit,
     onSelected: (Int) -> Unit
 ) {
@@ -58,7 +57,7 @@ fun SettingOptionsDialog(
                     .clip(RoundedCornerShape(dimen16dp))
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(bottom = dimen32dp)
-                    .fillMaxWidth(0.9F)
+                    .fillMaxWidth()
             ) {
                 item {
                     Text(
@@ -81,7 +80,7 @@ fun SettingOptionsDialog(
                             modifier = Modifier
                                 .padding(horizontal = dimen32dp)
                                 .height(dimen48dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth(MAX_WIDTH_FACTOR),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(dimen16dp)
                         ) {
@@ -99,3 +98,5 @@ fun SettingOptionsDialog(
         }
     }
 }
+
+internal const val MAX_WIDTH_FACTOR = 0.9F

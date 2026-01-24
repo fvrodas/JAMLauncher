@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.core.usecases
 
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.core.domain.entities.AppShortcutInfo
 import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import kotlinx.coroutines.runBlocking
@@ -27,7 +26,7 @@ class GetShortcutsListForApplicationTest {
     )
 
     private val expectedResult = listOf(
-        AppShortcutInfo(
+        PackageInfo.ShortcutInfo(
             id = "id",
             packageName = "com.example.package_name",
             label = "Example Shortcut",
@@ -51,6 +50,5 @@ class GetShortcutsListForApplicationTest {
             assert(expectedResult == result)
         }
     }
-
 
 }

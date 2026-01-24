@@ -1,6 +1,7 @@
 package io.github.fvrodas.jaml.ui
 
 import android.annotation.SuppressLint
+import android.app.SearchManager
 import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Intent
@@ -16,31 +17,36 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
-import io.github.fvrodas.jaml.framework.services.JAMLNotificationService
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
+import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
+import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
+import io.github.fvrodas.jaml.ui.common.settings.LauncherTheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
-import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
+import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.viewmodels.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
-class MainActivity : androidx.activity.ComponentActivity() {
+@Suppress("TooManyFunctions")
+class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, SettingsActions {
 
     private val startForResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == RESULT_OK) {
-                JAMLNotificationService.tryReEnableNotificationListener(this)
+                finish()
             }
         }
 
@@ -67,35 +73,43 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
             val navHostController = rememberNavController()
 
-            val launcherSettings: LauncherSettings by settingsViewModel.launcherSettings.collectAsState()
+            val launcherPreferences: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
 
-            var theme: Int by remember {
-                mutableIntStateOf(launcherSettings.selectedThemeName)
+            var theme: Int by rememberSaveable {
+                mutableIntStateOf(launcherPreferences.launcherTheme)
             }
 
-            var dynamicColorEnabled: Boolean by remember {
-                mutableStateOf(launcherSettings.isDynamicColorEnabled)
+            var colorScheme: Int by rememberSaveable {
+                mutableIntStateOf(launcherPreferences.launcherColorScheme)
+            }
+
+            var dynamicColorEnabled: Boolean by rememberSaveable {
+                mutableStateOf(launcherPreferences.isDynamicColorEnabled)
+            }
+
+            LaunchedEffect(launcherPreferences) {
+                theme = launcherPreferences.launcherTheme
+                colorScheme = launcherPreferences.launcherColorScheme
+                dynamicColorEnabled = launcherPreferences.isDynamicColorEnabled
             }
 
             JamlTheme(
-                colorScheme = themesByName[theme] ?: JamlColorScheme.Default,
-                isInDarkMode = isSystemInDarkTheme(),
+                colorScheme = colorSchemeByName[colorScheme] ?: JamlColorScheme.Default,
+                isInDarkMode = when (launcherThemeByName[theme]) {
+                    LauncherTheme.Light -> false
+                    LauncherTheme.Dark -> true
+                    else -> isSystemInDarkTheme()
+                },
                 isDynamicColorsEnabled = dynamicColorEnabled
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,
-                    launcherSettings = launcherSettings,
-                    openApplication = this::openApplication,
-                    openApplicationInfo = this::openApplicationInfo,
-                    isDefaultHome = this::isDefault,
-                    requestDefaultHome = this::requestDefaultHome,
-                    setWallpaper = this::setWallpaper,
+                    launcherSettings = launcherPreferences,
+                    launcherActions = this,
+                    settingsActions = this,
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
-                        theme = it.selectedThemeName
-                        dynamicColorEnabled = it.isDynamicColorEnabled
-                    },
-                    enableNotificationAccess = this::enableNotificationAccess
+                    }
                 )
             }
         }
@@ -119,7 +133,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         unregisterReceiver(packageReceiver)
     }
 
-    private fun setWallpaper() {
+    override fun setWallpaper() {
         Intent().apply {
             action = SET_WALLPAPER_ACTION
         }.also {
@@ -127,7 +141,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun enableNotificationAccess() {
+    override fun enableNotificationAccess() {
         Intent().apply {
             action = ENABLE_NOTIFICATION_ACTION
         }.also {
@@ -135,9 +149,9 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun requestDefaultHome() {
+    override fun setAsDefaultHome() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (!isDefault()) {
+            if (!isDefaultHome()) {
                 val componentName =
                     ComponentName(this, MainActivity::class.java)
                 packageManager.setComponentEnabledSetting(
@@ -164,12 +178,13 @@ class MainActivity : androidx.activity.ComponentActivity() {
                 )
             ) {
                 val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                intent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                 startForResult.launch(intent)
             }
         }
     }
 
-    private fun isDefault(): Boolean {
+    override fun isDefaultHome(): Boolean {
         val localPackageManager = packageManager
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
@@ -189,7 +204,7 @@ class MainActivity : androidx.activity.ComponentActivity() {
 
     }
 
-    private fun openApplication(packageInfo: PackageInfo) {
+    override fun openApplication(packageInfo: PackageInfo) {
         packageManager?.getLaunchIntentForPackage(packageInfo.packageName)?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
@@ -197,12 +212,30 @@ class MainActivity : androidx.activity.ComponentActivity() {
         }
     }
 
-    private fun openApplicationInfo(packageInfo: PackageInfo) {
+    override fun openApplicationInfo(packageInfo: PackageInfo) {
         Intent().apply {
             action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
             data = Uri.fromParts("package", packageInfo.packageName, null)
         }.also {
             startActivity(it)
+        }
+    }
+
+    override fun performWebSearch(query: String) {
+        Intent().apply {
+            action = Intent.ACTION_WEB_SEARCH
+            putExtra(SearchManager.QUERY, query)
+        }.also { intent ->
+            startActivity(intent)
+        }
+    }
+
+    override fun openWebPage(url: Uri) {
+        Intent().apply {
+            action = Intent.ACTION_VIEW
+            data = url
+        }.also { intent ->
+            startActivity(intent)
         }
     }
 }

@@ -3,6 +3,8 @@ package io.github.fvrodas.jaml.ui.launcher.viewmodels
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.BuildConfig
@@ -13,9 +15,13 @@ import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseC
 import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
+import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState.Companion.MAX_PINNED_APPS
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -34,7 +40,13 @@ class HomeViewModel(
     private var _shortcutList: MutableStateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         MutableStateFlow(null)
 
-    val applicationsState: StateFlow<ApplicationSheetState> = _applicationsState
+    val applicationsState: StateFlow<ApplicationSheetState> = _applicationsState.onStart {
+        retrieveApplicationsList()
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        ApplicationSheetState()
+    )
     val shortcutsListState: StateFlow<Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?> =
         _shortcutList
 
@@ -45,12 +57,12 @@ class HomeViewModel(
                     .filter { it.packageName != BuildConfig.APPLICATION_ID }
                 applicationsListCache = result.toSet()
 
-                sharedPreferences.getString(LauncherSettings.PINNED_APPS, null)?.let {
+                sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
                     pinnedApplications.clear()
                     val packageNames: List<String> = Json.decodeFromString(it)
                     pinnedApplications.addAll(
                         packageNames.mapNotNull { p ->
-                            applicationsListCache.firstOrNull { p == it.packageName }
+                            applicationsListCache.firstOrNull { e -> p == e.packageName }
                         }.toList()
                     )
                 }
@@ -71,11 +83,18 @@ class HomeViewModel(
                 _applicationsState.value = _applicationsState.value.copy(
                     pinnedApplications = if (query.isEmpty()) pinnedApplications.toSet() else setOf(),
                     applicationsList = applicationsListCache.filter { c ->
-                        pinnedApplications.none { c.packageName == it.packageName } &&
-                                c.label.simplify().contains(
-                                    query,
-                                    true
-                                )
+                        if (query.isNotEmpty()) {
+                            c.label.simplify().contains(
+                                query,
+                                true
+                            )
+                        } else {
+                            pinnedApplications.none { c.packageName == it.packageName } &&
+                                    c.label.simplify().contains(
+                                        query,
+                                        true
+                                    )
+                        }
                     }.toSet()
                 )
             } catch (_: Exception) {
@@ -87,7 +106,7 @@ class HomeViewModel(
     fun toggleAppPinning(packageInfo: PackageInfo) {
         viewModelScope.launch {
             if (pinnedApplications.find { it.packageName == packageInfo.packageName } == null) {
-                if (pinnedApplications.size >= 5) return@launch
+                if (pinnedApplications.size >= MAX_PINNED_APPS) return@launch
 
                 pinnedApplications.add(packageInfo)
             } else {
@@ -95,7 +114,7 @@ class HomeViewModel(
             }
             sharedPreferences.edit().apply {
                 putString(
-                    LauncherSettings.PINNED_APPS,
+                    LauncherPreferences.PINNED_APPS,
                     Json.encodeToString(pinnedApplications.map { it.packageName })
                 )
                 commit()
@@ -104,24 +123,30 @@ class HomeViewModel(
         }
     }
 
-    fun markNotification(packageName: String?, hasNotification: Boolean) {
+    fun markNotification(packageName: String?, hasNotification: Boolean, notificationTitle: String?) {
         viewModelScope.launch {
             try {
                 packageName?.let {
                     _applicationsState.value = _applicationsState.value.copy(
                         pinnedApplications = _applicationsState.value.pinnedApplications.updateAppEntry(
                             packageName,
-                            hasNotification
+                            hasNotification,
+                            notificationTitle
                         ),
                         applicationsList = _applicationsState.value.applicationsList.updateAppEntry(
                             packageName,
-                            hasNotification
+                            hasNotification,
+                            notificationTitle
                         )
                     )
-                    applicationsListCache.find { packageName == it.packageName }?.hasNotification =
-                        hasNotification
-                    pinnedApplications.find { packageName == it.packageName }?.hasNotification =
-                        hasNotification
+                    applicationsListCache.find { packageName == it.packageName }?.let {
+                        it.hasNotification = hasNotification
+                        it.notificationTitle = notificationTitle
+                    }
+                    pinnedApplications.find { packageName == it.packageName }?.let {
+                        it.hasNotification = hasNotification
+                        it.notificationTitle = notificationTitle
+                    }
                 }
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
@@ -155,5 +180,19 @@ data class ApplicationSheetState(
     val pinnedApplications: Set<PackageInfo> = setOf(),
     val applicationsList: Set<PackageInfo> = setOf()
 ) {
-    val canPinApps: Boolean get() = pinnedApplications.size < 5
+    val canPinApps: Boolean get() = pinnedApplications.size < MAX_PINNED_APPS
+
+    companion object {
+        const val MAX_PINNED_APPS = 5
+
+        val Saver: Saver<ApplicationSheetState, Any> = listSaver(
+            save = { listOf(it.pinnedApplications.toList(), it.applicationsList.toList()) },
+            restore = {
+                ApplicationSheetState(
+                    pinnedApplications = it[0].toSet(),
+                    applicationsList = it[1].toSet()
+                )
+            }
+        )
+    }
 }

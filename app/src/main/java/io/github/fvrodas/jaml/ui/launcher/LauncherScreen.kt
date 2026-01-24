@@ -29,12 +29,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
 import io.github.fvrodas.jaml.ui.launcher.views.HomeScreen
@@ -52,10 +54,13 @@ fun LauncherScreen(
     pinToTop: (PackageInfo) -> Unit = {},
     openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     openLauncherSettings: () -> Unit = {},
-    openApplicationInfo: (PackageInfo) -> Unit = {},
-    openApplication: (PackageInfo) -> Unit = {}
+    launcherActions: LauncherActions
 ) {
     val shortcutsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var sheetState by rememberSaveable(stateSaver = ApplicationSheetState.Saver) {
+        mutableStateOf(applicationSheetState)
+    }
 
     var shouldDisplayShortcutsList by remember {
         mutableStateOf(false)
@@ -71,6 +76,10 @@ fun LauncherScreen(
 
     LaunchedEffect(Unit) {
         shortcutsBottomSheetState.hide()
+    }
+
+    LaunchedEffect(applicationSheetState) {
+        sheetState = applicationSheetState
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
@@ -106,7 +115,7 @@ fun LauncherScreen(
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
-                                applicationSheetState,
+                                sheetState,
                                 shouldHideApplicationIcons,
                                 this@SharedTransitionLayout,
                                 this@AnimatedContent,
@@ -118,15 +127,16 @@ fun LauncherScreen(
                                     shortcutListPinningMode = pinningMode
                                 },
                                 openLauncherSettings,
-                                onApplicationPressed = openApplication,
-                                onApplicationLongPressed = retrieveShortcuts
+                                onApplicationPressed = launcherActions::openApplication,
+                                onApplicationLongPressed = retrieveShortcuts,
+                                performWebSearch = launcherActions::performWebSearch
                             ) { searchApplications(it) }
                         }
                     } else {
                         HomeScreen(
                             this@SharedTransitionLayout,
                             this@AnimatedContent,
-                            applicationSheetState,
+                            sheetState,
                             shouldHideApplicationIcons,
                             toggleListVisibility = {
                                 shouldDisplayAppList = !shouldDisplayAppList
@@ -135,7 +145,7 @@ fun LauncherScreen(
                                 shouldDisplayShortcutsList = shouldShow
                                 shortcutListPinningMode = pinningMode
                             },
-                            onApplicationPressed = openApplication,
+                            onApplicationPressed = launcherActions::openApplication,
                             onApplicationLongPressed = retrieveShortcuts
                         ) {
                             shouldDisplayAppList = it
@@ -143,13 +153,21 @@ fun LauncherScreen(
                     }
                 },
                 transitionSpec = {
-                    (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                    (fadeIn(
+                        animationSpec = tween(
+                            ANIMATION_DURATION,
+                            delayMillis = DELAY_DURATION
+                        )
+                    ) +
                             slideInVertically(
                                 initialOffsetY = { it / 2 },
-                                animationSpec = tween(220, delayMillis = 90)
+                                animationSpec = tween(
+                                    ANIMATION_DURATION,
+                                    delayMillis = DELAY_DURATION
+                                )
                             ))
                         .togetherWith(
-                            fadeOut(animationSpec = tween(90))
+                            fadeOut(animationSpec = tween(DELAY_DURATION))
                         )
                 }
             )
@@ -166,7 +184,7 @@ fun LauncherScreen(
                 ShortcutsList(
                     listOfShortcuts,
                     shouldHideApplicationIcons,
-                    applicationSheetState.canPinApps,
+                    sheetState.canPinApps,
                     shortcutListPinningMode,
                     changeShortcutsVisibility = {
                         shouldDisplayShortcutsList = false
@@ -179,7 +197,7 @@ fun LauncherScreen(
                         shouldDisplayShortcutsList = false
                         pinToTop(it)
                     },
-                    onApplicationInfoPressed = openApplicationInfo
+                    onApplicationInfoPressed = launcherActions::openApplicationInfo
                 )
             }
         }
@@ -189,3 +207,6 @@ fun LauncherScreen(
         }
     }
 }
+
+internal const val ANIMATION_DURATION = 220
+internal const val DELAY_DURATION = 90

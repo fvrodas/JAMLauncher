@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEvents
 
@@ -13,14 +15,25 @@ class JAMLNotificationService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-        getActiveNotifications()
+        activeNotifications
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        val counter = activeNotifications.count { it.packageName == sbn?.packageName }
+
+        val notificationText = sbn?.notification?.extras?.getString("android.title")?.let {
+            "($counter) $it"
+        } ?: sbn?.notification?.extras?.getCharSequence(
+            "android.text"
+        )?.let {
+            "($counter) $it"
+        } ?: this.getString(R.string.notification_default_title)
+
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
-                hasNotification = true
+                hasNotification = true,
+                notificationTitle = notificationText
             )
         )
         super.onNotificationPosted(sbn)
@@ -30,7 +43,8 @@ class JAMLNotificationService : NotificationListenerService() {
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
-                hasNotification = false
+                hasNotification = false,
+                notificationTitle = null
             )
         )
         super.onNotificationRemoved(sbn)
@@ -38,7 +52,7 @@ class JAMLNotificationService : NotificationListenerService() {
 
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
-        tryReEnableNotificationListener(this)
+        //tryReEnableNotificationListener(this)
     }
 
     companion object {
@@ -47,6 +61,7 @@ class JAMLNotificationService : NotificationListenerService() {
                 .contains(context.packageName)
         }
 
+        @Deprecated("Modern Android versions may not need this method")
         fun tryReEnableNotificationListener(context: Context) {
 
             try {
@@ -69,8 +84,8 @@ class JAMLNotificationService : NotificationListenerService() {
                         PackageManager.DONT_KILL_APP,
                     )
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: PackageManager.NameNotFoundException) {
+                Log.e(this::class.java.name, e.message ?: e.toString())
             }
         }
     }

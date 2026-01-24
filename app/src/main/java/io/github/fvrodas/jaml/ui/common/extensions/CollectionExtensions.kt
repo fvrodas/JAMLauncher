@@ -4,10 +4,11 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 
 fun Set<PackageInfo>.updateAppEntry(
     packageName: String,
-    hasNotification: Boolean
+    hasNotification: Boolean,
+    notificationTitle: String?
 ): Set<PackageInfo> = this.map {
     if (packageName == it.packageName) {
-        it.copy(hasNotification = hasNotification)
+        it.copy(hasNotification = hasNotification, notificationTitle = notificationTitle)
     } else {
         it
     }

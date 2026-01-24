@@ -1,13 +1,18 @@
 package io.github.fvrodas.jaml.ui.launcher.views
 
+import android.annotation.SuppressLint
 import android.os.Build
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,11 +26,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,13 +48,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
+import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
@@ -70,15 +77,14 @@ fun ApplicationsSheet(
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
     onApplicationLongPressed: (PackageInfo) -> Unit,
+    performWebSearch: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
 ) {
-
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
 
-    var startOffset: Offset = Offset.Zero
     var trackedDragAmount = 0f
 
     LaunchedEffect(Unit) {
@@ -95,141 +101,201 @@ fun ApplicationsSheet(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     with(sharedTransitionScope) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.background,
-                )
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragStart = {
-                            startOffset = it
-                        },
-                        onDragEnd = {
-                            if (trackedDragAmount > 0) {
-                                toggleListVisibility()
-                            }
-                        }
-                    ) { change, dragAmount ->
-                        trackedDragAmount = dragAmount
-                    }
-                }
-                .navigationBarsPadding()
-                .statusBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(dimen8dp)
-        ) {
-            Row(
+        Box {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = dimen16dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .sharedElement(
-                            rememberSharedContentState("arrow"),
-                            animatedVisibilityScope = animatedVisibilityScope
-                        )
-                        .padding(dimen4dp)
-                        .size(dimen48dp),
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            OutlinedTextField(
-                value = searchFieldValue,
-                textStyle = MaterialTheme.typography.titleLarge,
-                maxLines = 1,
-                onValueChange = {
-                    searchFieldValue = it
-                    onSearchApplication.invoke(searchFieldValue)
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Search,
-                        contentDescription = "Search"
+                    .fillMaxSize()
+                    .background(
+                        MaterialTheme.colorScheme.background,
                     )
-                },
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Clear,
-                        contentDescription = "",
-                        modifier = Modifier.clickable {
-                            searchFieldValue = ""
-                            onSearchApplication.invoke(searchFieldValue)
-                            keyboardController?.hide()
-                        }
-                    )
-                },
-                shape = RoundedCornerShape(dimen16dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = dimen16dp)
-                    .padding(
-                        horizontal = dimen16dp
-                    ),
-            )
-            LazyColumn(
-                state = lazyListState
-            ) {
-                items(state.applicationsList.size) {
-                    val item = state.applicationsList.elementAt(it)
-                    ApplicationItem(
-                        label = item.label,
-                        searchText = searchFieldValue,
-                        iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
-                        hasNotification = item.hasNotification,
-                        onApplicationLongPressed = { isFavorite ->
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                coroutineScope.launch {
-                                    onApplicationLongPressed.invoke(item)
-                                    changeShortcutVisibility(true, !isFavorite)
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures(
+                            onDragStart = {},
+                            onDragEnd = {
+                                if (trackedDragAmount > 0) {
+                                    toggleListVisibility()
                                 }
                             }
-                        },
-                        onApplicationPressed = {
-                            coroutineScope.launch {
-                                onApplicationPressed.invoke(item)
-                                toggleListVisibility()
-                            }
+                        ) { _, dragAmount ->
+                            trackedDragAmount = dragAmount
                         }
+                    },
+                verticalArrangement = Arrangement.spacedBy(dimen8dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .sharedElement(
+                                rememberSharedContentState("arrow"),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                            .padding(dimen4dp)
+                            .size(dimen48dp),
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimen16dp),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-
-                        if (shouldHideApplicationIcons) {
-                            TextButton(onClick = { onSettingsPressed.invoke() }) {
-                                Text(
-                                    stringResource(R.string.settings_button),
-                                    textDecoration = TextDecoration.Underline
-                                )
+                OutlinedTextField(
+                    value = searchFieldValue,
+                    textStyle = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    onValueChange = {
+                        searchFieldValue = it
+                        onSearchApplication.invoke(searchFieldValue)
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Clear,
+                            contentDescription = "",
+                            modifier = Modifier.clickable {
+                                searchFieldValue = ""
+                                onSearchApplication.invoke(searchFieldValue)
+                                keyboardController?.hide()
                             }
-                        } else {
-                            IconButton(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.background),
-                                onClick = { onSettingsPressed.invoke() }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Settings,
-                                    contentDescription = stringResource(R.string.settings_button),
+                        )
+                    },
+                    shape = RoundedCornerShape(dimen16dp),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxWidth()
+                        .padding(bottom = dimen8dp)
+                        .padding(
+                            horizontal = dimen16dp
+                        ),
+                )
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.padding(horizontal = dimen8dp),
+                    verticalArrangement = Arrangement.spacedBy(dimen8dp)
+                ) {
+                    items(state.applicationsList.size) {
+                        val item = state.applicationsList.elementAt(it)
+                        ApplicationItem(
+                            label = item.label,
+                            notificationText = item.notificationTitle,
+                            searchText = searchFieldValue,
+                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                            hasNotification = item.hasNotification,
+                            onApplicationLongPressed = { isFavorite ->
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                    coroutineScope.launch {
+                                        onApplicationLongPressed.invoke(item)
+                                        changeShortcutVisibility(true, !isFavorite)
+                                    }
+                                }
+                            },
+                            onApplicationPressed = {
+                                coroutineScope.launch {
+                                    onApplicationPressed.invoke(item)
+                                    toggleListVisibility()
+                                }
+                            }
+                        )
+                    }
+                    if (searchFieldValue.isNotEmpty()) {
+                        item {
+                            ApplicationItem(
+                                label = "\"$searchFieldValue\" on the web...",
+                                searchText = searchFieldValue,
+                                iconBitmap = null,
+                                iconVector = Icons.Default.Search,
+                                hasNotification = false,
+                                onApplicationLongPressed = null,
+                                onApplicationPressed = {
+                                    performWebSearch(searchFieldValue)
+                                    coroutineScope.launch {
+                                        toggleListVisibility()
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = dimen16dp)
+                                .padding(bottom = dimen8dp)
+                                .navigationBarsPadding(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+
+                            if (shouldHideApplicationIcons) {
+                                TextButton(onClick = { onSettingsPressed.invoke() }) {
+                                    Text(
+                                        stringResource(R.string.settings_button),
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                }
+                            } else {
+                                IconButton(
                                     modifier = Modifier
-                                        .size(dimen24dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.background),
+                                    onClick = { onSettingsPressed.invoke() }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Settings,
+                                        contentDescription = stringResource(R.string.settings_button),
+                                        modifier = Modifier
+                                            .size(dimen24dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ApplicationsSheetPreview() {
+    JamlTheme(
+        colorScheme = JamlColorScheme.Default,
+        isInDarkMode = isSystemInDarkTheme(),
+        isDynamicColorsEnabled = false
+    ) {
+        SharedTransitionLayout {
+            AnimatedContent(targetState = true, label = "ApplicationsSheet") {
+                ApplicationsSheet(
+                    state = ApplicationSheetState(
+                        applicationsList = setOf(
+                            PackageInfo(packageName = "com.android.settings", label = "Settings"),
+                            PackageInfo(packageName = "com.android.vending", label = "Play Store"),
+                            PackageInfo(
+                                packageName = "com.google.android.apps.maps",
+                                label = "Maps"
+                            ),
+                        )
+                    ),
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    toggleListVisibility = {},
+                    changeShortcutVisibility = { _, _ -> },
+                    onSettingsPressed = {},
+                    onApplicationPressed = {},
+                    onApplicationLongPressed = {},
+                    performWebSearch = {},
+                    onSearchApplication = {}
+                )
             }
         }
     }

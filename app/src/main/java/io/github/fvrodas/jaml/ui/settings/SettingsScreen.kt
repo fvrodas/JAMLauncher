@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,11 +33,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
+import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
+import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
+import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
+import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
-import io.github.fvrodas.jaml.ui.common.themes.themesByName
-import io.github.fvrodas.jaml.ui.settings.viewmodels.LauncherSettings
+import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.views.SettingItem
 import io.github.fvrodas.jaml.ui.settings.views.SettingOptionsDialog
 import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
@@ -44,47 +51,59 @@ import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    launcherSettings: LauncherSettings,
-    isDefaultHome: () -> Boolean = { false },
-    setAsDefaultHome: () -> Unit = {},
-    setWallpaper: () -> Unit = {},
-    enableNotificationAccess: () -> Unit = {},
-    saveSettings: (LauncherSettings) -> Unit,
+    launcherPreferences: LauncherPreferences,
+    settingsActions: SettingsActions,
+    saveSettings: (LauncherPreferences) -> Unit,
     onBackPressed: () -> Unit = {}
 ) {
+    val projectUrl = stringResource(id = R.string.about_github_url)
+
+    var selectedLauncherTheme: Int by remember {
+        mutableIntStateOf(launcherPreferences.launcherTheme)
+    }
 
     var isDynamicColorEnabled: Boolean by remember {
-        mutableStateOf(launcherSettings.isDynamicColorEnabled)
+        mutableStateOf(launcherPreferences.isDynamicColorEnabled)
     }
-    var selectedThemeName: Int by remember {
-        mutableIntStateOf(launcherSettings.selectedThemeName)
+    var selectedColorScheme: Int by remember {
+        mutableIntStateOf(launcherPreferences.launcherColorScheme)
     }
 
     var shouldHideApplicationIcons: Boolean by remember {
-        mutableStateOf(launcherSettings.shouldHideApplicationIcons)
+        mutableStateOf(launcherPreferences.shouldHideApplicationIcons)
     }
 
-    var showDisplayDialog by remember {
+    var showThemeSelection by remember {
+        mutableStateOf(false)
+    }
+
+    var showColorSchemeSelection by remember {
         mutableStateOf(false)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            saveSettings(LauncherSettings(
-                isDynamicColorEnabled,
-                selectedThemeName,
-                shouldHideApplicationIcons
-            ))
+            saveSettings(
+                LauncherPreferences(
+                    selectedLauncherTheme,
+                    isDynamicColorEnabled,
+                    selectedColorScheme,
+                    shouldHideApplicationIcons
+                )
+            )
         }
     }
 
-    LaunchedEffect(isDynamicColorEnabled, selectedThemeName) {
-        if (launcherSettings.isDynamicColorEnabled != isDynamicColorEnabled ||
-            launcherSettings.selectedThemeName != selectedThemeName) {
+    LaunchedEffect(isDynamicColorEnabled, selectedColorScheme, selectedLauncherTheme) {
+        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
+            launcherPreferences.launcherColorScheme != selectedColorScheme ||
+            launcherPreferences.launcherTheme != selectedLauncherTheme
+        ) {
             saveSettings(
-                LauncherSettings(
+                LauncherPreferences(
+                    selectedLauncherTheme,
                     isDynamicColorEnabled,
-                    selectedThemeName,
+                    selectedColorScheme,
                     shouldHideApplicationIcons
                 )
             )
@@ -92,8 +111,9 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.settings_activity)
@@ -108,12 +128,12 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    scrolledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    subtitleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                    subtitleContentColor = MaterialTheme.colorScheme.primary,
                 )
             )
         }
@@ -134,19 +154,19 @@ fun SettingsScreen(
                     )
                 )
             }
-            if (!isDefaultHome()) {
+            if (!settingsActions.isDefaultHome()) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_default_launcher),
                     description = stringResource(id = R.string.summary_default_launcher)
                 ) {
-                    setAsDefaultHome()
+                    settingsActions.setAsDefaultHome()
                 }
             }
             SettingItem(
                 title = stringResource(id = R.string.menu_notification_access),
                 description = stringResource(id = R.string.summary_notification_access)
             ) {
-                enableNotificationAccess()
+                settingsActions.enableNotificationAccess()
             }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {
@@ -161,9 +181,17 @@ fun SettingsScreen(
                 title = stringResource(id = R.string.menu_wallpaper),
                 description = stringResource(id = R.string.summary_wallpaper)
             ) {
-                setWallpaper()
+                settingsActions.setWallpaper()
             }
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+            SettingItem(
+                title = stringResource(id = R.string.menu_theme),
+                description = stringResource(selectedLauncherTheme)
+            ) {
+                showThemeSelection = true
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 SettingSwitch(
                     title = stringResource(id = R.string.menu_dynamic_colors),
                     description = stringResource(id = R.string.summary_dynamic_colors),
@@ -174,10 +202,10 @@ fun SettingsScreen(
             }
             AnimatedVisibility(visible = !isDynamicColorEnabled) {
                 SettingItem(
-                    title = stringResource(id = R.string.menu_theme),
-                    description = stringResource(selectedThemeName)
+                    title = stringResource(id = R.string.menu_color_scheme),
+                    description = stringResource(selectedColorScheme)
                 ) {
-                    showDisplayDialog = true
+                    showColorSchemeSelection = true
                 }
             }
             SettingSwitch(
@@ -197,10 +225,11 @@ fun SettingsScreen(
                 )
             }
             SettingItem(
-                title = stringResource(id = R.string.menu_about),
-                description = stringResource(id = R.string.about_github_url)
+                title = stringResource(id = R.string.about_neutral),
+                description = projectUrl
             ) {
-
+                settingsActions.openWebPage(projectUrl.toUri())
+                onBackPressed()
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -214,14 +243,54 @@ fun SettingsScreen(
                 )
             }
             SettingOptionsDialog(
-                showIf = showDisplayDialog,
+                showIf = showThemeSelection,
                 title = stringResource(id = R.string.menu_theme),
-                options = themesByName.entries.toList().map { item -> item.key },
-                defaultValue = selectedThemeName,
-                onDismiss = { showDisplayDialog = false },
+                options = launcherThemeByName.entries.toList().map { item -> item.key },
+                defaultValue = selectedLauncherTheme,
+                onDismiss = { showThemeSelection = false },
             ) { selected ->
-                selectedThemeName = selected
+                selectedLauncherTheme = selected
+            }
+            SettingOptionsDialog(
+                showIf = showColorSchemeSelection,
+                title = stringResource(id = R.string.menu_color_scheme),
+                options = colorSchemeByName.entries.toList().map { item -> item.key },
+                defaultValue = selectedColorScheme,
+                onDismiss = { showColorSchemeSelection = false },
+            ) { selected ->
+                selectedColorScheme = selected
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenPreview() {
+    JamlTheme(
+        colorScheme = JamlColorScheme.Default,
+        isInDarkMode = false,
+        isDynamicColorsEnabled = false
+    ) {
+        SettingsScreen(
+            launcherPreferences = LauncherPreferences(),
+            settingsActions = object : SettingsActions {
+                override fun isDefaultHome(): Boolean = false
+                override fun setAsDefaultHome() {
+                    /** No - Op **/
+                }
+                override fun setWallpaper() {
+                    /** No - Op **/
+                }
+                override fun enableNotificationAccess() {
+                    /** No - Op **/
+                }
+                override fun openWebPage(url: android.net.Uri) {
+                    /** No - Op **/
+                }
+            },
+            saveSettings = {},
+            onBackPressed = {}
+        )
     }
 }

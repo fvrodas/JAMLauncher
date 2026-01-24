@@ -8,13 +8,16 @@ import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
 import android.os.Build
+import android.util.Log
 import android.util.LruCache
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
-    private val iconCache: LruCache<String, Bitmap> = LruCache(1024 * 1024 * 80)
+    private const val MAX_CACHE_SIZE = 83886080
+    private const val INSET = 0.16f
+    private val iconCache: LruCache<String, Bitmap> = LruCache(MAX_CACHE_SIZE)
 
     fun loadIcon(packageName: String, drawable: Drawable): Bitmap {
         if (iconCache[packageName] != null) {
@@ -25,7 +28,7 @@ object BitmapUtils {
                     iconCache.put(packageName, drawable.toBitmap())
                     drawable.toBitmap()
                 } else {
-                    val scaled = InsetDrawable(drawable, 0.24f)
+                    val scaled = InsetDrawable(drawable, INSET)
                     scaled.bounds = drawable.bounds
                     AdaptiveIconDrawable(Color.WHITE.toDrawable(), scaled).toBitmap()
                 }
@@ -47,7 +50,7 @@ object BitmapUtils {
                     iconCache.put(shortcutInfo.`package` + shortcutInfo.id, it)
                 }
         } catch (e: SecurityException) {
-            e.printStackTrace()
+            Log.e(this::class.java.name, e.message ?: e.toString())
             null
         }
     }

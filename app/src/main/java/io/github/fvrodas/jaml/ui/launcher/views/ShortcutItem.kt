@@ -1,8 +1,6 @@
 package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.graphics.Bitmap
-import android.graphics.drawable.Icon
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,21 +20,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
@@ -56,7 +50,6 @@ fun ShortcutItem(
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(dimen16dp))
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(
                 onClick = { onApplicationPressed.invoke() },

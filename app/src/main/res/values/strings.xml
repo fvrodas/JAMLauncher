@@ -2,29 +2,36 @@
     <string name="app_name" translatable="false">Just Another Minimal Launcher</string>
     <string name="settings_activity">Launcher Settings</string>
     <string name="menu_wallpaper">Wallpaper</string>
-    <string name="menu_notification_access">Notification Dots</string>
+    <string name="menu_notification_access">Notification Highlights</string>
     <string name="summary_wallpaper">Set wallpaper</string>
     <string name="summary_notification_access">Enable notification access</string>
     <string name="menu_about">About</string>
     <string name="about_neutral">View on Github</string>
     <string name="about_github_url" translatable="false">https://github.com/fvrodas/JAMLauncher</string>
     <string name="apps_sv_hint">What are you looking for?</string>
-    <string name="app_version_name">Version 1.0.0</string>
+    <string name="app_version_name">Version 1.0.0-beta2</string>
     <string name="service_name">Show notification dots</string>
     <string name="summary_dynamic_colors">Enable Material Design 3 Dynamic Colors on Android 12 and above</string>
     <string name="menu_dynamic_colors">Dynamic Colors</string>
-    <string name="summary_theme">Select your Launcher Theme</string>
-    <string name="menu_theme">Themes</string>
+    <string name="summary_theme">Select your Color Scheme</string>
+    <string name="menu_color_scheme">Color Scheme</string>
+    <string name="menu_theme">Theme</string>
     <string name="menu_appearance">Appearance</string>
     <string name="menu_other_settings">General</string>
     <string name="summary_default_launcher">Select this launcher as your default launcher</string>
     <string name="menu_default_launcher">Set as Default Launcher</string>
-    <string name="theme_default">Default</string>
-    <string name="theme_gruvbox">Gruvbox</string>
+    <string name="colorscheme_default">Default</string>
+    <string name="colorscheme_gruvbox">Gruvbox</string>
     <string name="summary_hide_app_icons">Hide application icons for a more minimalist style</string>
     <string name="menu_hide_app_icons">Hide application icons</string>
     <string name="label_favorites">Favorites</string>
-    <string name="shortcut_pin">Pin to Home Screen</string>
-    <string name="shortcut_unpin">Unpin</string>
+    <string name="shortcut_pin">Move to Home Screen</string>
+    <string name="shortcut_unpin">Move to Drawer</string>
     <string name="settings_button">Go to Launcher Settings</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">Follow System</string>
+    <string name="shortcut_app_info">App Info</string>
+    <string name="notification_default_title">You have notifications</string>
+
 </resources>

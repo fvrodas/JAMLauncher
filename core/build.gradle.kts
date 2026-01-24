@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -35,8 +36,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization)
 
-//    testImplementation "org.mockito:mockito-core:3.11.1"
     testImplementation(libs.test.junit)
+    testImplementation(libs.test.mockito.core)
     androidTestImplementation(libs.test.androidx.junit)
     androidTestImplementation(libs.test.androidx.espresso)
 }

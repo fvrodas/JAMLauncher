@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,10 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
@@ -48,7 +50,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
+import io.github.fvrodas.jaml.ui.launcher.views.extensions.applyIf
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
 
 
@@ -56,6 +58,7 @@ import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
 @Composable
 fun ApplicationItem(
     label: String,
+    notificationText: String? = null,
     searchText: String? = null,
     iconBitmap: Bitmap? = null,
     iconVector: ImageVector? = null,
@@ -69,14 +72,34 @@ fun ApplicationItem(
         mutableStateOf(hasNotification)
     }
 
-    LaunchedEffect(hasNotification) {
+    var notificationTextState by remember {
+        mutableStateOf(notificationText)
+    }
+
+    LaunchedEffect(hasNotification, notificationText) {
         hasNotificationState = hasNotification
+        notificationTextState = notificationText
+    }
+
+    val gradient = if (isFavorite) {
+        GRADIENT
+    } else {
+        Brush.linearGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.0f)
+            )
+        )
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(dimen64dp)
+            .clip(RoundedCornerShape(dimen16dp))
+            .applyIf(hasNotificationState) {
+                background(gradient)
+            }
             .combinedClickable(
                 onLongClick = { onApplicationLongPressed?.invoke(isFavorite) },
                 onClick = { onApplicationPressed.invoke() },
@@ -97,15 +120,6 @@ fun ApplicationItem(
                             .size(dimen48dp)
                             .shadow(dimen2dp, shape = RoundedCornerShape(dimen24dp)),
                     )
-                    if (hasNotificationState) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary)
-                                .size(dimen8dp)
-                        )
-                    }
                 }
             }
             iconVector?.let {
@@ -119,26 +133,60 @@ fun ApplicationItem(
             }
         }
         Spacer(modifier = Modifier.width(dimen16dp))
-        Text(
-            text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = if (hasNotificationState) {
-                    MaterialTheme.colorScheme.primary
-                } else if (isFavorite) {
-                    Color.White
-                } else {
-                    MaterialTheme.colorScheme.onBackground
-                },
-                shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
+        Column {
+            Text(
+                text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = if (hasNotificationState) {
+                        MaterialTheme.colorScheme.primary
+                    } else if (isFavorite) {
+                        Color.White
+                    } else {
+                        MaterialTheme.colorScheme.onBackground
+                    },
+                    shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
+                )
             )
-        )
+            if (isFavorite && hasNotificationState && !notificationTextState.isNullOrEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (iconBitmap != null || iconVector != null) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
+                            modifier = Modifier
+                                .size(dimen16dp),
+                        )
+                    }
+                    Text(
+                        text = notificationTextState ?: "",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
+                        )
+                    )
+                }
+            }
+        }
     }
 }
 
+internal const val DEFAULT_ALPHA = 0.9f
+
 internal val FAVORITE_DROP_SHADOW: Shadow = Shadow(
-    Color.Black,
+    Color.Black.copy(.9f),
     Offset(2f, 3f),
     3f
+)
+
+internal val GRADIENT = Brush.linearGradient(
+    colors = listOf(
+        Color.Black.copy(alpha = 0.7f),
+        Color.Black.copy(alpha = 0.1f)
+    )
 )
 
 @Preview(showBackground = true)
@@ -151,8 +199,10 @@ fun ApplicationItemPreview() {
     ) {
         ApplicationItem(
             label = "Application",
-            iconVector = Icons.Rounded.Settings,
-            hasNotification = false
+            notificationText = "This is a notification",
+            iconVector = null,
+            isFavorite = true,
+            hasNotification = true
         ) { }
     }
 }
