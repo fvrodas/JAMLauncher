@@ -45,10 +45,9 @@ fun HomeNavigationGraph(
 
                 override fun onNotificationChanged(
                     packageName: String?,
-                    hasNotification: Boolean,
-                    notificationTitle: String?
+                    message: String?
                 ) {
-                    homeViewModel.markNotification(packageName, hasNotification, notificationTitle)
+                    homeViewModel.markNotification(packageName, message)
                 }
             }
 

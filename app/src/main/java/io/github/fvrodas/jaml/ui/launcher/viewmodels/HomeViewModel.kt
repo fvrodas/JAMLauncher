@@ -12,7 +12,6 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
-import io.github.fvrodas.jaml.ui.common.extensions.exclude
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
@@ -33,7 +32,6 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private var applicationsListCache: Set<PackageInfo> = emptySet()
-    private val pinnedApplications: ArrayList<PackageInfo> = arrayListOf()
 
     private var _applicationsState: MutableStateFlow<ApplicationSheetState> =
         MutableStateFlow(ApplicationSheetState())
@@ -58,18 +56,16 @@ class HomeViewModel(
                 applicationsListCache = result.toSet()
 
                 sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
-                    pinnedApplications.clear()
                     val packageNames: List<String> = Json.decodeFromString(it)
-                    pinnedApplications.addAll(
-                        packageNames.mapNotNull { p ->
-                            applicationsListCache.firstOrNull { e -> p == e.packageName }
-                        }.toList()
-                    )
+
+                    applicationsListCache.forEach { app ->
+                        if (packageNames.contains(app.packageName)) app.moveToHomeScreen()
+                    }
                 }
 
                 _applicationsState.value = ApplicationSheetState(
-                    pinnedApplications = pinnedApplications.toSet(),
-                    applicationsList = applicationsListCache.exclude(pinnedApplications)
+                    pinnedApplications = applicationsListCache.filter { it.movedToHome }.toSet(),
+                    applicationsList = applicationsListCache.filter { !it.movedToHome }.toSet()
                 )
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
@@ -81,7 +77,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 _applicationsState.value = _applicationsState.value.copy(
-                    pinnedApplications = if (query.isEmpty()) pinnedApplications.toSet() else setOf(),
+                    pinnedApplications = applicationsListCache.filter { it.movedToHome }.toSet(),
                     applicationsList = applicationsListCache.filter { c ->
                         if (query.isNotEmpty()) {
                             c.label.simplify().contains(
@@ -89,7 +85,8 @@ class HomeViewModel(
                                 true
                             )
                         } else {
-                            pinnedApplications.none { c.packageName == it.packageName } &&
+                            applicationsListCache.filter { it.movedToHome }
+                                .none { c.packageName == it.packageName } &&
                                     c.label.simplify().contains(
                                         query,
                                         true
@@ -105,13 +102,16 @@ class HomeViewModel(
 
     fun toggleAppPinning(packageInfo: PackageInfo) {
         viewModelScope.launch {
-            if (pinnedApplications.find { it.packageName == packageInfo.packageName } == null) {
-                if (pinnedApplications.size >= MAX_PINNED_APPS) return@launch
+            val targetApp = applicationsListCache.find { it.packageName == packageInfo.packageName }
 
-                pinnedApplications.add(packageInfo)
-            } else {
-                pinnedApplications.removeAll { it.packageName == packageInfo.packageName }
+            if (targetApp?.movedToHome == false && applicationsListCache.count { it.movedToHome } >= MAX_PINNED_APPS) return@launch
+            targetApp?.let {
+                if (it.movedToHome) it.moveToDrawer()
+                else it.moveToHomeScreen()
             }
+
+            val pinnedApplications = applicationsListCache.filter { it.movedToHome }.toSet()
+
             sharedPreferences.edit().apply {
                 putString(
                     LauncherPreferences.PINNED_APPS,
@@ -123,29 +123,25 @@ class HomeViewModel(
         }
     }
 
-    fun markNotification(packageName: String?, hasNotification: Boolean, notificationTitle: String?) {
+    fun markNotification(
+        packageName: String?,
+        message: String?
+    ) {
         viewModelScope.launch {
             try {
                 packageName?.let {
                     _applicationsState.value = _applicationsState.value.copy(
                         pinnedApplications = _applicationsState.value.pinnedApplications.updateAppEntry(
                             packageName,
-                            hasNotification,
-                            notificationTitle
+                            message
                         ),
                         applicationsList = _applicationsState.value.applicationsList.updateAppEntry(
                             packageName,
-                            hasNotification,
-                            notificationTitle
+                            message
                         )
                     )
                     applicationsListCache.find { packageName == it.packageName }?.let {
-                        it.hasNotification = hasNotification
-                        it.notificationTitle = notificationTitle
-                    }
-                    pinnedApplications.find { packageName == it.packageName }?.let {
-                        it.hasNotification = hasNotification
-                        it.notificationTitle = notificationTitle
+                        it.notificationTitle = message
                     }
                 }
             } catch (_: Exception) {

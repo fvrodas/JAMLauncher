@@ -32,8 +32,7 @@ class JAMLNotificationService : NotificationListenerService() {
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
-                hasNotification = true,
-                notificationTitle = notificationText
+                message = notificationText
             )
         )
         super.onNotificationPosted(sbn)
@@ -43,8 +42,7 @@ class JAMLNotificationService : NotificationListenerService() {
         LauncherEventBus.postEvent(
             LauncherEvents.OnNotificationChanged(
                 packageName = sbn?.packageName,
-                hasNotification = false,
-                notificationTitle = null
+                message = null
             )
         )
         super.onNotificationRemoved(sbn)
