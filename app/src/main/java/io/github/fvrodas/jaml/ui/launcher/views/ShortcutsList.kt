@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
@@ -45,27 +45,29 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ShortcutsList(
-    shortcutsList: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
+    shortcutsList: Pair<LauncherEntry, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
     shouldLetPinApps: Boolean = true,
     pinningMode: Boolean = true,
     changeShortcutsVisibility: (Boolean) -> Unit,
     startShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
-    pinAppToTop: (PackageInfo) -> Unit = {},
+    pinAppToTop: (LauncherEntry) -> Unit = {},
     onApplicationInfoPressed: (PackageInfo) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
-            .padding(horizontal = dimen32dp)
-            .padding(bottom = dimen32dp)
+            .padding(horizontal = dimen32dp, vertical = dimen32dp)
     ) {
         Row(
+            modifier = Modifier
+                .padding(bottom = dimen12dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!shouldHideApplicationIcons) {
-                shortcutsList?.first?.icon?.let {
+                shortcutsList?.first?.packageInfo?.icon?.let {
                     Image(
                         bitmap = it.asImageBitmap(),
                         contentScale = ContentScale.FillBounds,
@@ -79,7 +81,7 @@ fun ShortcutsList(
                 }
             }
             Text(
-                text = shortcutsList?.first?.label ?: "",
+                text = shortcutsList?.first?.packageInfo?.label ?: "",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -89,7 +91,6 @@ fun ShortcutsList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = dimen8dp)
                     .clip(RoundedCornerShape(dimen16dp))
                     .background(MaterialTheme.colorScheme.surfaceContainer),
                 verticalAlignment = Alignment.CenterVertically
@@ -105,7 +106,7 @@ fun ShortcutsList(
                 Text(
                     modifier = Modifier
                         .padding(end = dimen16dp)
-                        .padding(vertical = dimen8dp),
+                        .padding(vertical = dimen16dp),
                     text = notification,
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
@@ -156,7 +157,7 @@ fun ShortcutsList(
                             stringResource(id = R.string.shortcut_unpin)
                         },
                         bitmapIcon = null,
-                        vectorIcon = if(pinningMode)
+                        vectorIcon = if (pinningMode)
                             Icons.Outlined.Home
                         else
                             Icons.Outlined.Apps,
@@ -171,7 +172,7 @@ fun ShortcutsList(
                     vectorIcon = Icons.Outlined.Info,
                     shouldHideShortcutIcons = shouldHideApplicationIcons
                 ) {
-                    onApplicationInfoPressed(it)
+                    onApplicationInfoPressed(it.packageInfo)
                     changeShortcutsVisibility(false)
                 }
             }

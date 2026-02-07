@@ -1,14 +1,14 @@
 package io.github.fvrodas.jaml.ui.common.extensions
 
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 
-fun Set<PackageInfo>.updateAppEntry(
+fun Set<LauncherEntry>.updateAppEntry(
     packageName: String,
-    hasNotification: Boolean,
     notificationTitle: String?
-): Set<PackageInfo> = this.map {
-    if (packageName == it.packageName) {
-        it.copy(hasNotification = hasNotification, notificationTitle = notificationTitle)
+): Set<LauncherEntry> = this.map {
+    if (packageName == it.packageInfo.packageName) {
+        it.copy(notificationTitle = notificationTitle)
     } else {
         it
     }

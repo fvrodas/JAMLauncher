@@ -1,5 +1,9 @@
 package io.github.fvrodas.jaml.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,10 +45,9 @@ fun HomeNavigationGraph(
 
                 override fun onNotificationChanged(
                     packageName: String?,
-                    hasNotification: Boolean,
-                    notificationTitle: String?
+                    message: String?
                 ) {
-                    homeViewModel.markNotification(packageName, hasNotification, notificationTitle)
+                    homeViewModel.markNotification(packageName, message)
                 }
             }
 
@@ -81,7 +84,11 @@ fun HomeNavigationGraph(
             )
         }
 
-        composable(Routes.SETTINGS_SCREEN) {
+        composable(
+            Routes.SETTINGS_SCREEN,
+            enterTransition = { fadeIn() + slideInVertically(initialOffsetY = { it / 2 }) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut() }
+        ) {
             SettingsScreen(
                 launcherSettings,
                 settingsActions,

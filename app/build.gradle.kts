@@ -1,11 +1,11 @@
 
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.detekt)
 }
 
@@ -16,10 +16,12 @@ android {
         applicationId = "io.github.fvrodas.jaml"
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
-        versionCode = 2
-        versionName = "1.0.0-beta2"
+        versionCode = 3
+        versionName = "1.0.0-beta3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        resValue("string", "display_app_version_name", "Version $versionName build($versionCode)")
     }
 
     buildTypes {

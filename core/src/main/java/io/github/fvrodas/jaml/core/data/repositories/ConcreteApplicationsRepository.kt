@@ -3,55 +3,52 @@ package io.github.fvrodas.jaml.core.data.repositories
 import android.app.Application
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class ConcreteApplicationsRepository(
     application: Application
 ) : ApplicationsRepository {
 
-    private val pm: PackageManager = application.packageManager
     private val launcherApps by lazy {
         application.baseContext.applicationContext
             .getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     }
 
-    override suspend fun getApplicationsList(): List<PackageInfo> {
+    override suspend fun getApplicationsList(): List<PackageInfo> = withContext(Dispatchers.IO) {
         val apps: ArrayList<PackageInfo> = ArrayList()
 
         launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
-            if (pm.getApplicationInfo(
+            apps.add(
+                PackageInfo(
                     it.applicationInfo.packageName,
-                    PackageManager.MATCH_UNINSTALLED_PACKAGES
-                ).enabled
-            ) {
-                apps.add(
-                    PackageInfo(
+                    it.label.toString(),
+                    BitmapUtils.loadIcon(
                         it.applicationInfo.packageName,
-                        it.label.toString(),
-                        BitmapUtils.loadIcon(
-                            it.applicationInfo.packageName,
-                            it.getIcon(-1)
-                        )
+                        it.getIcon(-1)
                     )
                 )
-            }
+            )
         }
 
         apps.sortWith { t1, t2 ->
             t1.label.lowercase().compareTo(t2.label.lowercase())
         }
 
-        return apps
+        return@withContext apps
     }
 
-    override suspend fun getShortcutsListForApplication(packageName: String): List<PackageInfo.ShortcutInfo> {
+    override suspend fun getShortcutsListForApplication(
+        packageName: String,
+        maxShortcuts: Int
+    ): List<PackageInfo.ShortcutInfo> = withContext(Dispatchers.IO) {
         val shortcuts = ArrayList<PackageInfo.ShortcutInfo>()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -72,11 +69,11 @@ class ConcreteApplicationsRepository(
                         it.shortLabel.toString(),
                         BitmapUtils.loadShortcutIcon(launcherApps, it)
                     )
-                }.toList().take(MAX_SHORTCUTS_TO_DISPLAY)
+                }.toList().take(maxShortcuts)
             )
         }
 
-        return shortcuts
+        return@withContext shortcuts
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
