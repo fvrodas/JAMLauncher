@@ -9,7 +9,10 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +51,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -55,6 +60,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.models.toLauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
@@ -84,11 +90,24 @@ fun ApplicationsSheet(
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val focusRequester = remember { FocusRequester() }
+    val mutableInteractionSource = remember { MutableInteractionSource() }
+    val focusState = mutableInteractionSource.collectIsFocusedAsState()
 
     var trackedDragAmount = 0f
 
     LaunchedEffect(Unit) {
         lazyListState.animateScrollToItem(0)
+    }
+
+    LaunchedEffect(focusState) {
+        if (focusState.value) {
+            keyboardController?.show()
+        } else {
+            keyboardController?.hide()
+        }
     }
 
     DisposableEffect(Unit) {
@@ -97,8 +116,6 @@ fun ApplicationsSheet(
             onSearchApplication(searchFieldValue)
         }
     }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     with(sharedTransitionScope) {
         Box {
@@ -168,6 +185,8 @@ fun ApplicationsSheet(
                     },
                     shape = RoundedCornerShape(dimen16dp),
                     modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .focusable(interactionSource = mutableInteractionSource)
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxWidth()
                         .padding(bottom = dimen8dp)
@@ -183,22 +202,22 @@ fun ApplicationsSheet(
                     items(state.applicationsList.size) {
                         val item = state.applicationsList.elementAt(it)
                         ApplicationItem(
-                            label = item.label,
+                            label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
                             searchText = searchFieldValue,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                            iconBitmap = if (shouldHideApplicationIcons) null else item.packageInfo.icon,
                             hasNotification = item.hasNotification,
                             onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                     coroutineScope.launch {
-                                        onApplicationLongPressed.invoke(item)
+                                        onApplicationLongPressed.invoke(item.packageInfo)
                                         changeShortcutVisibility(true, !isFavorite)
                                     }
                                 }
                             },
                             onApplicationPressed = {
                                 coroutineScope.launch {
-                                    onApplicationPressed.invoke(item)
+                                    onApplicationPressed.invoke(item.packageInfo)
                                     toggleListVisibility()
                                 }
                             }
@@ -278,12 +297,12 @@ fun ApplicationsSheetPreview() {
                 ApplicationsSheet(
                     state = ApplicationSheetState(
                         applicationsList = setOf(
-                            PackageInfo(packageName = "com.android.settings", label = "Settings"),
-                            PackageInfo(packageName = "com.android.vending", label = "Play Store"),
+                            PackageInfo(packageName = "com.android.settings", label = "Settings").toLauncherEntry(),
+                            PackageInfo(packageName = "com.android.vending", label = "Play Store").toLauncherEntry(),
                             PackageInfo(
                                 packageName = "com.google.android.apps.maps",
                                 label = "Maps"
-                            ),
+                            ).toLauncherEntry(),
                         )
                     ),
                     sharedTransitionScope = this@SharedTransitionLayout,

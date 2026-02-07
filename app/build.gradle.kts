@@ -1,11 +1,11 @@
 
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.detekt)
 }
 

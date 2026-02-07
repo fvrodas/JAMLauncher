@@ -1,39 +1,25 @@
 package io.github.fvrodas.jaml.core.domain.entities
 
 import android.graphics.Bitmap
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.io.Serializable
 
+@Parcelize
+@kotlinx.serialization.Serializable
 data class PackageInfo(
     val packageName: String,
     val label: String,
-    @Transient val icon: Bitmap? = null,
-    var notificationTitle: String? = null,
-    var group: String? = null
-) : Serializable {
+    @Transient val icon: Bitmap? = null
+) : Serializable, Parcelable {
 
-    val hasNotification: Boolean get() = notificationTitle != null
-
-    val movedToHome: Boolean get() = group == HOME_GROUP
-
-
-    fun moveToHomeScreen() {
-        moveToGroup(HOME_GROUP)
-    }
-
-    fun moveToGroup(groupName: String) {
-        group = groupName
-    }
-
-    fun moveToDrawer() {
-        group = null
-    }
-
+    @Parcelize
     class ShortcutInfo(
         val id: String,
         val packageName: String,
         val label: String,
         @Transient val icon: Bitmap?
-    ) : Serializable {
+    ) : Serializable, Parcelable {
         companion object {
             private const val serialVersionUID: Long = 1L
         }
@@ -41,6 +27,5 @@ data class PackageInfo(
 
     companion object {
         private const val serialVersionUID: Long = 1L
-        const val HOME_GROUP = "home_screen"
     }
 }

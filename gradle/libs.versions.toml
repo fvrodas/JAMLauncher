@@ -57,4 +57,5 @@ kotlinAndroid = {id= "org.jetbrains.kotlin.android", version.ref = "kotlin-versi
 kotlinKapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin-version"}
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
 kotlinCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin-version" }
+kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
 detekt = {id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-version"}

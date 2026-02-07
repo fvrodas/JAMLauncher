@@ -89,22 +89,22 @@ fun HomeScreen(
                     items(state.pinnedApplications.size) {
                         val item = state.pinnedApplications.elementAt(it)
                         ApplicationItem(
-                            label = item.label,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.icon,
+                            label = item.packageInfo.label,
+                            iconBitmap = if (shouldHideApplicationIcons) null else item.packageInfo.icon,
                             hasNotification = item.hasNotification,
                             notificationText = item.notificationTitle,
                             isFavorite = true,
                             onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
                                     coroutineScope.launch {
-                                        onApplicationLongPressed.invoke(item)
+                                        onApplicationLongPressed.invoke(item.packageInfo)
                                         changeShortcutVisibility(true, !isFavorite)
                                     }
                                 }
                             },
                             onApplicationPressed = {
                                 coroutineScope.launch {
-                                    onApplicationPressed.invoke(item)
+                                    onApplicationPressed.invoke(item.packageInfo)
                                     toggleListVisibility()
                                 }
                             }

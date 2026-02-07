@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
@@ -44,21 +45,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ShortcutsList(
-    shortcutsList: Pair<PackageInfo, Set<PackageInfo.ShortcutInfo>>?,
+    shortcutsList: Pair<LauncherEntry, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
     shouldLetPinApps: Boolean = true,
     pinningMode: Boolean = true,
     changeShortcutsVisibility: (Boolean) -> Unit,
     startShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
-    pinAppToTop: (PackageInfo) -> Unit = {},
+    pinAppToTop: (LauncherEntry) -> Unit = {},
     onApplicationInfoPressed: (PackageInfo) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
-            .padding(horizontal = dimen32dp)
-            .padding(bottom = dimen32dp)
+            .padding(horizontal = dimen32dp, vertical = dimen32dp)
     ) {
         Row(
             modifier = Modifier
@@ -67,7 +67,7 @@ fun ShortcutsList(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!shouldHideApplicationIcons) {
-                shortcutsList?.first?.icon?.let {
+                shortcutsList?.first?.packageInfo?.icon?.let {
                     Image(
                         bitmap = it.asImageBitmap(),
                         contentScale = ContentScale.FillBounds,
@@ -81,7 +81,7 @@ fun ShortcutsList(
                 }
             }
             Text(
-                text = shortcutsList?.first?.label ?: "",
+                text = shortcutsList?.first?.packageInfo?.label ?: "",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -172,7 +172,7 @@ fun ShortcutsList(
                     vectorIcon = Icons.Outlined.Info,
                     shouldHideShortcutIcons = shouldHideApplicationIcons
                 ) {
-                    onApplicationInfoPressed(it)
+                    onApplicationInfoPressed(it.packageInfo)
                     changeShortcutsVisibility(false)
                 }
             }
