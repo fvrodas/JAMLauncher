@@ -20,9 +20,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.core.graphics.drawable.toDrawable
 import androidx.navigation.compose.rememberNavController
@@ -33,7 +32,6 @@ import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.common.settings.LauncherTheme
-import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 import io.github.fvrodas.jaml.ui.common.themes.colorSchemeByName
 import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
@@ -73,34 +71,24 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val navHostController = rememberNavController()
 
-            val launcherPreferences: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
+            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
 
-            var theme: Int by rememberSaveable {
-                mutableIntStateOf(launcherPreferences.launcherTheme)
+            var launcherPreferences: LauncherPreferences by retain {
+                mutableStateOf(preferencesState)
             }
 
-            var colorScheme: Int by rememberSaveable {
-                mutableIntStateOf(launcherPreferences.launcherColorScheme)
-            }
-
-            var dynamicColorEnabled: Boolean by rememberSaveable {
-                mutableStateOf(launcherPreferences.isDynamicColorEnabled)
-            }
-
-            LaunchedEffect(launcherPreferences) {
-                theme = launcherPreferences.launcherTheme
-                colorScheme = launcherPreferences.launcherColorScheme
-                dynamicColorEnabled = launcherPreferences.isDynamicColorEnabled
+            LaunchedEffect(preferencesState) {
+                launcherPreferences = preferencesState
             }
 
             JamlTheme(
-                colorScheme = colorSchemeByName[colorScheme] ?: JamlColorScheme.Default,
-                isInDarkMode = when (launcherThemeByName[theme]) {
+                colorScheme = colorSchemeByName[launcherPreferences.launcherColorScheme]!!,
+                isInDarkMode = when (launcherThemeByName[launcherPreferences.launcherTheme]) {
                     LauncherTheme.Light -> false
                     LauncherTheme.Dark -> true
                     else -> isSystemInDarkTheme()
                 },
-                isDynamicColorsEnabled = dynamicColorEnabled
+                isDynamicColorsEnabled = launcherPreferences.isDynamicColorEnabled
             ) {
                 HomeNavigationGraph(
                     navHostController = navHostController,

@@ -16,12 +16,13 @@ android {
         applicationId = "io.github.fvrodas.jaml"
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
-        versionCode = 3
-        versionName = "1.0.0-beta3"
+        versionCode = 4
+        versionName = "1.0.0-beta4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         resValue("string", "display_app_version_name", "Version $versionName build($versionCode)")
+        resValue("string", "prefs_name", "$applicationId.preferences")
     }
 
     buildTypes {

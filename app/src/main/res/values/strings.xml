@@ -9,7 +9,7 @@
     <string name="about_neutral">View on Github</string>
     <string name="about_github_url" translatable="false">https://github.com/fvrodas/JAMLauncher</string>
     <string name="apps_sv_hint">What are you looking for?</string>
-    <string name="service_name">Show notification dots</string>
+    <string name="service_name">Show notification highlights</string>
     <string name="summary_dynamic_colors">Enable Material Design 3 Dynamic Colors on Android 12 and above</string>
     <string name="menu_dynamic_colors">Dynamic Colors</string>
     <string name="summary_theme">Select your Color Scheme</string>
@@ -32,5 +32,4 @@
     <string name="theme_system">Follow System</string>
     <string name="shortcut_app_info">App Info</string>
     <string name="notification_default_title">You have notifications</string>
-
 </resources>

@@ -5,10 +5,10 @@ import io.github.fvrodas.jaml.R
 
 @Stable
 data class LauncherPreferences(
-    var launcherTheme: Int = R.string.theme_light,
-    var isDynamicColorEnabled: Boolean = false,
-    var launcherColorScheme: Int = R.string.colorscheme_default,
-    var shouldHideApplicationIcons: Boolean = false,
+    val launcherTheme: Int = R.string.theme_light,
+    val isDynamicColorEnabled: Boolean = false,
+    val launcherColorScheme: Int = R.string.colorscheme_default,
+    val shouldHideApplicationIcons: Boolean = false,
 ) {
     companion object Companion {
         const val LAUNCHER_THEME = "launchertheme"

@@ -90,9 +90,9 @@ fun HomeNavigationGraph(
             exitTransition = { slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut() }
         ) {
             SettingsScreen(
-                launcherSettings,
-                settingsActions,
-                onSettingsSaved
+                launcherPreferences = launcherSettings,
+                settingsActions = settingsActions,
+                saveSettings = onSettingsSaved
             ) {
                 navHostController.popBackStack(route = Routes.HOME_SCREEN, inclusive = false)
             }

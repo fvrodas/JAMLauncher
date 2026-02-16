@@ -7,7 +7,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.fvrodas.jaml.BuildConfig
+import io.github.fvrodas.jaml.AppConfig
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
@@ -25,12 +25,12 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import java.util.SortedSet
 
 class HomeViewModel(
     private val getApplicationsListUseCase: GetApplicationsListUseCase,
     private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
     private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
+    private val appConfig: AppConfig,
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
 
@@ -55,7 +55,7 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 val result = getApplicationsListUseCase(null)
-                    .filter { it.packageName != BuildConfig.APPLICATION_ID }
+                    .filter { it.packageName != appConfig.packageName }
                 applicationsListCache = result.map { it.toLauncherEntry() }.toSet()
 
                 sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
