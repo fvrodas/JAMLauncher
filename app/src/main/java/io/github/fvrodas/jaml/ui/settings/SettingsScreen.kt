@@ -21,10 +21,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,7 +51,7 @@ import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
 fun SettingsScreen(
     launcherPreferences: LauncherPreferences,
     settingsActions: SettingsActions,
-    saveSettings: (LauncherPreferences) -> Unit,
+    saveSettings: (LauncherPreferences) -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
@@ -81,8 +79,17 @@ fun SettingsScreen(
         mutableStateOf(false)
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
+    LaunchedEffect(
+        isDynamicColorEnabled,
+        selectedColorScheme,
+        selectedLauncherTheme,
+        shouldHideApplicationIcons
+    ) {
+//        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
+//            launcherPreferences.launcherColorScheme != selectedColorScheme ||
+//            launcherPreferences.launcherTheme != selectedLauncherTheme ||
+//            launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons
+//        ) {
             saveSettings(
                 LauncherPreferences(
                     selectedLauncherTheme,
@@ -91,23 +98,7 @@ fun SettingsScreen(
                     shouldHideApplicationIcons
                 )
             )
-        }
-    }
-
-    LaunchedEffect(isDynamicColorEnabled, selectedColorScheme, selectedLauncherTheme) {
-        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
-            launcherPreferences.launcherColorScheme != selectedColorScheme ||
-            launcherPreferences.launcherTheme != selectedLauncherTheme
-        ) {
-            saveSettings(
-                LauncherPreferences(
-                    selectedLauncherTheme,
-                    isDynamicColorEnabled,
-                    selectedColorScheme,
-                    shouldHideApplicationIcons
-                )
-            )
-        }
+//        }
     }
 
     Scaffold(
@@ -279,12 +270,15 @@ fun SettingsScreenPreview() {
                 override fun setAsDefaultHome() {
                     /** No - Op **/
                 }
+
                 override fun setWallpaper() {
                     /** No - Op **/
                 }
+
                 override fun enableNotificationAccess() {
                     /** No - Op **/
                 }
+
                 override fun openWebPage(url: android.net.Uri) {
                     /** No - Op **/
                 }
