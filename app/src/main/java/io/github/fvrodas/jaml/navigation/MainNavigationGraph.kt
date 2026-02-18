@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
@@ -28,6 +29,7 @@ fun HomeNavigationGraph(
     launcherSettings: LauncherPreferences,
     launcherActions: LauncherActions,
     settingsActions: SettingsActions,
+    clearIconsAndReload: (IconConfig) -> Unit,
     onSettingsSaved: (LauncherPreferences) -> Unit,
 ) {
     NavHost(
@@ -92,7 +94,8 @@ fun HomeNavigationGraph(
             SettingsScreen(
                 launcherPreferences = launcherSettings,
                 settingsActions = settingsActions,
-                saveSettings = onSettingsSaved
+                saveSettings = onSettingsSaved,
+                clearIconsAndReload = clearIconsAndReload
             ) {
                 navHostController.popBackStack(route = Routes.HOME_SCREEN, inclusive = false)
             }

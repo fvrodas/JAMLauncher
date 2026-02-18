@@ -32,4 +32,7 @@
     <string name="theme_system">Follow System</string>
     <string name="shortcut_app_info">App Info</string>
     <string name="notification_default_title">You have notifications</string>
+    <string name="summary_themed_icons">Replace your regular icons with themed ones</string>
+    <string name="menu_themed_icons">Use themed icons</string>
+    <string name="badge_experimental">Experimental</string>
 </resources>

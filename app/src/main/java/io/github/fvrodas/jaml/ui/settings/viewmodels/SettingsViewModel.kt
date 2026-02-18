@@ -4,14 +4,20 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.core.domain.entities.IconConfig
+import io.github.fvrodas.jaml.core.domain.usecases.ClearIconsAndReloadUseCase
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
+class SettingsViewModel(
+    private val prefs: SharedPreferences,
+    private val clearIconsAndReloadUseCase: ClearIconsAndReloadUseCase
+) : ViewModel() {
 
     private val _launcherPreferences = MutableStateFlow(
         readFromPrefs()
@@ -32,6 +38,7 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
             prefs.getBoolean(LauncherPreferences.DYNAMIC_COLOR_ENABLED, false),
             prefs.getInt(LauncherPreferences.SELECTED_COLORSCHEME, R.string.colorscheme_default),
             prefs.getBoolean(LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS, false),
+            prefs.getBoolean(LauncherPreferences.SHOULD_USE_THEMED_ICONS, false)
         )
     }
 
@@ -48,8 +55,18 @@ class SettingsViewModel(private val prefs: SharedPreferences) : ViewModel() {
                 LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS,
                 newSettings.shouldHideApplicationIcons
             )
+            putBoolean(
+                LauncherPreferences.SHOULD_USE_THEMED_ICONS,
+                newSettings.shouldUseThemedIcons
+            )
             commit()
         }
         _launcherPreferences.value = newSettings
+    }
+
+    fun clearIconsAndReload(iconConfig: IconConfig) {
+        viewModelScope.launch {
+            clearIconsAndReloadUseCase(iconConfig)
+        }
     }
 }

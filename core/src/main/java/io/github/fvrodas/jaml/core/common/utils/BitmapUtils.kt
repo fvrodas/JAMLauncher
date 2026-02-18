@@ -4,6 +4,7 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.InsetDrawable
@@ -23,19 +24,53 @@ object BitmapUtils {
 
     fun loadIcon(
         packageName: String,
-        drawable: Drawable
+        drawable: Drawable,
+        themedIcons: Boolean = false,
+        backgroundColor: Int = Color.WHITE,
+        foregroundColor: Int = Color.BLACK,
     ): Bitmap = iconCache[packageName] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        if (drawable is AdaptiveIconDrawable) {
-            drawable.toBitmap()
-        } else {
-            val scaled = InsetDrawable(drawable, INSET)
-            scaled.bounds = drawable.bounds
-            AdaptiveIconDrawable(Color.WHITE.toDrawable(), scaled).toBitmap()
-        }
+        drawable.forceAdaptiveIconIfNeeded().let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
+                it.forceThemedIcon(backgroundColor, foregroundColor)
+            } else {
+                it
+            }
+        }.toBitmap()
     } else {
         drawable.toBitmap()
     }.also {
         iconCache.put(packageName, it)
+    }
+
+    fun loadIconForPackage(packageName: String): Bitmap = iconCache[packageName]
+
+    fun clearCache() {
+        iconCache.evictAll()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun Drawable.forceAdaptiveIconIfNeeded(): AdaptiveIconDrawable {
+        if (this is AdaptiveIconDrawable) {
+            return this
+        } else {
+            val scaled = InsetDrawable(this, INSET)
+            scaled.bounds = this.bounds
+            return AdaptiveIconDrawable(Color.WHITE.toDrawable(), scaled)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun AdaptiveIconDrawable.forceThemedIcon(
+        backgroundColor: Int = Color.WHITE,
+        foregroundColor: Int = Color.BLACK,
+        tintMode: PorterDuff.Mode = PorterDuff.Mode.SRC_ATOP
+    ): AdaptiveIconDrawable {
+        val scaled = InsetDrawable(this.monochrome ?: this.foreground, INSET)
+        scaled.bounds = this.bounds
+        return AdaptiveIconDrawable(backgroundColor.toDrawable(), scaled.apply {
+            this.setTintMode(tintMode)
+            this.setTint(foregroundColor)
+        })
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)

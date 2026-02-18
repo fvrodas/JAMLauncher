@@ -2,6 +2,7 @@ package io.github.fvrodas.jaml.ui.common.themes
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -19,7 +20,7 @@ fun JamlTheme(
     colorScheme: JamlColorScheme,
     isInDarkMode: Boolean,
     isDynamicColorsEnabled: Boolean,
-    content: @Composable () -> Unit
+    content: @Composable (currentColorScheme: ColorScheme) -> Unit
 ) {
     val context = LocalContext.current
     val currentScheme = remember {
@@ -54,6 +55,6 @@ fun JamlTheme(
     MaterialTheme(
         colorScheme = currentScheme.value,
     ) {
-        content()
+        content(currentScheme.value)
     }
 }

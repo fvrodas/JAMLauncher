@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -52,6 +53,7 @@ fun SettingsScreen(
     launcherPreferences: LauncherPreferences,
     settingsActions: SettingsActions,
     saveSettings: (LauncherPreferences) -> Unit = {},
+    clearIconsAndReload: (IconConfig) -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
@@ -71,6 +73,10 @@ fun SettingsScreen(
         mutableStateOf(launcherPreferences.shouldHideApplicationIcons)
     }
 
+    var shouldUseThemedIcons: Boolean by remember {
+        mutableStateOf(launcherPreferences.shouldUseThemedIcons)
+    }
+
     var showThemeSelection by remember {
         mutableStateOf(false)
     }
@@ -83,22 +89,18 @@ fun SettingsScreen(
         isDynamicColorEnabled,
         selectedColorScheme,
         selectedLauncherTheme,
-        shouldHideApplicationIcons
+        shouldHideApplicationIcons,
+        shouldUseThemedIcons
     ) {
-//        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
-//            launcherPreferences.launcherColorScheme != selectedColorScheme ||
-//            launcherPreferences.launcherTheme != selectedLauncherTheme ||
-//            launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons
-//        ) {
-            saveSettings(
-                LauncherPreferences(
-                    selectedLauncherTheme,
-                    isDynamicColorEnabled,
-                    selectedColorScheme,
-                    shouldHideApplicationIcons
-                )
+        saveSettings(
+            LauncherPreferences(
+                selectedLauncherTheme,
+                isDynamicColorEnabled,
+                selectedColorScheme,
+                shouldHideApplicationIcons,
+                shouldUseThemedIcons
             )
-//        }
+        )
     }
 
     Scaffold(
@@ -205,6 +207,17 @@ fun SettingsScreen(
                 value = shouldHideApplicationIcons
             ) { checked ->
                 shouldHideApplicationIcons = checked
+            }
+            AnimatedVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !shouldHideApplicationIcons) {
+                SettingSwitch(
+                    title = stringResource(id = R.string.menu_themed_icons),
+                    description = stringResource(id = R.string.summary_themed_icons),
+                    value = shouldUseThemedIcons,
+                    badgeContent = stringResource(id = R.string.badge_experimental),
+
+                ) { checked ->
+                    shouldUseThemedIcons = checked
+                }
             }
             Spacer(modifier = Modifier.height(dimen16dp))
             Row {

@@ -59,6 +59,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.models.toLauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -205,7 +206,7 @@ fun ApplicationsSheet(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
                             searchText = searchFieldValue,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.packageInfo.icon,
+                            iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(item.packageInfo.packageName), //item.packageInfo.icon,
                             hasNotification = item.hasNotification,
                             onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

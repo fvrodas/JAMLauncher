@@ -30,7 +30,8 @@ val appModule = module {
     }
     viewModel {
         SettingsViewModel(
-            get()
+            get(),
+             get()
         )
     }
 }
