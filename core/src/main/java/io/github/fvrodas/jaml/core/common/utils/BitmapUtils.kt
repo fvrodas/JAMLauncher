@@ -4,6 +4,10 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.ColorFilter
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.LightingColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
@@ -16,7 +20,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
-    private const val INSET = 0.16f
+    private const val INSET = 0.14f
 
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
     private val cacheSize = maxMemory / 8
@@ -29,13 +33,11 @@ object BitmapUtils {
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
     ): Bitmap = iconCache[packageName] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        drawable.forceAdaptiveIconIfNeeded().let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
-                it.forceThemedIcon(backgroundColor, foregroundColor)
-            } else {
-                it
-            }
-        }.toBitmap()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
+            drawable.toThemedIcon(backgroundColor, foregroundColor).toBitmap()
+        } else {
+            drawable.forceAdaptiveIconIfNeeded().toBitmap()
+        }
     } else {
         drawable.toBitmap()
     }.also {
@@ -60,17 +62,36 @@ object BitmapUtils {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun Drawable.toThemedIcon(
+        backgroundColor: Int = Color.WHITE,
+        foregroundColor: Int = Color.BLACK
+    ): AdaptiveIconDrawable {
+        val (iconMask, needsInset) = if (this is AdaptiveIconDrawable) {
+            (this.monochrome ?: this.foreground) to false
+        } else {
+            this to true
+        }
+
+        val themedForeground = if (needsInset) {
+            InsetDrawable(iconMask.mutate(), INSET)
+        } else {
+            iconMask.mutate()
+        }.apply {
+            setTintMode(PorterDuff.Mode.SRC_IN)
+            setTint(foregroundColor)
+        }
+
+        return AdaptiveIconDrawable(backgroundColor.toDrawable(), themedForeground)
+    }
+
+    @Deprecated("Use Drawable.toThemedIcon instead", ReplaceWith("toThemedIcon(backgroundColor, foregroundColor)"))
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun AdaptiveIconDrawable.forceThemedIcon(
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
         tintMode: PorterDuff.Mode = PorterDuff.Mode.SRC_ATOP
     ): AdaptiveIconDrawable {
-        val scaled = InsetDrawable(this.monochrome ?: this.foreground, INSET)
-        scaled.bounds = this.bounds
-        return AdaptiveIconDrawable(backgroundColor.toDrawable(), scaled.apply {
-            this.setTintMode(tintMode)
-            this.setTint(foregroundColor)
-        })
+        return this.toThemedIcon(backgroundColor, foregroundColor)
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
