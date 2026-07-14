@@ -92,7 +92,7 @@ class ConcreteApplicationsRepository(
         loadThemedIcons: Boolean,
         backgroundColor: Int,
         foregroundColor: Int
-    ) {
+    ) = withContext(Dispatchers.IO) {
         BitmapUtils.clearCache()
         launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
             BitmapUtils.loadIcon(

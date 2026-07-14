@@ -4,10 +4,6 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.ColorFilter
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.LightingColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
@@ -44,7 +40,7 @@ object BitmapUtils {
         iconCache.put(packageName, it)
     }
 
-    fun loadIconForPackage(packageName: String): Bitmap = iconCache[packageName]
+    fun loadIconForPackage(packageName: String): Bitmap? = iconCache[packageName]
 
     fun clearCache() {
         iconCache.evictAll()
@@ -66,11 +62,14 @@ object BitmapUtils {
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK
     ): AdaptiveIconDrawable {
-        val (iconMask, needsInset) = if (this is AdaptiveIconDrawable) {
-            (this.monochrome ?: this.foreground) to false
-        } else {
-            this to true
-        }
+        val (iconMask, needsInset) = when {
+            this is AdaptiveIconDrawable -> {
+                val layer = this.monochrome ?: this.foreground
+                    ?: return AdaptiveIconDrawable(backgroundColor.toDrawable(), InsetDrawable(this, INSET))
+                layer to false
+            }
+            else -> this to true
+        } as Pair<Drawable, Boolean>
 
         val themedForeground = if (needsInset) {
             InsetDrawable(iconMask.mutate(), INSET)
@@ -82,16 +81,6 @@ object BitmapUtils {
         }
 
         return AdaptiveIconDrawable(backgroundColor.toDrawable(), themedForeground)
-    }
-
-    @Deprecated("Use Drawable.toThemedIcon instead", ReplaceWith("toThemedIcon(backgroundColor, foregroundColor)"))
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun AdaptiveIconDrawable.forceThemedIcon(
-        backgroundColor: Int = Color.WHITE,
-        foregroundColor: Int = Color.BLACK,
-        tintMode: PorterDuff.Mode = PorterDuff.Mode.SRC_ATOP
-    ): AdaptiveIconDrawable {
-        return this.toThemedIcon(backgroundColor, foregroundColor)
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)

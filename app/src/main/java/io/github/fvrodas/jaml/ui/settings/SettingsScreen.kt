@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.net.toUri
 import io.github.fvrodas.jaml.R
-import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -53,7 +52,6 @@ fun SettingsScreen(
     launcherPreferences: LauncherPreferences,
     settingsActions: SettingsActions,
     saveSettings: (LauncherPreferences) -> Unit = {},
-    clearIconsAndReload: (IconConfig) -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
@@ -92,15 +90,22 @@ fun SettingsScreen(
         shouldHideApplicationIcons,
         shouldUseThemedIcons
     ) {
-        saveSettings(
-            LauncherPreferences(
-                selectedLauncherTheme,
-                isDynamicColorEnabled,
-                selectedColorScheme,
-                shouldHideApplicationIcons,
-                shouldUseThemedIcons
+        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
+            launcherPreferences.launcherColorScheme != selectedColorScheme ||
+            launcherPreferences.launcherTheme != selectedLauncherTheme ||
+            launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons ||
+            launcherPreferences.shouldUseThemedIcons != shouldUseThemedIcons
+        ) {
+            saveSettings(
+                LauncherPreferences(
+                    selectedLauncherTheme,
+                    isDynamicColorEnabled,
+                    selectedColorScheme,
+                    shouldHideApplicationIcons,
+                    shouldUseThemedIcons
+                )
             )
-        )
+        }
     }
 
     Scaffold(
@@ -215,7 +220,7 @@ fun SettingsScreen(
                     value = shouldUseThemedIcons,
                     badgeContent = stringResource(id = R.string.badge_experimental),
 
-                ) { checked ->
+                    ) { checked ->
                     shouldUseThemedIcons = checked
                 }
             }
@@ -275,7 +280,7 @@ fun SettingsScreenPreview() {
         colorScheme = JamlColorScheme.Default,
         isInDarkMode = false,
         isDynamicColorsEnabled = false
-    ) {
+    ) { _ ->
         SettingsScreen(
             launcherPreferences = LauncherPreferences(),
             settingsActions = object : SettingsActions {

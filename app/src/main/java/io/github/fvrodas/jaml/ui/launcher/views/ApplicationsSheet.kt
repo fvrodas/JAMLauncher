@@ -292,7 +292,7 @@ fun ApplicationsSheetPreview() {
         colorScheme = JamlColorScheme.Default,
         isInDarkMode = isSystemInDarkTheme(),
         isDynamicColorsEnabled = false
-    ) {
+    ) { _ ->
         SharedTransitionLayout {
             AnimatedContent(targetState = true, label = "ApplicationsSheet") {
                 ApplicationsSheet(

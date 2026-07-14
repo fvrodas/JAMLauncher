@@ -59,7 +59,7 @@ class SettingsViewModel(
                 LauncherPreferences.SHOULD_USE_THEMED_ICONS,
                 newSettings.shouldUseThemedIcons
             )
-            commit()
+            apply()
         }
         _launcherPreferences.value = newSettings
     }

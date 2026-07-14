@@ -17,15 +17,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
@@ -74,7 +73,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val navHostController = rememberNavController()
 
-            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
+            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsStateWithLifecycle()
 
             var launcherPreferences: LauncherPreferences by retain {
                 mutableStateOf(preferencesState)
@@ -94,7 +93,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                 isDynamicColorsEnabled = launcherPreferences.isDynamicColorEnabled
             ) { colors ->
 
-                LaunchedEffect(preferencesState, colors) {
+                LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primary.toArgb(), colors.onPrimary.toArgb()) {
                     settingsViewModel.clearIconsAndReload(
                         IconConfig(
                             preferencesState.shouldUseThemedIcons,
@@ -109,9 +108,6 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                     launcherSettings = launcherPreferences,
                     launcherActions = this,
                     settingsActions = this,
-                    clearIconsAndReload = {
-                        settingsViewModel.clearIconsAndReload(it)
-                    },
                     onSettingsSaved = {
                         settingsViewModel.saveSetting(it)
                     }

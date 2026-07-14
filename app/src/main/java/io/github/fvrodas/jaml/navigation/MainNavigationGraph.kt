@@ -29,7 +29,6 @@ fun HomeNavigationGraph(
     launcherSettings: LauncherPreferences,
     launcherActions: LauncherActions,
     settingsActions: SettingsActions,
-    clearIconsAndReload: (IconConfig) -> Unit,
     onSettingsSaved: (LauncherPreferences) -> Unit,
 ) {
     NavHost(
@@ -94,8 +93,7 @@ fun HomeNavigationGraph(
             SettingsScreen(
                 launcherPreferences = launcherSettings,
                 settingsActions = settingsActions,
-                saveSettings = onSettingsSaved,
-                clearIconsAndReload = clearIconsAndReload
+                saveSettings = onSettingsSaved
             ) {
                 navHostController.popBackStack(route = Routes.HOME_SCREEN, inclusive = false)
             }

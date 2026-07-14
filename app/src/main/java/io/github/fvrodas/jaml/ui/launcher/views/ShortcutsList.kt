@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
@@ -67,9 +68,10 @@ fun ShortcutsList(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (!shouldHideApplicationIcons) {
-                shortcutsList?.first?.packageInfo?.icon?.let {
+                shortcutsList?.first?.packageInfo?.packageName?.let {
+                    val cachedIcon = BitmapUtils.loadIconForPackage(it) ?: return@let
                     Image(
-                        bitmap = it.asImageBitmap(),
+                        bitmap = cachedIcon.asImageBitmap(),
                         contentScale = ContentScale.FillBounds,
                         contentDescription = "",
                         modifier = Modifier

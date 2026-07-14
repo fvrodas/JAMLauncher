@@ -196,7 +196,7 @@ fun ApplicationItemPreview() {
         colorScheme = JamlColorScheme.Gruvbox,
         isDynamicColorsEnabled = false,
         isInDarkMode = isSystemInDarkTheme(),
-    ) {
+    ) { _ ->
         ApplicationItem(
             label = "Application",
             notificationText = "This is a notification",
