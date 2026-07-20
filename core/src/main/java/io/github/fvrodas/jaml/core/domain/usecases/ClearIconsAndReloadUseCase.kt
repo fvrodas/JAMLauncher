@@ -9,7 +9,6 @@ class ClearIconsAndReloadUseCase(
 ) : UseCase<Unit, IconConfig>() {
     override suspend fun invoke(params: IconConfig) {
         repository.clearIconCacheAndLoad(
-            params.shouldUseThemedIcons,
             params.backgroundColor,
             params.foregroundColor,
         )

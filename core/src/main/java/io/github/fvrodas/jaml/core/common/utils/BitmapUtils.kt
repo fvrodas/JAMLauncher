@@ -30,7 +30,7 @@ object BitmapUtils {
         themedIcons: Boolean = false,
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
-    ): Bitmap = iconCache[packageName] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    ): Bitmap = iconCache["$packageName${if (themedIcons) ".themed" else ""}"] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
             Log.i(
                 "Determine Icon Nature",
@@ -43,10 +43,11 @@ object BitmapUtils {
     } else {
         drawable.toBitmap()
     }.also {
-        iconCache.put(packageName, it)
+        iconCache.put("$packageName${if (themedIcons) ".themed" else ""}", it)
     }
 
-    fun loadIconForPackage(packageName: String): Bitmap? = iconCache[packageName]
+    fun loadIconForPackage(packageName: String, shouldDisplayThemedIcon: Boolean = false): Bitmap? =
+        iconCache["$packageName${if (shouldDisplayThemedIcon) ".themed" else ""}"]
 
     fun clearCache() {
         iconCache.evictAll()
@@ -104,22 +105,24 @@ object BitmapUtils {
     ): Drawable {
         val mutatedDrawable = this.mutate()
 
-        val r1 = Color.red(primaryColor)   / 255f
+        val r1 = Color.red(primaryColor) / 255f
         val g1 = Color.green(primaryColor) / 255f
-        val b1 = Color.blue(primaryColor)  / 255f
+        val b1 = Color.blue(primaryColor) / 255f
 
-        val r2 = Color.red(secondaryColor)   / 255f
+        val r2 = Color.red(secondaryColor) / 255f
         val g2 = Color.green(secondaryColor) / 255f
-        val b2 = Color.blue(secondaryColor)  / 255f
+        val b2 = Color.blue(secondaryColor) / 255f
 
         val pivot = 128f * (1f - contrast)
 
-        val colorMatrix = ColorMatrix(floatArrayOf(
-            (r2 - r1) * contrast, 0f, 0f, 0f, r1 * 255f + (r2 - r1) * pivot,
-            (g2 - g1) * contrast, 0f, 0f, 0f, g1 * 255f + (g2 - g1) * pivot,
-            (b2 - b1) * contrast, 0f, 0f, 0f, b1 * 255f + (b2 - b1) * pivot,
-            0f, 0f, 0f, 1f, 0f,
-        ))
+        val colorMatrix = ColorMatrix(
+            floatArrayOf(
+                (r2 - r1) * contrast, 0f, 0f, 0f, r1 * 255f + (r2 - r1) * pivot,
+                (g2 - g1) * contrast, 0f, 0f, 0f, g1 * 255f + (g2 - g1) * pivot,
+                (b2 - b1) * contrast, 0f, 0f, 0f, b1 * 255f + (b2 - b1) * pivot,
+                0f, 0f, 0f, 1f, 0f,
+            )
+        )
 
         mutatedDrawable.colorFilter = ColorMatrixColorFilter(colorMatrix)
         return mutatedDrawable

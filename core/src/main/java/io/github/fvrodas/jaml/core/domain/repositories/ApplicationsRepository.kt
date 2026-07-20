@@ -14,7 +14,6 @@ interface ApplicationsRepository {
     suspend fun launchShortcut(shortcut: PackageInfo.ShortcutInfo)
 
     suspend fun clearIconCacheAndLoad(
-        loadThemedIcons: Boolean = false,
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
     )

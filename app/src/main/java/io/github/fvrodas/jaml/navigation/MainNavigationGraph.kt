@@ -66,6 +66,7 @@ fun HomeNavigationGraph(
                 applicationListState,
                 shortcutsList,
                 launcherSettings.shouldHideApplicationIcons,
+                launcherSettings.shouldUseThemedIcons,
                 searchApplications = {
                     homeViewModel.filterApplicationsList(it)
                 },

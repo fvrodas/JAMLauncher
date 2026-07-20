@@ -206,7 +206,7 @@ fun ApplicationsSheet(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
                             searchText = searchFieldValue,
-                            iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(item.packageInfo.packageName), //item.packageInfo.icon,
+                            iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(item.packageInfo.packageName),
                             hasNotification = item.hasNotification,
                             onApplicationLongPressed = { isFavorite ->
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

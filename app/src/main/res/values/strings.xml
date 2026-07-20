@@ -21,6 +21,7 @@
     <string name="menu_default_launcher">Set as Default Launcher</string>
     <string name="colorscheme_default">Default</string>
     <string name="colorscheme_gruvbox">Gruvbox</string>
+    <string name="colorscheme_nord">Nord</string>
     <string name="summary_hide_app_icons">Hide application icons for a more minimalist style</string>
     <string name="menu_hide_app_icons">Hide application icons</string>
     <string name="label_favorites">Favorites</string>
@@ -32,7 +33,7 @@
     <string name="theme_system">Follow System</string>
     <string name="shortcut_app_info">App Info</string>
     <string name="notification_default_title">You have notifications</string>
-    <string name="summary_themed_icons">Replace your regular icons with themed ones</string>
+    <string name="summary_themed_icons">Themed icons for your Homescreen</string>
     <string name="menu_themed_icons">Use themed icons</string>
-    <string name="badge_experimental">Experimental</string>
+    <string name="badge_experimental">Experimental </string>
 </resources>

@@ -96,7 +96,6 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                 LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primary.toArgb(), colors.onPrimary.toArgb()) {
                     settingsViewModel.clearIconsAndReload(
                         IconConfig(
-                            preferencesState.shouldUseThemedIcons,
                             colors.primaryContainer.toArgb(),
                             colors.onPrimaryContainer.toArgb(),
                         )

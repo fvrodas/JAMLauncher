@@ -3,6 +3,8 @@ package io.github.fvrodas.jaml.ui.launcher.viewmodels
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
@@ -184,6 +186,7 @@ class HomeViewModel(
     }
 }
 
+@Immutable
 data class ApplicationSheetState(
     val pinnedApplications: Set<LauncherEntry> = setOf(),
     val applicationsList: Set<LauncherEntry> = setOf()

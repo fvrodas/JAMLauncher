@@ -46,6 +46,7 @@ fun HomeScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     state: ApplicationSheetState?,
     shouldHideApplicationIcons: Boolean = false,
+    shouldDisplayThemeIcons: Boolean = false,
     toggleListVisibility: () -> Unit,
     changeShortcutVisibility: (Boolean, Boolean) -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
@@ -92,8 +93,9 @@ fun HomeScreen(
                         ApplicationItem(
                             label = item.packageInfo.label,
                             iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(
-                                item.packageInfo.packageName
-                            ),//item.packageInfo.icon,
+                                item.packageInfo.packageName,
+                                shouldDisplayThemeIcons
+                            ),
                             hasNotification = item.hasNotification,
                             notificationText = item.notificationTitle,
                             isFavorite = true,
