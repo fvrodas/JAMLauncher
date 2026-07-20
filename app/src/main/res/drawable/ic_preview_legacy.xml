@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Orange rounded-rect background (dark area) -->
+    <path
+        android:fillColor="#E65100"
+        android:pathData="M8,0 L40,0 Q48,0 48,8 L48,40 Q48,48 40,48 L8,48 Q0,48 0,40 L0,8 Q0,0 8,0 Z"/>
+    <!-- White play triangle (light area) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,12 L14,36 L38,24 Z"/>
+</vector>

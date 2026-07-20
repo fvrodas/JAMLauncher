@@ -91,7 +91,7 @@ class ConcreteApplicationsRepository(
     override suspend fun clearIconCacheAndLoad(
         loadThemedIcons: Boolean,
         backgroundColor: Int,
-        foregroundColor: Int
+        foregroundColor: Int,
     ) = withContext(Dispatchers.IO) {
         BitmapUtils.clearCache()
         launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
@@ -100,7 +100,7 @@ class ConcreteApplicationsRepository(
                 it.getIcon(-1),
                 loadThemedIcons,
                 backgroundColor,
-                foregroundColor
+                foregroundColor,
             )
         }
     }

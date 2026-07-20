@@ -97,8 +97,8 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                     settingsViewModel.clearIconsAndReload(
                         IconConfig(
                             preferencesState.shouldUseThemedIcons,
-                            colors.primary.toArgb(),
-                            colors.onPrimary.toArgb()
+                            colors.primaryContainer.toArgb(),
+                            colors.onPrimaryContainer.toArgb(),
                         )
                     )
                 }

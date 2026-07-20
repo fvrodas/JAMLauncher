@@ -5,5 +5,5 @@ import android.graphics.Color
 data class IconConfig(
     val shouldUseThemedIcons: Boolean = false,
     val backgroundColor: Int = Color.WHITE,
-    val foregroundColor: Int = Color.BLACK
+    val foregroundColor: Int = Color.BLACK,
 )

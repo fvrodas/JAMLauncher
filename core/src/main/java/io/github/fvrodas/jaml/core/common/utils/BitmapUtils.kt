@@ -4,6 +4,8 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.PorterDuff
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
@@ -30,6 +32,10 @@ object BitmapUtils {
         foregroundColor: Int = Color.BLACK,
     ): Bitmap = iconCache[packageName] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
+            Log.i(
+                "Determine Icon Nature",
+                "$packageName = Adaptive Icon: ${drawable is AdaptiveIconDrawable} | monochrome: ${drawable is AdaptiveIconDrawable && drawable.monochrome != null}"
+            )
             drawable.toThemedIcon(backgroundColor, foregroundColor).toBitmap()
         } else {
             drawable.forceAdaptiveIconIfNeeded().toBitmap()
@@ -60,27 +66,20 @@ object BitmapUtils {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun Drawable.toThemedIcon(
         backgroundColor: Int = Color.WHITE,
-        foregroundColor: Int = Color.BLACK
+        foregroundColor: Int = Color.BLACK,
     ): AdaptiveIconDrawable {
-        val (iconMask, needsInset) = when {
-            this is AdaptiveIconDrawable -> {
-                val layer = this.monochrome ?: this.foreground
-                    ?: return AdaptiveIconDrawable(backgroundColor.toDrawable(), InsetDrawable(this, INSET))
-                layer to false
+        if (this is AdaptiveIconDrawable && monochrome != null) {
+            val tintedMonochrome = monochrome!!.mutate().apply {
+                setTintMode(PorterDuff.Mode.SRC_ATOP)
+                setTint(foregroundColor)
             }
-            else -> this to true
-        } as Pair<Drawable, Boolean>
-
-        val themedForeground = if (needsInset) {
-            InsetDrawable(iconMask.mutate(), INSET)
-        } else {
-            iconMask.mutate()
-        }.apply {
-            setTintMode(PorterDuff.Mode.SRC_IN)
-            setTint(foregroundColor)
+            return AdaptiveIconDrawable(backgroundColor.toDrawable(), tintedMonochrome)
         }
 
-        return AdaptiveIconDrawable(backgroundColor.toDrawable(), themedForeground)
+        val drawable = this.mutate().applyDualTone(backgroundColor, foregroundColor)
+
+        val foreground = InsetDrawable(drawable, INSET)
+        return AdaptiveIconDrawable(backgroundColor.toDrawable(), foreground)
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
@@ -96,5 +95,33 @@ object BitmapUtils {
             Log.e(this::class.java.name, e.message ?: e.toString())
             null
         }
+    }
+
+    fun Drawable.applyDualTone(
+        primaryColor: Int,
+        secondaryColor: Int,
+        contrast: Float = 1.5f,
+    ): Drawable {
+        val mutatedDrawable = this.mutate()
+
+        val r1 = Color.red(primaryColor)   / 255f
+        val g1 = Color.green(primaryColor) / 255f
+        val b1 = Color.blue(primaryColor)  / 255f
+
+        val r2 = Color.red(secondaryColor)   / 255f
+        val g2 = Color.green(secondaryColor) / 255f
+        val b2 = Color.blue(secondaryColor)  / 255f
+
+        val pivot = 128f * (1f - contrast)
+
+        val colorMatrix = ColorMatrix(floatArrayOf(
+            (r2 - r1) * contrast, 0f, 0f, 0f, r1 * 255f + (r2 - r1) * pivot,
+            (g2 - g1) * contrast, 0f, 0f, 0f, g1 * 255f + (g2 - g1) * pivot,
+            (b2 - b1) * contrast, 0f, 0f, 0f, b1 * 255f + (b2 - b1) * pivot,
+            0f, 0f, 0f, 1f, 0f,
+        ))
+
+        mutatedDrawable.colorFilter = ColorMatrixColorFilter(colorMatrix)
+        return mutatedDrawable
     }
 }

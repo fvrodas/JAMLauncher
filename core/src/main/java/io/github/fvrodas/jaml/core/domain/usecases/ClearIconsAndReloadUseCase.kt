@@ -11,7 +11,7 @@ class ClearIconsAndReloadUseCase(
         repository.clearIconCacheAndLoad(
             params.shouldUseThemedIcons,
             params.backgroundColor,
-            params.foregroundColor
+            params.foregroundColor,
         )
     }
 }
