@@ -93,7 +93,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                 isDynamicColorsEnabled = launcherPreferences.isDynamicColorEnabled
             ) { colors ->
 
-                LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primary.toArgb(), colors.onPrimary.toArgb()) {
+                LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primaryContainer.toArgb(), colors.onPrimaryContainer.toArgb()) {
                     settingsViewModel.clearIconsAndReload(
                         IconConfig(
                             colors.primaryContainer.toArgb(),

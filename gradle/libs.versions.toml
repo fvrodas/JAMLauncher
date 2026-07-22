@@ -1,6 +1,6 @@
 [versions]
 sdk-min = "24"
-sdk-target = "36"
+sdk-target = "37"
 ktx = "1.17.0"
 coroutines = "1.10.2"
 koin-version = "4.1.1"

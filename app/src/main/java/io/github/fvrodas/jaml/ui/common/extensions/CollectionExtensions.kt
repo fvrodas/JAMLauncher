@@ -14,5 +14,8 @@ fun Set<LauncherEntry>.updateAppEntry(
     }
 }.toSet()
 
+fun Set<LauncherEntry>.replaceEntry(updated: LauncherEntry): Set<LauncherEntry> =
+    map { if (it.packageInfo.packageName == updated.packageInfo.packageName) updated else it }.toSet()
+
 fun Set<PackageInfo>.exclude(collection: Collection<PackageInfo>): Set<PackageInfo> =
     this.filter { c -> collection.none { it.packageName == c.packageName } }.toSet()
