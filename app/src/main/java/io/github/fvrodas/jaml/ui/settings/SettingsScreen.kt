@@ -14,6 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +48,7 @@ import io.github.fvrodas.jaml.ui.common.themes.launcherThemeByName
 import io.github.fvrodas.jaml.ui.settings.views.SettingItem
 import io.github.fvrodas.jaml.ui.settings.views.SettingOptionsDialog
 import io.github.fvrodas.jaml.ui.settings.views.SettingSwitch
+import io.github.fvrodas.jaml.ui.settings.views.SettingsHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,14 +148,7 @@ fun SettingsScreen(
                 .padding(horizontal = dimen16dp, vertical = dimen16dp),
             verticalArrangement = Arrangement.spacedBy(dimen8dp)
         ) {
-            Row {
-                Text(
-                    text = stringResource(id = R.string.menu_other_settings),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                )
-            }
+            SettingsHeader(R.string.menu_other_settings, Icons.Default.Settings)
             if (!settingsActions.isDefaultHome()) {
                 SettingItem(
                     title = stringResource(id = R.string.menu_default_launcher),
@@ -167,14 +164,7 @@ fun SettingsScreen(
                 settingsActions.enableNotificationAccess()
             }
             Spacer(modifier = Modifier.height(dimen16dp))
-            Row {
-                Text(
-                    text = stringResource(id = R.string.menu_appearance),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                )
-            }
+            SettingsHeader(R.string.menu_appearance, Icons.Default.Palette)
             SettingItem(
                 title = stringResource(id = R.string.menu_wallpaper),
                 description = stringResource(id = R.string.summary_wallpaper)
@@ -225,14 +215,7 @@ fun SettingsScreen(
                 }
             }
             Spacer(modifier = Modifier.height(dimen16dp))
-            Row {
-                Text(
-                    text = stringResource(id = R.string.menu_about),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                )
-            }
+            SettingsHeader(R.string.menu_about, Icons.Default.Info)
             SettingItem(
                 title = stringResource(id = R.string.about_neutral),
                 description = projectUrl
