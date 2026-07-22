@@ -17,12 +17,24 @@ android {
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
         versionCode = 5
-        versionName = "1.0.0-beta5"
+        versionName = (project.findProperty("versionName") as String?) ?: "1.0.0-beta5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         resValue("string", "display_app_version_name", "Version $versionName build($versionCode)")
         resValue("string", "prefs_name", "$applicationId.preferences")
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -38,11 +50,12 @@ android {
 
         release {
             isMinifyEnabled = true
-            isShrinkResources =  true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

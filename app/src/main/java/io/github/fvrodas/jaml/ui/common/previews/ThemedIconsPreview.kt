@@ -113,7 +113,7 @@ private fun ThemedIconsPreview() {
             Divider()
             IconCaseRow(IconCase(R.drawable.ic_preview_adaptive_with_monochrome, "Adaptive\n+ Monochrome"))
             Divider()
-            IconCaseRow(IconCase(R.drawable.ic_preview_bitmap, "Adaptive\nNo Monochrome"))
+            IconCaseRow(IconCase(R.drawable.ic_preview_adaptive_no_monochrome, "Adaptive\nNo Monochrome"))
             Divider()
             IconCaseRow(IconCase(R.drawable.ic_preview_legacy, "Legacy\n(Non-Adaptive)"))
         }
