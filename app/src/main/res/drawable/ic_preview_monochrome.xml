@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Ring: outer circle minus inner circle via evenOdd winding -->
+    <path
+        android:fillColor="#000000"
+        android:fillType="evenOdd"
+        android:pathData="M16,54 A38,38,0,0,1,92,54 A38,38,0,0,1,16,54 Z M24,54 A30,30,0,0,0,84,54 A30,30,0,0,0,24,54 Z"/>
+    <!-- Play triangle -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M42,35 L42,73 L76,54 Z"/>
+</vector>

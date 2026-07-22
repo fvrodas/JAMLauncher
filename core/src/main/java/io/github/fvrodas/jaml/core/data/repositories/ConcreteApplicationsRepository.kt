@@ -3,6 +3,7 @@ package io.github.fvrodas.jaml.core.data.repositories
 import android.app.Application
 import android.content.Context
 import android.content.pm.LauncherApps
+import android.graphics.Color
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
@@ -85,6 +86,32 @@ class ConcreteApplicationsRepository(
             null,
             Process.myUserHandle()
         )
+    }
+
+    override suspend fun clearIconCacheAndLoad(
+        backgroundColor: Int,
+        foregroundColor: Int,
+    ) = withContext(Dispatchers.IO) {
+        BitmapUtils.clearCache()
+        launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
+            BitmapUtils.loadIcon(
+                it.applicationInfo.packageName,
+                it.getIcon(-1),
+                true,
+                backgroundColor,
+                foregroundColor,
+            )
+        }
+
+        launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
+            BitmapUtils.loadIcon(
+                it.applicationInfo.packageName,
+                it.getIcon(-1),
+                false,
+                backgroundColor,
+                foregroundColor,
+            )
+        }
     }
 }
 

@@ -3,6 +3,8 @@ package io.github.fvrodas.jaml.ui.launcher.viewmodels
 import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
@@ -12,6 +14,7 @@ import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
 import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
+import io.github.fvrodas.jaml.ui.common.extensions.replaceEntry
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
@@ -62,8 +65,9 @@ class HomeViewModel(
                     val packageNames: List<Pair<String, Long>> = Json.decodeFromString(it)
 
                     packageNames.sortedBy { e -> e.second }.forEach { entry ->
-                        applicationsListCache.find { e -> e.packageInfo.packageName == entry.first }
-                            ?.moveToHomeScreen(entry.second)
+                        applicationsListCache = applicationsListCache.map { e ->
+                            if (e.packageInfo.packageName == entry.first) e.moveToHomeScreen(entry.second) else e
+                        }.toSet()
                     }
                 }
 
@@ -116,8 +120,8 @@ class HomeViewModel(
             ) return@launch
 
             targetApp?.let {
-                if (it.movedToHome) it.moveToDrawer()
-                else it.moveToHomeScreen()
+                val updated = if (it.movedToHome) it.moveToDrawer() else it.moveToHomeScreen()
+                applicationsListCache = applicationsListCache.replaceEntry(updated)
             }
 
             val pinnedApplications =
@@ -152,9 +156,7 @@ class HomeViewModel(
                             message
                         )
                     )
-                    applicationsListCache.find { packageName == it.packageInfo.packageName }?.let {
-                        it.notificationTitle = message
-                    }
+                    applicationsListCache = applicationsListCache.updateAppEntry(packageName, message)
                 }
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
@@ -184,6 +186,7 @@ class HomeViewModel(
     }
 }
 
+@Immutable
 data class ApplicationSheetState(
     val pinnedApplications: Set<LauncherEntry> = setOf(),
     val applicationsList: Set<LauncherEntry> = setOf()

@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
@@ -65,6 +66,7 @@ fun HomeNavigationGraph(
                 applicationListState,
                 shortcutsList,
                 launcherSettings.shouldHideApplicationIcons,
+                launcherSettings.shouldUseThemedIcons,
                 searchApplications = {
                     homeViewModel.filterApplicationsList(it)
                 },

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
@@ -45,6 +46,7 @@ fun HomeScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     state: ApplicationSheetState?,
     shouldHideApplicationIcons: Boolean = false,
+    shouldDisplayThemeIcons: Boolean = false,
     toggleListVisibility: () -> Unit,
     changeShortcutVisibility: (Boolean, Boolean) -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
@@ -90,7 +92,10 @@ fun HomeScreen(
                         val item = state.pinnedApplications.elementAt(it)
                         ApplicationItem(
                             label = item.packageInfo.label,
-                            iconBitmap = if (shouldHideApplicationIcons) null else item.packageInfo.icon,
+                            iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(
+                                item.packageInfo.packageName,
+                                shouldDisplayThemeIcons
+                            ),
                             hasNotification = item.hasNotification,
                             notificationText = item.notificationTitle,
                             isFavorite = true,

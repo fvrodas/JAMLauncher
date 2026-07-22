@@ -16,8 +16,8 @@ android {
         applicationId = "io.github.fvrodas.jaml"
         minSdk = libs.versions.sdk.min.get().toInt()
         lint.targetSdk = libs.versions.sdk.target.get().toInt()
-        versionCode = 4
-        versionName = "1.0.0-beta4"
+        versionCode = 5
+        versionName = (project.findProperty("versionName") as String?) ?: "1.0.0-beta5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -25,11 +25,23 @@ android {
         resValue("string", "prefs_name", "$applicationId.preferences")
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
 
         debug {
             isMinifyEnabled = true
-            isShrinkResources =  true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -38,11 +50,12 @@ android {
 
         release {
             isMinifyEnabled = true
-            isShrinkResources =  true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -50,7 +63,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
     buildFeatures {
         compose = true
     }
@@ -60,6 +72,12 @@ android {
     }
 
     namespace = "io.github.fvrodas.jaml"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    }
 }
 
 dependencies {

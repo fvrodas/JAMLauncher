@@ -18,13 +18,15 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.framework.receivers.PackageChangedReceiver
 import io.github.fvrodas.jaml.navigation.HomeNavigationGraph
@@ -71,7 +73,7 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val navHostController = rememberNavController()
 
-            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsState()
+            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsStateWithLifecycle()
 
             var launcherPreferences: LauncherPreferences by retain {
                 mutableStateOf(preferencesState)
@@ -89,7 +91,17 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                     else -> isSystemInDarkTheme()
                 },
                 isDynamicColorsEnabled = launcherPreferences.isDynamicColorEnabled
-            ) {
+            ) { colors ->
+
+                LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primaryContainer.toArgb(), colors.onPrimaryContainer.toArgb()) {
+                    settingsViewModel.clearIconsAndReload(
+                        IconConfig(
+                            colors.primaryContainer.toArgb(),
+                            colors.onPrimaryContainer.toArgb(),
+                        )
+                    )
+                }
+
                 HomeNavigationGraph(
                     navHostController = navHostController,
                     launcherSettings = launcherPreferences,

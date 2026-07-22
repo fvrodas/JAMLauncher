@@ -64,6 +64,7 @@ fun LauncherScreen(
     applicationSheetState: ApplicationSheetState,
     listOfShortcuts: Pair<LauncherEntry, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
+    shouldDisplayThemeIcons: Boolean = false,
     searchApplications: (String) -> Unit = {},
     retrieveShortcuts: (PackageInfo) -> Unit = {},
     pinToTop: (LauncherEntry) -> Unit = {},
@@ -155,6 +156,7 @@ fun LauncherScreen(
                             this@AnimatedContent,
                             sheetState,
                             shouldHideApplicationIcons,
+                            shouldDisplayThemeIcons,
                             toggleListVisibility = {
                                 shouldDisplayAppList = !shouldDisplayAppList
                             },
