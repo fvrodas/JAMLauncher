@@ -85,22 +85,18 @@ class HomeViewModel(
     fun filterApplicationsList(query: String = "") {
         viewModelScope.launch {
             try {
+                val pinnedPackages = applicationsListCache
+                    .filter { it.movedToHome }
+                    .map { it.packageInfo.packageName }
+                    .toSet()
                 _applicationsState.value = _applicationsState.value.copy(
                     pinnedApplications = applicationsListCache.filter { it.movedToHome }
                         .sortedBy { it.order }.toSet(),
                     applicationsList = applicationsListCache.filter { c ->
                         if (query.isNotEmpty()) {
-                            c.packageInfo.label.simplify().contains(
-                                query,
-                                true
-                            )
+                            c.packageInfo.label.simplify().contains(query, true)
                         } else {
-                            applicationsListCache.filter { it.movedToHome }
-                                .none { c.packageInfo.packageName == it.packageInfo.packageName } &&
-                                    c.packageInfo.label.simplify().contains(
-                                        query,
-                                        true
-                                    )
+                            c.packageInfo.packageName !in pinnedPackages
                         }
                     }.toSet()
                 )
@@ -135,7 +131,12 @@ class HomeViewModel(
                 )
                 commit()
             }
-            retrieveApplicationsList()
+
+            _applicationsState.value = ApplicationSheetState(
+                pinnedApplications = applicationsListCache.filter { it.movedToHome }
+                    .sortedBy { it.order }.toSet(),
+                applicationsList = applicationsListCache.filter { !it.movedToHome }.toSet()
+            )
         }
     }
 

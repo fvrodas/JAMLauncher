@@ -63,14 +63,14 @@ class ConcreteApplicationsRepository(
                         )
                         setPackage(packageName)
                     }, Process.myUserHandle()
-                )!!.map {
+                ).orEmpty().map {
                     PackageInfo.ShortcutInfo(
                         it.id,
                         it.`package`,
                         it.shortLabel.toString(),
                         BitmapUtils.loadShortcutIcon(launcherApps, it)
                     )
-                }.toList().take(maxShortcuts)
+                }.take(maxShortcuts)
             )
         }
 
@@ -94,23 +94,8 @@ class ConcreteApplicationsRepository(
     ) = withContext(Dispatchers.IO) {
         BitmapUtils.clearCache()
         launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
-            BitmapUtils.loadIcon(
-                it.applicationInfo.packageName,
-                it.getIcon(-1),
-                true,
-                backgroundColor,
-                foregroundColor,
-            )
-        }
-
-        launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
-            BitmapUtils.loadIcon(
-                it.applicationInfo.packageName,
-                it.getIcon(-1),
-                false,
-                backgroundColor,
-                foregroundColor,
-            )
+            BitmapUtils.loadIcon(it.applicationInfo.packageName, it.getIcon(-1), true, backgroundColor, foregroundColor)
+            BitmapUtils.loadIcon(it.applicationInfo.packageName, it.getIcon(-1), false, backgroundColor, foregroundColor)
         }
     }
 }

@@ -2,7 +2,7 @@ package io.github.fvrodas.jaml.framework
 
 object LauncherEventBus {
 
-    private val listeners = mutableListOf<LauncherEventListener>()
+    private val listeners = java.util.concurrent.CopyOnWriteArrayList<LauncherEventListener>()
 
     fun postEvent(event: LauncherEvents) {
         for (listener in listeners) {
