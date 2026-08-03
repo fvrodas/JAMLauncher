@@ -15,7 +15,6 @@ class JAMLNotificationService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-        activeNotifications
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {

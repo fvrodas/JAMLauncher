@@ -10,7 +10,8 @@ import java.io.Serializable
 data class PackageInfo(
     val packageName: String,
     val label: String,
-    @Transient val icon: Bitmap? = null
+    @Transient val icon: Bitmap? = null,
+    val key: String
 ) : Serializable, Parcelable {
 
     @Parcelize

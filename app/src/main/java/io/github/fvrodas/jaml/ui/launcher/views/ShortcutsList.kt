@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -125,18 +126,16 @@ fun ShortcutsList(
                     .clip(RoundedCornerShape(dimen16dp)),
                 verticalArrangement = Arrangement.spacedBy(dimen2dp)
             ) {
-                items(shortcuts.size) { i ->
-                    shortcuts.elementAt(i).run {
-                        ShortcutItem(
-                            label = label,
-                            bitmapIcon = icon,
-                            shouldHideShortcutIcons = shouldHideApplicationIcons
-                        ) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                                coroutineScope.launch {
-                                    startShortcut(this@run)
-                                    changeShortcutsVisibility(false)
-                                }
+                items(shortcuts.toList(), key = { it.id }) { shortcut ->
+                    ShortcutItem(
+                        label = shortcut.label,
+                        bitmapIcon = shortcut.icon,
+                        shouldHideShortcutIcons = shouldHideApplicationIcons
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                            coroutineScope.launch {
+                                startShortcut(shortcut)
+                                changeShortcutsVisibility(false)
                             }
                         }
                     }

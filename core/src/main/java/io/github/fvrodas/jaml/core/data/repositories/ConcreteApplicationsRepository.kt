@@ -34,14 +34,13 @@ class ConcreteApplicationsRepository(
                     BitmapUtils.loadIcon(
                         it.applicationInfo.packageName,
                         it.getIcon(-1)
-                    )
+                    ),
+                    it.componentName.flattenToString()
                 )
             )
         }
 
-        apps.sortWith { t1, t2 ->
-            t1.label.lowercase().compareTo(t2.label.lowercase())
-        }
+        apps.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
 
         return@withContext apps
     }
@@ -94,8 +93,20 @@ class ConcreteApplicationsRepository(
     ) = withContext(Dispatchers.IO) {
         BitmapUtils.clearCache()
         launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
-            BitmapUtils.loadIcon(it.applicationInfo.packageName, it.getIcon(-1), true, backgroundColor, foregroundColor)
-            BitmapUtils.loadIcon(it.applicationInfo.packageName, it.getIcon(-1), false, backgroundColor, foregroundColor)
+            BitmapUtils.loadIcon(
+                it.applicationInfo.packageName,
+                it.getIcon(-1),
+                true,
+                backgroundColor,
+                foregroundColor
+            )
+            BitmapUtils.loadIcon(
+                it.applicationInfo.packageName,
+                it.getIcon(-1),
+                false,
+                backgroundColor,
+                foregroundColor
+            )
         }
     }
 }

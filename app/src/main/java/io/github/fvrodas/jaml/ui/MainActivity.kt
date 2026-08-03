@@ -94,12 +94,14 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
             ) { colors ->
 
                 LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primaryContainer.toArgb(), colors.onPrimaryContainer.toArgb()) {
-                    settingsViewModel.clearIconsAndReload(
-                        IconConfig(
-                            colors.primaryContainer.toArgb(),
-                            colors.onPrimaryContainer.toArgb(),
+                    if (preferencesState.shouldUseThemedIcons) {
+                        settingsViewModel.clearIconsAndReload(
+                            IconConfig(
+                                colors.primaryContainer.toArgb(),
+                                colors.onPrimaryContainer.toArgb(),
+                            )
                         )
-                    )
+                    }
                 }
 
                 HomeNavigationGraph(
@@ -192,13 +194,13 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
             val str = localPackageManager.resolveActivity(
                 intent,
                 PackageManager.MATCH_DEFAULT_ONLY
-            )!!.activityInfo.packageName
+            )?.activityInfo?.packageName ?: packageName
             str == packageName
         } else {
             val str = localPackageManager.resolveActivity(
                 intent,
                 PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
-            )!!.activityInfo.packageName
+            )?.activityInfo?.packageName ?: packageName
             str == packageName
         }
 

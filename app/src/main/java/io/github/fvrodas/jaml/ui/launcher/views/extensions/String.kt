@@ -10,12 +10,8 @@ import androidx.compose.ui.text.style.TextDecoration
 fun String.hightlightCoincidence(value: String?, color: Color): AnnotatedString =
     buildAnnotatedString {
         append(this@hightlightCoincidence)
-        if (!value.isNullOrBlank() && this@hightlightCoincidence.contains(
-                value,
-                ignoreCase = true
-            )
-        ) {
-            val start = this@hightlightCoincidence.indexOf(value, ignoreCase = true)
+        val start = if (!value.isNullOrBlank()) this@hightlightCoincidence.indexOf(value, ignoreCase = true) else -1
+        if (start >= 0) {
             this.addStyle(
                 SpanStyle(
                     color = color,
@@ -23,7 +19,7 @@ fun String.hightlightCoincidence(value: String?, color: Color): AnnotatedString 
                     textDecoration = TextDecoration.Underline
                 ),
                 start,
-                start + (value.length)
+                start + value!!.length
             )
         }
     }

@@ -202,7 +202,7 @@ fun ApplicationsSheet(
                     modifier = Modifier.padding(horizontal = dimen8dp),
                     verticalArrangement = Arrangement.spacedBy(dimen8dp)
                 ) {
-                    items(appList, key = { it.packageInfo.packageName }) { item ->
+                    items(appList, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}"}) { item ->
                         ApplicationItem(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
@@ -299,11 +299,12 @@ fun ApplicationsSheetPreview() {
                 ApplicationsSheet(
                     state = ApplicationSheetState(
                         applicationsList = setOf(
-                            PackageInfo(packageName = "com.android.settings", label = "Settings").toLauncherEntry(),
-                            PackageInfo(packageName = "com.android.vending", label = "Play Store").toLauncherEntry(),
+                            PackageInfo(packageName = "com.android.settings", label = "Settings", key = "").toLauncherEntry(),
+                            PackageInfo(packageName = "com.android.vending", label = "Play Store", key = "").toLauncherEntry(),
                             PackageInfo(
                                 packageName = "com.google.android.apps.maps",
-                                label = "Maps"
+                                label = "Maps",
+                                key = ""
                             ).toLauncherEntry(),
                         )
                     ),
