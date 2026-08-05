@@ -25,11 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,19 +64,6 @@ fun ApplicationItem(
     onApplicationPressed: () -> Unit
 ) {
 
-    var hasNotificationState by remember {
-        mutableStateOf(hasNotification)
-    }
-
-    var notificationTextState by remember {
-        mutableStateOf(notificationText)
-    }
-
-    LaunchedEffect(hasNotification, notificationText) {
-        hasNotificationState = hasNotification
-        notificationTextState = notificationText
-    }
-
     val gradient = if (isFavorite) {
         GRADIENT
     } else {
@@ -97,7 +80,7 @@ fun ApplicationItem(
             .fillMaxWidth()
             .height(dimen64dp)
             .clip(RoundedCornerShape(dimen16dp))
-            .applyIf(hasNotificationState) {
+            .applyIf(hasNotification) {
                 background(gradient)
             }
             .combinedClickable(
@@ -137,7 +120,7 @@ fun ApplicationItem(
             Text(
                 text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
                 style = MaterialTheme.typography.titleLarge.copy(
-                    color = if (hasNotificationState) {
+                    color = if (hasNotification) {
                         MaterialTheme.colorScheme.primary
                     } else if (isFavorite) {
                         Color.White
@@ -147,7 +130,7 @@ fun ApplicationItem(
                     shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
                 )
             )
-            if (isFavorite && hasNotificationState && !notificationTextState.isNullOrEmpty()) {
+            if (isFavorite && hasNotification && !notificationText.isNullOrEmpty()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -161,7 +144,7 @@ fun ApplicationItem(
                         )
                     }
                     Text(
-                        text = notificationTextState ?: "",
+                        text = notificationText ?: "",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleMedium.copy(

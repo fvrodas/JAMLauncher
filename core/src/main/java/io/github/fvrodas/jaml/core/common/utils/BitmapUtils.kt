@@ -32,10 +32,6 @@ object BitmapUtils {
         foregroundColor: Int = Color.BLACK,
     ): Bitmap = iconCache["$packageName${if (themedIcons) ".themed" else ""}"] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
-            Log.i(
-                "Determine Icon Nature",
-                "$packageName = Adaptive Icon: ${drawable is AdaptiveIconDrawable} | monochrome: ${drawable is AdaptiveIconDrawable && drawable.monochrome != null}"
-            )
             drawable.toThemedIcon(backgroundColor, foregroundColor).toBitmap()
         } else {
             drawable.forceAdaptiveIconIfNeeded().toBitmap()

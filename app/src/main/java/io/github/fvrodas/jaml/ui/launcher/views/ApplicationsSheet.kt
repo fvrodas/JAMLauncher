@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,6 +90,7 @@ fun ApplicationsSheet(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
+    val appList = remember(state.applicationsList) { state.applicationsList.toList() }
 
     var searchFieldValue by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -200,8 +202,7 @@ fun ApplicationsSheet(
                     modifier = Modifier.padding(horizontal = dimen8dp),
                     verticalArrangement = Arrangement.spacedBy(dimen8dp)
                 ) {
-                    items(state.applicationsList.size) {
-                        val item = state.applicationsList.elementAt(it)
+                    items(appList, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}"}) { item ->
                         ApplicationItem(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
@@ -298,11 +299,12 @@ fun ApplicationsSheetPreview() {
                 ApplicationsSheet(
                     state = ApplicationSheetState(
                         applicationsList = setOf(
-                            PackageInfo(packageName = "com.android.settings", label = "Settings").toLauncherEntry(),
-                            PackageInfo(packageName = "com.android.vending", label = "Play Store").toLauncherEntry(),
+                            PackageInfo(packageName = "com.android.settings", label = "Settings", key = "").toLauncherEntry(),
+                            PackageInfo(packageName = "com.android.vending", label = "Play Store", key = "").toLauncherEntry(),
                             PackageInfo(
                                 packageName = "com.google.android.apps.maps",
-                                label = "Maps"
+                                label = "Maps",
+                                key = ""
                             ).toLauncherEntry(),
                         )
                     ),

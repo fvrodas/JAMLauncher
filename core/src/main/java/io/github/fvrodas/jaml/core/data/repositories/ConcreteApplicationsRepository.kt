@@ -34,14 +34,13 @@ class ConcreteApplicationsRepository(
                     BitmapUtils.loadIcon(
                         it.applicationInfo.packageName,
                         it.getIcon(-1)
-                    )
+                    ),
+                    it.componentName.flattenToString()
                 )
             )
         }
 
-        apps.sortWith { t1, t2 ->
-            t1.label.lowercase().compareTo(t2.label.lowercase())
-        }
+        apps.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
 
         return@withContext apps
     }
@@ -63,14 +62,14 @@ class ConcreteApplicationsRepository(
                         )
                         setPackage(packageName)
                     }, Process.myUserHandle()
-                )!!.map {
+                ).orEmpty().map {
                     PackageInfo.ShortcutInfo(
                         it.id,
                         it.`package`,
                         it.shortLabel.toString(),
                         BitmapUtils.loadShortcutIcon(launcherApps, it)
                     )
-                }.toList().take(maxShortcuts)
+                }.take(maxShortcuts)
             )
         }
 
@@ -99,17 +98,14 @@ class ConcreteApplicationsRepository(
                 it.getIcon(-1),
                 true,
                 backgroundColor,
-                foregroundColor,
+                foregroundColor
             )
-        }
-
-        launcherApps.getActivityList(null, Process.myUserHandle()).forEach {
             BitmapUtils.loadIcon(
                 it.applicationInfo.packageName,
                 it.getIcon(-1),
                 false,
                 backgroundColor,
-                foregroundColor,
+                foregroundColor
             )
         }
     }
