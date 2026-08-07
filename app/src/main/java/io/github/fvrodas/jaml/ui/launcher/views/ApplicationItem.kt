@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +47,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.applyIf
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.hightlightCoincidence
 
@@ -56,6 +58,7 @@ fun ApplicationItem(
     label: String,
     notificationText: String? = null,
     searchText: String? = null,
+    groupLabel: String? = null,
     iconBitmap: Bitmap? = null,
     iconVector: ImageVector? = null,
     hasNotification: Boolean = false,
@@ -78,7 +81,7 @@ fun ApplicationItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(dimen64dp)
+            .heightIn(min = dimen64dp)
             .clip(RoundedCornerShape(dimen16dp))
             .applyIf(hasNotification) {
                 background(gradient)
@@ -116,7 +119,7 @@ fun ApplicationItem(
             }
         }
         Spacer(modifier = Modifier.width(dimen16dp))
-        Column {
+        Column(modifier = Modifier.padding(vertical = dimen8dp)) {
             Text(
                 text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -130,6 +133,16 @@ fun ApplicationItem(
                     shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
                 )
             )
+            if (!groupLabel.isNullOrEmpty()) {
+                Text(
+                    text = groupLabel,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    ),
+                )
+            }
             if (isFavorite && hasNotification && !notificationText.isNullOrEmpty()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically

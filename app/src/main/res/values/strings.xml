@@ -50,4 +50,5 @@
     <string name="group_confirm">Confirm</string>
     <string name="group_cancel">Cancel</string>
     <string name="group_select_title">Add to group</string>
+    <string name="group_label_desktop">Home</string>
 </resources>

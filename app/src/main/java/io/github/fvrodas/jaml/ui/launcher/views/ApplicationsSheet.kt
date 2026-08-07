@@ -241,10 +241,16 @@ fun ApplicationsSheet(
                         }
                     }
                     items(appList, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}" }) { item ->
+                        val groupLabel = if (searchFieldValue.isNotEmpty()) when {
+                            item.movedToHome -> stringResource(R.string.group_label_desktop)
+                            item.group != null -> item.group
+                            else -> null
+                        } else null
                         ApplicationItem(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
                             searchText = searchFieldValue,
+                            groupLabel = groupLabel,
                             iconBitmap = if (shouldHideApplicationIcons) null else BitmapUtils.loadIconForPackage(item.packageInfo.packageName),
                             hasNotification = item.hasNotification,
                             onApplicationLongPressed = { isFavorite ->

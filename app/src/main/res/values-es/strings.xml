@@ -36,4 +36,17 @@
     <string name="summary_themed_icons">Íconos temáticos para tu pantalla de inicio</string>
     <string name="menu_themed_icons">Usar íconos temáticos</string>
     <string name="badge_experimental">Experimental </string>
+    <string name="group_add_to_group">Añadir a grupo</string>
+    <string name="group_move_to_group">Mover a grupo</string>
+    <string name="group_remove_from_group">Quitar del grupo</string>
+    <string name="group_create_new">Nuevo grupo</string>
+    <string name="group_rename">Renombrar</string>
+    <string name="group_delete">Eliminar grupo</string>
+    <string name="group_name_hint">Nombre del grupo</string>
+    <string name="group_create_title">Crear grupo</string>
+    <string name="group_rename_title">Renombrar grupo</string>
+    <string name="group_confirm">Confirmar</string>
+    <string name="group_cancel">Cancelar</string>
+    <string name="group_select_title">Añadir a grupo</string>
+    <string name="group_label_desktop">Inicio</string>
 </resources>
