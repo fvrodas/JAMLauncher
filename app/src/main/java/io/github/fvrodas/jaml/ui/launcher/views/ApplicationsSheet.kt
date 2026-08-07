@@ -87,12 +87,17 @@ fun ApplicationsSheet(
     onApplicationLongPressed: (PackageInfo) -> Unit,
     performWebSearch: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
+    onRenameGroup: (String, String) -> Unit,
+    onDeleteGroup: (String) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     val appList = remember(state.applicationsList) { state.applicationsList.toList() }
+    val groupsList = remember(state.groups) { state.groups }
+    val groupedApps = remember(state.groupedApplications) { state.groupedApplications }
 
     var searchFieldValue by remember { mutableStateOf("") }
+    var expandedGroups by remember { mutableStateOf(emptySet<String>()) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val focusRequester = remember { FocusRequester() }
@@ -116,6 +121,7 @@ fun ApplicationsSheet(
     DisposableEffect(Unit) {
         onDispose {
             searchFieldValue = ""
+            expandedGroups = emptySet()
             onSearchApplication(searchFieldValue)
         }
     }
@@ -125,9 +131,7 @@ fun ApplicationsSheet(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        MaterialTheme.colorScheme.background,
-                    )
+                    .background(MaterialTheme.colorScheme.background)
                     .pointerInput(Unit) {
                         detectVerticalDragGestures(
                             onDragStart = {},
@@ -193,16 +197,50 @@ fun ApplicationsSheet(
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxWidth()
                         .padding(bottom = dimen8dp)
-                        .padding(
-                            horizontal = dimen16dp
-                        ),
+                        .padding(horizontal = dimen16dp),
                 )
                 LazyColumn(
                     state = lazyListState,
                     modifier = Modifier.padding(horizontal = dimen8dp),
                     verticalArrangement = Arrangement.spacedBy(dimen8dp)
                 ) {
-                    items(appList, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}"}) { item ->
+                    if (searchFieldValue.isEmpty()) {
+                        groupsList.forEach { group ->
+                            item(key = "group_${group.name}") {
+                                GroupSection(
+                                    group = group,
+                                    apps = groupedApps[group.name] ?: emptyList(),
+                                    isExpanded = group.name in expandedGroups,
+                                    shouldHideApplicationIcons = shouldHideApplicationIcons,
+                                    shouldDisplayThemeIcons = false,
+                                    onToggle = {
+                                        expandedGroups = if (group.name in expandedGroups) {
+                                            expandedGroups - group.name
+                                        } else {
+                                            expandedGroups + group.name
+                                        }
+                                    },
+                                    onAppPressed = { packageInfo ->
+                                        coroutineScope.launch {
+                                            onApplicationPressed(packageInfo)
+                                            toggleListVisibility()
+                                        }
+                                    },
+                                    onAppLongPressed = { packageInfo ->
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                            coroutineScope.launch {
+                                                onApplicationLongPressed(packageInfo)
+                                                changeShortcutVisibility(true, true)
+                                            }
+                                        }
+                                    },
+                                    onRenameGroup = { newName -> onRenameGroup(group.name, newName) },
+                                    onDeleteGroup = { onDeleteGroup(group.name) },
+                                )
+                            }
+                        }
+                    }
+                    items(appList, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}" }) { item ->
                         ApplicationItem(
                             label = item.packageInfo.label,
                             notificationText = item.notificationTitle,
@@ -252,7 +290,6 @@ fun ApplicationsSheet(
                                 .navigationBarsPadding(),
                             horizontalArrangement = Arrangement.End,
                         ) {
-
                             if (shouldHideApplicationIcons) {
                                 TextButton(onClick = { onSettingsPressed.invoke() }) {
                                     Text(
@@ -270,8 +307,7 @@ fun ApplicationsSheet(
                                     Icon(
                                         imageVector = Icons.Outlined.Settings,
                                         contentDescription = stringResource(R.string.settings_button),
-                                        modifier = Modifier
-                                            .size(dimen24dp),
+                                        modifier = Modifier.size(dimen24dp),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -301,11 +337,7 @@ fun ApplicationsSheetPreview() {
                         applicationsList = setOf(
                             PackageInfo(packageName = "com.android.settings", label = "Settings", key = "").toLauncherEntry(),
                             PackageInfo(packageName = "com.android.vending", label = "Play Store", key = "").toLauncherEntry(),
-                            PackageInfo(
-                                packageName = "com.google.android.apps.maps",
-                                label = "Maps",
-                                key = ""
-                            ).toLauncherEntry(),
+                            PackageInfo(packageName = "com.google.android.apps.maps", label = "Maps", key = "").toLauncherEntry(),
                         )
                     ),
                     sharedTransitionScope = this@SharedTransitionLayout,
@@ -316,7 +348,9 @@ fun ApplicationsSheetPreview() {
                     onApplicationPressed = {},
                     onApplicationLongPressed = {},
                     performWebSearch = {},
-                    onSearchApplication = {}
+                    onSearchApplication = {},
+                    onRenameGroup = { _, _ -> },
+                    onDeleteGroup = {},
                 )
             }
         }

@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.outlined.FolderOff
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
@@ -36,6 +38,7 @@ import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry.Companion.DEFAULT_GROUP
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen18dp
@@ -55,6 +58,8 @@ fun ShortcutsList(
     startShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     pinAppToTop: (LauncherEntry) -> Unit = {},
     onApplicationInfoPressed: (PackageInfo) -> Unit = {},
+    onAddToGroup: ((LauncherEntry) -> Unit)? = null,
+    onRemoveFromGroup: ((LauncherEntry) -> Unit)? = null,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -174,6 +179,28 @@ fun ShortcutsList(
                     shouldHideShortcutIcons = shouldHideApplicationIcons
                 ) {
                     onApplicationInfoPressed(it.packageInfo)
+                    changeShortcutsVisibility(false)
+                }
+                val isInGroup = it.group != null && it.group != DEFAULT_GROUP
+                if (isInGroup) {
+                    ShortcutItem(
+                        label = stringResource(R.string.group_remove_from_group),
+                        bitmapIcon = null,
+                        vectorIcon = Icons.Outlined.FolderOff,
+                        shouldHideShortcutIcons = shouldHideApplicationIcons,
+                    ) {
+                        onRemoveFromGroup?.invoke(shortcutsList.first)
+                        changeShortcutsVisibility(false)
+                    }
+                }
+                ShortcutItem(
+                    label = if (isInGroup) stringResource(R.string.group_move_to_group)
+                            else stringResource(R.string.group_add_to_group),
+                    bitmapIcon = null,
+                    vectorIcon = Icons.Outlined.CreateNewFolder,
+                    shouldHideShortcutIcons = shouldHideApplicationIcons,
+                ) {
+                    onAddToGroup?.invoke(shortcutsList.first)
                     changeShortcutsVisibility(false)
                 }
             }

@@ -25,6 +25,8 @@ data class LauncherPreferences(
         const val THEMED_ICON_BACKGROUND_COLOR = "themediconbackgroundcolor"
 
         const val PINNED_APPS = "pinnedapplications"
+        const val GROUPS_LIST = "groupslist"
+        const val GROUPED_APPS = "groupedapps"
     }
 }
 

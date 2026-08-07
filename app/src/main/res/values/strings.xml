@@ -38,4 +38,16 @@
     <string name="summary_themed_icons">Themed icons for your Homescreen</string>
     <string name="menu_themed_icons">Use themed icons</string>
     <string name="badge_experimental">Experimental </string>
+    <string name="group_add_to_group">Add to group</string>
+    <string name="group_move_to_group">Move to group</string>
+    <string name="group_remove_from_group">Remove from group</string>
+    <string name="group_create_new">New group</string>
+    <string name="group_rename">Rename</string>
+    <string name="group_delete">Delete group</string>
+    <string name="group_name_hint">Group name</string>
+    <string name="group_create_title">Create Group</string>
+    <string name="group_rename_title">Rename Group</string>
+    <string name="group_confirm">Confirm</string>
+    <string name="group_cancel">Cancel</string>
+    <string name="group_select_title">Add to group</string>
 </resources>
