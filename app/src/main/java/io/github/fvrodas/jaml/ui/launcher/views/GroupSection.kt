@@ -2,14 +2,22 @@ package io.github.fvrodas.jaml.ui.launcher.views
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,6 +48,8 @@ import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.models.AppGroup
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
+import io.github.fvrodas.jaml.ui.common.themes.dimen1dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
@@ -129,31 +139,61 @@ fun GroupSection(
         }
     }
 
-    AnimatedVisibility(visible = isExpanded) {
-        Column(verticalArrangement = Arrangement.spacedBy(dimen4dp)) {
-            apps.forEach { item ->
-                ApplicationItem(
-                    label = item.packageInfo.label,
-                    iconBitmap = if (shouldHideApplicationIcons) null
-                                 else BitmapUtils.loadIconForPackage(
-                                     item.packageInfo.packageName,
-                                     shouldDisplayThemeIcons,
-                                 ),
-                    hasNotification = item.hasNotification,
-                    notificationText = item.notificationTitle,
-                    onApplicationLongPressed = { _ ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                            coroutineScope.launch {
-                                onAppLongPressed(item.packageInfo)
+    AnimatedVisibility(
+        visible = isExpanded,
+        enter = expandVertically(
+            animationSpec = tween(220),
+            expandFrom = Alignment.Top,
+        ) + fadeIn(animationSpec = tween(220)),
+        exit = shrinkVertically(
+            animationSpec = tween(180),
+            shrinkTowards = Alignment.Top,
+        ) + fadeOut(animationSpec = tween(180)),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
+        ) {
+            // Vertical guideline positioned under the folder icon centre (16dp + 12dp = 28dp)
+            Spacer(modifier = Modifier.width(dimen16dp + dimen12dp))
+            Box(
+                modifier = Modifier
+                    .width(dimen1dp)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+            )
+            // Apps indented to align with the group name (gap = 48dp − 28dp − 1dp ≈ 20dp)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = dimen12dp + dimen8dp),
+                verticalArrangement = Arrangement.spacedBy(dimen4dp),
+            ) {
+                apps.forEach { item ->
+                    ApplicationItem(
+                        label = item.packageInfo.label,
+                        iconBitmap = if (shouldHideApplicationIcons) null
+                                     else BitmapUtils.loadIconForPackage(
+                                         item.packageInfo.packageName,
+                                         shouldDisplayThemeIcons,
+                                     ),
+                        hasNotification = item.hasNotification,
+                        notificationText = item.notificationTitle,
+                        onApplicationLongPressed = { _ ->
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                                coroutineScope.launch {
+                                    onAppLongPressed(item.packageInfo)
+                                }
                             }
-                        }
-                    },
-                    onApplicationPressed = {
-                        coroutineScope.launch {
-                            onAppPressed(item.packageInfo)
-                        }
-                    },
-                )
+                        },
+                        onApplicationPressed = {
+                            coroutineScope.launch {
+                                onAppPressed(item.packageInfo)
+                            }
+                        },
+                    )
+                }
             }
         }
     }
