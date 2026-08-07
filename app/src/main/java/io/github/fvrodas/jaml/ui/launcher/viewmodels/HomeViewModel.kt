@@ -285,14 +285,14 @@ class HomeViewModel(
 
     fun retrieveShortcuts(packageInfo: PackageInfo) {
         viewModelScope.launch {
+            val applicationInfo =
+                applicationsListCache.first { it.packageInfo.packageName == packageInfo.packageName }
             try {
-                val applicationInfo =
-                    applicationsListCache.first { it.packageInfo.packageName == packageInfo.packageName }
                 val shortcuts =
                     getShortcutsListForApplicationUseCase(packageInfo.packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
             } catch (_: Exception) {
-                _shortcutList.value = null
+                _shortcutList.value = Pair(applicationInfo, emptySet())
             }
         }
     }
