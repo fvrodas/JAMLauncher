@@ -22,6 +22,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 @Composable
 fun GroupPickerDialog(
     groups: List<String>,
+    shouldHideApplicationIcons: Boolean = false,
     onGroupSelected: (String) -> Unit,
     onCreateNew: () -> Unit,
 ) {
@@ -44,12 +45,14 @@ fun GroupPickerDialog(
                     label = group,
                     bitmapIcon = null,
                     vectorIcon = Icons.Default.Folder,
+                    shouldHideShortcutIcons = shouldHideApplicationIcons,
                 ) { onGroupSelected(group) }
             }
             ShortcutItem(
                 label = stringResource(R.string.group_create_new),
                 bitmapIcon = null,
                 vectorIcon = Icons.Default.Add,
+                shouldHideShortcutIcons = shouldHideApplicationIcons,
             ) { onCreateNew() }
         }
     }

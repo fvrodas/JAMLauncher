@@ -287,6 +287,7 @@ fun LauncherScreen(
                     ) {
                         GroupPickerDialog(
                             groups = sheetState.groups,
+                            shouldHideApplicationIcons = shouldHideApplicationIcons,
                             onGroupSelected = { groupName ->
                                 groupPickerEntry?.let { addAppToGroup(it, groupName) }
                                 shouldShowGroupPicker = false

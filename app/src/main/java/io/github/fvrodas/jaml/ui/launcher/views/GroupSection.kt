@@ -96,13 +96,15 @@ fun GroupSection(
             .padding(horizontal = dimen16dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            imageVector = if (isExpanded) Icons.Default.FolderOpen else Icons.Default.Folder,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(dimen24dp),
-        )
-        Spacer(modifier = Modifier.width(dimen8dp))
+        if (!shouldHideApplicationIcons) {
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.FolderOpen else Icons.Default.Folder,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(dimen24dp),
+            )
+            Spacer(modifier = Modifier.width(dimen8dp))
+        }
         Text(
             text = group,
             style = MaterialTheme.typography.titleMedium.copy(
@@ -157,6 +159,7 @@ fun GroupSection(
                                 label = stringResource(R.string.group_rename),
                                 bitmapIcon = null,
                                 vectorIcon = Icons.Default.Edit,
+                                shouldHideShortcutIcons = shouldHideApplicationIcons,
                             ) {
                                 showContextMenu = false
                                 showRenameDialog = true
@@ -165,6 +168,7 @@ fun GroupSection(
                                 label = stringResource(R.string.group_delete),
                                 bitmapIcon = null,
                                 vectorIcon = Icons.Default.Delete,
+                                shouldHideShortcutIcons = shouldHideApplicationIcons,
                             ) {
                                 showContextMenu = false
                                 onDeleteGroup()
