@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,10 +41,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
@@ -54,6 +55,8 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import io.github.fvrodas.jaml.ui.launcher.views.ApplicationsSheet
+import io.github.fvrodas.jaml.ui.launcher.views.GroupNameDialog
+import io.github.fvrodas.jaml.ui.launcher.views.GroupPickerDialog
 import io.github.fvrodas.jaml.ui.launcher.views.HomeScreen
 import io.github.fvrodas.jaml.ui.launcher.views.ShortcutsList
 
@@ -70,24 +73,25 @@ fun LauncherScreen(
     pinToTop: (LauncherEntry) -> Unit = {},
     openShortcut: (PackageInfo.ShortcutInfo) -> Unit = {},
     openLauncherSettings: () -> Unit = {},
-    launcherActions: LauncherActions
+    createGroup: (String) -> Unit = {},
+    renameGroup: (String, String) -> Unit = { _, _ -> },
+    deleteGroup: (String) -> Unit = {},
+    addAppToGroup: (LauncherEntry, String) -> Unit = { _, _ -> },
+    removeAppFromGroup: (LauncherEntry) -> Unit = {},
+    launcherActions: LauncherActions,
 ) {
 
     var sheetState by retain {
         mutableStateOf(applicationSheetState)
     }
 
-    var shouldDisplayShortcutsList by remember {
-        mutableStateOf(false)
-    }
+    var shouldDisplayShortcutsList by remember { mutableStateOf(false) }
+    var shortcutListPinningMode by remember { mutableStateOf(false) }
+    var shouldDisplayAppList by remember { mutableStateOf(false) }
 
-    var shortcutListPinningMode by remember {
-        mutableStateOf(false)
-    }
-
-    var shouldDisplayAppList by remember {
-        mutableStateOf(false)
-    }
+    var shouldShowGroupPicker by remember { mutableStateOf(false) }
+    var shouldShowGroupCreate by remember { mutableStateOf(false) }
+    var groupPickerEntry by remember { mutableStateOf<LauncherEntry?>(null) }
 
     LaunchedEffect(applicationSheetState) {
         sheetState = applicationSheetState
@@ -123,13 +127,11 @@ fun LauncherScreen(
                     )
             )
         }
-        /** End of Experimental Status Bar Tint **/
         SharedTransitionLayout {
             AnimatedContent(
                 targetState = shouldDisplayAppList,
                 label = "home",
                 content = { targetState ->
-
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
@@ -147,8 +149,11 @@ fun LauncherScreen(
                                 openLauncherSettings,
                                 onApplicationPressed = launcherActions::openApplication,
                                 onApplicationLongPressed = retrieveShortcuts,
-                                performWebSearch = launcherActions::performWebSearch
-                            ) { searchApplications(it) }
+                                performWebSearch = launcherActions::performWebSearch,
+                                onSearchApplication = { searchApplications(it) },
+                                onRenameGroup = renameGroup,
+                                onDeleteGroup = deleteGroup,
+                            )
                         }
                     } else {
                         HomeScreen(
@@ -165,7 +170,7 @@ fun LauncherScreen(
                                 shortcutListPinningMode = pinningMode
                             },
                             onApplicationPressed = launcherActions::openApplication,
-                            onApplicationLongPressed = retrieveShortcuts
+                            onApplicationLongPressed = retrieveShortcuts,
                         ) {
                             shouldDisplayAppList = it
                         }
@@ -202,7 +207,6 @@ fun LauncherScreen(
                 onDismissRequest = { shouldDisplayShortcutsList = false },
                 properties = PopupProperties(focusable = true)
             ) {
-                // Dimmed background that catches clicks to dismiss
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -212,7 +216,6 @@ fun LauncherScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    // The actual Vertical Menu
                     Surface(
                         modifier = Modifier
                             .padding(horizontal = dimen32dp, vertical = dimen16dp)
@@ -236,11 +239,84 @@ fun LauncherScreen(
                                 shouldDisplayShortcutsList = false
                                 pinToTop(it)
                             },
-                            onApplicationInfoPressed = launcherActions::openApplicationInfo
+                            onApplicationInfoPressed = launcherActions::openApplicationInfo,
+                            onAddToGroup = { entry ->
+                                groupPickerEntry = entry
+                                shouldShowGroupPicker = true
+                            },
+                            onRemoveFromGroup = { entry ->
+                                removeAppFromGroup(entry)
+                            },
                         )
                     }
                 }
             }
+        }
+
+        AnimatedVisibility(
+            shouldShowGroupPicker,
+            enter = slideInVertically(),
+            exit = slideOutVertically()
+        ) {
+            Popup(
+                alignment = Alignment.BottomCenter,
+                onDismissRequest = {
+                    shouldShowGroupPicker = false
+                    groupPickerEntry = null
+                },
+                properties = PopupProperties(focusable = true)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                shouldShowGroupPicker = false
+                                groupPickerEntry = null
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = dimen32dp, vertical = dimen16dp)
+                            .clip(RoundedCornerShape(dimen16dp)),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = dimen8dp
+                    ) {
+                        GroupPickerDialog(
+                            groups = sheetState.groups,
+                            shouldHideApplicationIcons = shouldHideApplicationIcons,
+                            onGroupSelected = { groupName ->
+                                groupPickerEntry?.let { addAppToGroup(it, groupName) }
+                                shouldShowGroupPicker = false
+                                groupPickerEntry = null
+                            },
+                            onCreateNew = {
+                                shouldShowGroupPicker = false
+                                shouldShowGroupCreate = true
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
+        if (shouldShowGroupCreate) {
+            GroupNameDialog(
+                title = stringResource(R.string.group_create_title),
+                onConfirm = { name ->
+                    createGroup(name)
+                    groupPickerEntry?.let { addAppToGroup(it, name) }
+                    shouldShowGroupCreate = false
+                    groupPickerEntry = null
+                },
+                onDismiss = {
+                    shouldShowGroupCreate = false
+                    groupPickerEntry = null
+                },
+            )
         }
 
         BackHandler {

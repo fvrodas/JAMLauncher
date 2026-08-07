@@ -2,6 +2,7 @@ package io.github.fvrodas.jaml.ui.common.themes
 
 import androidx.compose.ui.unit.dp
 
+val dimen1dp = 1.dp
 val dimen2dp = 2.dp
 val dimen4dp = 4.dp
 val dimen8dp = 8.dp

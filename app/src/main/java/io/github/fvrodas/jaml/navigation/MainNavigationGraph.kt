@@ -82,7 +82,12 @@ fun HomeNavigationGraph(
                 openLauncherSettings = {
                     navHostController.navigate(Routes.SETTINGS_SCREEN)
                 },
-                launcherActions = launcherActions
+                createGroup = { homeViewModel.createGroup(it) },
+                renameGroup = { old, new -> homeViewModel.renameGroup(old, new) },
+                deleteGroup = { homeViewModel.deleteGroup(it) },
+                addAppToGroup = { entry, group -> homeViewModel.addAppToGroup(entry, group) },
+                removeAppFromGroup = { homeViewModel.removeAppFromGroup(it) },
+                launcherActions = launcherActions,
             )
         }
 
