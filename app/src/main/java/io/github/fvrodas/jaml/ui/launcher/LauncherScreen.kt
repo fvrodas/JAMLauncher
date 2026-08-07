@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,10 +41,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
@@ -252,28 +253,58 @@ fun LauncherScreen(
             }
         }
 
-        if (shouldShowGroupPicker) {
-            GroupPickerDialog(
-                groups = sheetState.groups,
-                onGroupSelected = { groupName ->
-                    groupPickerEntry?.let { addAppToGroup(it, groupName) }
+        AnimatedVisibility(
+            shouldShowGroupPicker,
+            enter = slideInVertically(),
+            exit = slideOutVertically()
+        ) {
+            Popup(
+                alignment = Alignment.BottomCenter,
+                onDismissRequest = {
                     shouldShowGroupPicker = false
                     groupPickerEntry = null
                 },
-                onCreateNew = {
-                    shouldShowGroupPicker = false
-                    shouldShowGroupCreate = true
-                },
-                onDismiss = {
-                    shouldShowGroupPicker = false
-                    groupPickerEntry = null
-                },
-            )
+                properties = PopupProperties(focusable = true)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f))
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                shouldShowGroupPicker = false
+                                groupPickerEntry = null
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .padding(horizontal = dimen32dp, vertical = dimen16dp)
+                            .clip(RoundedCornerShape(dimen16dp)),
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = dimen8dp
+                    ) {
+                        GroupPickerDialog(
+                            groups = sheetState.groups,
+                            onGroupSelected = { groupName ->
+                                groupPickerEntry?.let { addAppToGroup(it, groupName) }
+                                shouldShowGroupPicker = false
+                                groupPickerEntry = null
+                            },
+                            onCreateNew = {
+                                shouldShowGroupPicker = false
+                                shouldShowGroupCreate = true
+                            },
+                        )
+                    }
+                }
+            }
         }
 
         if (shouldShowGroupCreate) {
             GroupNameDialog(
-                title = "New Group",
+                title = stringResource(R.string.group_create_title),
                 onConfirm = { name ->
                     createGroup(name)
                     groupPickerEntry?.let { addAppToGroup(it, name) }

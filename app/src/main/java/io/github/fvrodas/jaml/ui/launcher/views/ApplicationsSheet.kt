@@ -93,8 +93,8 @@ fun ApplicationsSheet(
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
     val appList = remember(state.applicationsList) { state.applicationsList.toList() }
-    val groupsList = remember(state.groups) { state.groups }
-    val groupedApps = remember(state.groupedApplications) { state.groupedApplications }
+    val groupsList = state.groups
+    val groupedApps = state.groupedApplications
 
     var searchFieldValue by remember { mutableStateOf("") }
     var expandedGroups by remember { mutableStateOf(emptySet<String>()) }
@@ -110,7 +110,7 @@ fun ApplicationsSheet(
         lazyListState.animateScrollToItem(0)
     }
 
-    LaunchedEffect(focusState) {
+    LaunchedEffect(focusState.value) {
         if (focusState.value) {
             keyboardController?.show()
         } else {
@@ -206,18 +206,18 @@ fun ApplicationsSheet(
                 ) {
                     if (searchFieldValue.isEmpty()) {
                         groupsList.forEach { group ->
-                            item(key = "group_${group.name}") {
+                            item(key = "group_$group") {
                                 GroupSection(
                                     group = group,
-                                    apps = groupedApps[group.name] ?: emptyList(),
-                                    isExpanded = group.name in expandedGroups,
+                                    apps = groupedApps[group] ?: emptyList(),
+                                    isExpanded = group in expandedGroups,
                                     shouldHideApplicationIcons = shouldHideApplicationIcons,
                                     shouldDisplayThemeIcons = false,
                                     onToggle = {
-                                        expandedGroups = if (group.name in expandedGroups) {
-                                            expandedGroups - group.name
+                                        expandedGroups = if (group in expandedGroups) {
+                                            expandedGroups - group
                                         } else {
-                                            expandedGroups + group.name
+                                            expandedGroups + group
                                         }
                                     },
                                     onAppPressed = { packageInfo ->
@@ -234,8 +234,8 @@ fun ApplicationsSheet(
                                             }
                                         }
                                     },
-                                    onRenameGroup = { newName -> onRenameGroup(group.name, newName) },
-                                    onDeleteGroup = { onDeleteGroup(group.name) },
+                                    onRenameGroup = { newName -> onRenameGroup(group, newName) },
+                                    onDeleteGroup = { onDeleteGroup(group) },
                                 )
                             }
                         }

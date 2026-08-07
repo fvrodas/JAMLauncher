@@ -10,6 +10,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,20 +19,22 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -42,16 +45,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.ui.common.models.AppGroup
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
-import io.github.fvrodas.jaml.ui.common.themes.dimen1dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen1dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
@@ -60,7 +68,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GroupSection(
-    group: AppGroup,
+    group: String,
     apps: List<LauncherEntry>,
     isExpanded: Boolean,
     shouldHideApplicationIcons: Boolean,
@@ -75,67 +83,96 @@ fun GroupSection(
     var showRenameDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    Box {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(dimen48dp)
-                .combinedClickable(
-                    onClick = onToggle,
-                    onLongClick = { showContextMenu = true },
-                    indication = ripple(color = MaterialTheme.colorScheme.primary),
-                    interactionSource = remember { MutableInteractionSource() },
-                )
-                .padding(horizontal = dimen16dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.FolderOpen
-                              else Icons.Default.Folder,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(dimen24dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(dimen48dp)
+            .combinedClickable(
+                onClick = onToggle,
+                onLongClick = { showContextMenu = true },
+                indication = ripple(color = MaterialTheme.colorScheme.primary),
+                interactionSource = remember { MutableInteractionSource() },
             )
-            Spacer(modifier = Modifier.width(dimen8dp))
-            Text(
-                text = group.name,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.onBackground,
-                ),
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = apps.size.toString(),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                ),
-            )
-        }
+            .padding(horizontal = dimen16dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = if (isExpanded) Icons.Default.FolderOpen else Icons.Default.Folder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(dimen24dp),
+        )
+        Spacer(modifier = Modifier.width(dimen8dp))
+        Text(
+            text = group,
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground,
+            ),
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = apps.size.toString(),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            ),
+        )
+    }
 
-        DropdownMenu(
-            expanded = showContextMenu,
+    if (showContextMenu) {
+        Popup(
+            alignment = Alignment.BottomCenter,
             onDismissRequest = { showContextMenu = false },
+            properties = PopupProperties(focusable = true),
         ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.group_rename)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Edit, contentDescription = null)
-                },
-                onClick = {
-                    showContextMenu = false
-                    showRenameDialog = true
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.group_delete)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Delete, contentDescription = null)
-                },
-                onClick = {
-                    showContextMenu = false
-                    onDeleteGroup()
-                },
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .pointerInput(Unit) {
+                        detectTapGestures { showContextMenu = false }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Surface(
+                    modifier = Modifier.padding(horizontal = dimen32dp, vertical = dimen16dp),
+                    shape = RoundedCornerShape(dimen16dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = dimen8dp,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = dimen32dp, vertical = dimen32dp)
+                    ) {
+                        Text(
+                            text = group,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                color = MaterialTheme.colorScheme.onBackground,
+                            ),
+                            modifier = Modifier.padding(bottom = dimen12dp),
+                        )
+                        Column(
+                            modifier = Modifier.clip(RoundedCornerShape(dimen16dp)),
+                            verticalArrangement = Arrangement.spacedBy(dimen2dp),
+                        ) {
+                            ShortcutItem(
+                                label = stringResource(R.string.group_rename),
+                                bitmapIcon = null,
+                                vectorIcon = Icons.Default.Edit,
+                            ) {
+                                showContextMenu = false
+                                showRenameDialog = true
+                            }
+                            ShortcutItem(
+                                label = stringResource(R.string.group_delete),
+                                bitmapIcon = null,
+                                vectorIcon = Icons.Default.Delete,
+                            ) {
+                                showContextMenu = false
+                                onDeleteGroup()
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -201,7 +238,7 @@ fun GroupSection(
     if (showRenameDialog) {
         GroupNameDialog(
             title = stringResource(R.string.group_rename_title),
-            initialName = group.name,
+            initialName = group,
             onConfirm = { newName ->
                 onRenameGroup(newName)
                 showRenameDialog = false

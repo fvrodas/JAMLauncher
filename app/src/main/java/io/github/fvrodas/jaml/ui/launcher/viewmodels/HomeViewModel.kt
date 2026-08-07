@@ -4,9 +4,6 @@ import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.AppConfig
@@ -17,7 +14,6 @@ import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseC
 import io.github.fvrodas.jaml.ui.common.extensions.replaceEntry
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
-import io.github.fvrodas.jaml.ui.common.models.AppGroup
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 import io.github.fvrodas.jaml.ui.common.models.toLauncherEntry
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
@@ -87,8 +83,10 @@ class HomeViewModel(
         }
     }
 
-    private fun buildState(groupNames: List<String>): ApplicationSheetState {
-        val groups = groupNames.map { AppGroup(it) }
+    private fun buildState(
+        groupNames: List<String>,
+        appListOverride: Set<LauncherEntry>? = null,
+    ): ApplicationSheetState {
         val groupedApplications = groupNames.associateWith { gName ->
             applicationsListCache.filter { it.group == gName }
         }
@@ -97,10 +95,10 @@ class HomeViewModel(
                 .filter { it.movedToHome }
                 .sortedBy { it.order }
                 .toSet(),
-            applicationsList = applicationsListCache
+            applicationsList = appListOverride ?: applicationsListCache
                 .filter { it.group == null }
                 .toSet(),
-            groups = groups,
+            groups = groupNames,
             groupedApplications = groupedApplications,
         )
     }
@@ -115,22 +113,17 @@ class HomeViewModel(
                 applicationsListCache = result.map { it.toLauncherEntry() }.toSet()
 
                 sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
-                    val packageNames: List<Pair<String, Long>> = Json.decodeFromString(it)
-                    packageNames.sortedBy { e -> e.second }.forEach { entry ->
-                        applicationsListCache = applicationsListCache.map { e ->
-                            if (e.packageInfo.packageName == entry.first) e.moveToHomeScreen(entry.second) else e
-                        }.toSet()
-                    }
+                    val pinnedMap = Json.decodeFromString<List<Pair<String, Long>>>(it).toMap()
+                    applicationsListCache = applicationsListCache.map { e ->
+                        pinnedMap[e.packageInfo.packageName]?.let { order -> e.moveToHomeScreen(order) } ?: e
+                    }.toSet()
                 }
 
                 val (groupNames, groupedApps) = loadGroupsFromPrefs()
-                groupedApps.forEach { (groupName, packageNames) ->
-                    packageNames.forEach { packageName ->
-                        applicationsListCache = applicationsListCache.map { e ->
-                            if (e.packageInfo.packageName == packageName) e.moveToGroup(groupName) else e
-                        }.toSet()
-                    }
-                }
+                val groupLookup = groupedApps.flatMap { (gName, pkgs) -> pkgs.map { it to gName } }.toMap()
+                applicationsListCache = applicationsListCache.map { e ->
+                    groupLookup[e.packageInfo.packageName]?.let { e.moveToGroup(it) } ?: e
+                }.toSet()
 
                 _applicationsState.value = buildState(groupNames)
             } catch (_: Exception) {
@@ -142,25 +135,13 @@ class HomeViewModel(
     fun filterApplicationsList(query: String = "") {
         viewModelScope.launch {
             try {
-                val (groupNames, _) = loadGroupsFromPrefs()
+                val groupNames = _applicationsState.value.groups
                 val filtered = if (query.isNotEmpty()) {
                     applicationsListCache.filter { c ->
                         c.packageInfo.label.simplify().contains(query, true)
-                    }
-                } else {
-                    applicationsListCache.filter { it.group == null }
-                }
-                _applicationsState.value = _applicationsState.value.copy(
-                    pinnedApplications = applicationsListCache
-                        .filter { it.movedToHome }
-                        .sortedBy { it.order }
-                        .toSet(),
-                    applicationsList = filtered.toSet(),
-                    groups = groupNames.map { AppGroup(it) },
-                    groupedApplications = groupNames.associateWith { gName ->
-                        applicationsListCache.filter { it.group == gName }
-                    },
-                )
+                    }.toSet()
+                } else null
+                _applicationsState.value = buildState(groupNames, filtered)
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
             }
@@ -187,9 +168,11 @@ class HomeViewModel(
 
             savePinnedApps()
 
-            val (groupNames, groupedApps) = loadGroupsFromPrefs()
+            val groupNames = _applicationsState.value.groups
             if (isPinning) {
                 val packageName = entry.packageInfo.packageName
+                val groupedApps = _applicationsState.value.groupedApplications
+                    .mapValues { (_, v) -> v.map { it.packageInfo.packageName } }
                 val updatedApps = groupedApps.mapValues { (_, v) -> v.filter { it != packageName } }
                 saveGroupsToPrefs(groupNames, updatedApps)
             }
@@ -249,9 +232,9 @@ class HomeViewModel(
                 k to if (k == groupName) (v + packageName).distinct()
                       else v.filter { it != packageName }
             }
-            applicationsListCache = applicationsListCache.map { e ->
-                if (e.packageInfo.packageName == packageName) e.moveToGroup(groupName) else e
-            }.toSet()
+            applicationsListCache.find { it.packageInfo.packageName == packageName }?.let {
+                applicationsListCache = applicationsListCache.replaceEntry(it.moveToGroup(groupName))
+            }
             savePinnedApps()
             saveGroupsToPrefs(groupNames, updatedApps)
             _applicationsState.value = buildState(groupNames)
@@ -263,9 +246,9 @@ class HomeViewModel(
             val (groupNames, groupedApps) = loadGroupsFromPrefs()
             val packageName = entry.packageInfo.packageName
             val updatedApps = groupedApps.mapValues { (_, v) -> v.filter { it != packageName } }
-            applicationsListCache = applicationsListCache.map { e ->
-                if (e.packageInfo.packageName == packageName) e.moveToDrawer() else e
-            }.toSet()
+            applicationsListCache.find { it.packageInfo.packageName == packageName }?.let {
+                applicationsListCache = applicationsListCache.replaceEntry(it.moveToDrawer())
+            }
             saveGroupsToPrefs(groupNames, updatedApps)
             _applicationsState.value = buildState(groupNames)
         }
@@ -326,22 +309,12 @@ class HomeViewModel(
 data class ApplicationSheetState(
     val pinnedApplications: Set<LauncherEntry> = setOf(),
     val applicationsList: Set<LauncherEntry> = setOf(),
-    val groups: List<AppGroup> = emptyList(),
+    val groups: List<String> = emptyList(),
     val groupedApplications: Map<String, List<LauncherEntry>> = emptyMap(),
 ) {
     val canPinApps: Boolean get() = pinnedApplications.size < MAX_PINNED_APPS
 
     companion object {
         const val MAX_PINNED_APPS = 5
-
-        val Saver: Saver<ApplicationSheetState, Any> = listSaver(
-            save = { listOf(it.pinnedApplications.toList(), it.applicationsList.toList()) },
-            restore = {
-                ApplicationSheetState(
-                    pinnedApplications = it[0].sortedBy { e -> e.order }.toSet(),
-                    applicationsList = it[1].toSet()
-                )
-            }
-        )
     }
 }

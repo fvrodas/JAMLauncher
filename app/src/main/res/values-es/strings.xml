@@ -25,7 +25,7 @@
     <string name="summary_hide_app_icons">Ocultar los íconos de aplicaciones para un estilo más minimalista</string>
     <string name="menu_hide_app_icons">Ocultar íconos de aplicaciones</string>
     <string name="label_favorites">Favoritos</string>
-    <string name="shortcut_pin">Mover al escritorio</string>
+    <string name="shortcut_pin">Mover al Inicio</string>
     <string name="shortcut_unpin">Mover al cajón</string>
     <string name="settings_button">Ir a la configuración del lanzador</string>
     <string name="theme_light">Claro</string>
