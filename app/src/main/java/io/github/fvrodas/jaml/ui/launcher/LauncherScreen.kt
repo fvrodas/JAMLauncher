@@ -210,7 +210,7 @@ fun LauncherScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
                         .pointerInput(Unit) {
                             detectTapGestures { shouldDisplayShortcutsList = false }
                         },
@@ -269,7 +269,7 @@ fun LauncherScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
                         .pointerInput(Unit) {
                             detectTapGestures {
                                 shouldShowGroupPicker = false

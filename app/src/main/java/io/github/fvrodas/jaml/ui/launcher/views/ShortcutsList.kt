@@ -91,7 +91,7 @@ fun ShortcutsList(
             Text(
                 text = shortcutsList?.first?.packageInfo?.label ?: "",
                 style = MaterialTheme.typography.headlineMedium.copy(
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
         }

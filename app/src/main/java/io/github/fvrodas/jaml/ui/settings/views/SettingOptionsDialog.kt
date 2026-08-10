@@ -46,7 +46,7 @@ fun SettingOptionsDialog(
 
     if (showIf) {
         ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             onDismissRequest = {
                 onDismiss()
             },
@@ -55,7 +55,6 @@ fun SettingOptionsDialog(
             LazyColumn(
                 modifier = Modifier
                     .clip(RoundedCornerShape(dimen16dp))
-                    .background(MaterialTheme.colorScheme.surface)
                     .padding(bottom = dimen32dp)
                     .fillMaxWidth()
             ) {

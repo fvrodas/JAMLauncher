@@ -32,7 +32,7 @@ fun GroupPickerDialog(
         Text(
             text = stringResource(R.string.group_select_title),
             style = MaterialTheme.typography.headlineMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.onSurface,
             ),
             modifier = Modifier.padding(bottom = dimen12dp),
         )

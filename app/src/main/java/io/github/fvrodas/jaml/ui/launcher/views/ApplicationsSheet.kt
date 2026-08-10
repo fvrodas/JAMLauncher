@@ -3,6 +3,7 @@ package io.github.fvrodas.jaml.ui.launcher.views
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -66,10 +67,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Popup
@@ -220,6 +221,7 @@ fun ApplicationsSheet(
                         containerColor = MaterialTheme.colorScheme.background,
                         contentColor = MaterialTheme.colorScheme.primary,
                         edgePadding = dimen8dp,
+                        divider = {}
                     ) {
                         GroupTab(
                             text = stringResource(R.string.group_all_apps),
@@ -252,6 +254,7 @@ fun ApplicationsSheet(
                             performWebSearch = performWebSearch,
                             onSettingsPressed = onSettingsPressed,
                             coroutineScope = coroutineScope,
+                            shouldDisplaySettings = page == 0
                         )
                     }
                 } else {
@@ -280,7 +283,7 @@ fun ApplicationsSheet(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
                             .pointerInput(Unit) {
                                 detectTapGestures { contextMenuGroup = null }
                             },
@@ -298,7 +301,7 @@ fun ApplicationsSheet(
                                 Text(
                                     text = contextMenuGroup!!,
                                     style = MaterialTheme.typography.headlineMedium.copy(
-                                        color = MaterialTheme.colorScheme.onBackground,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                     ),
                                     modifier = Modifier.padding(bottom = dimen12dp),
                                 )
@@ -365,6 +368,7 @@ private fun AppPage(
     performWebSearch: (String) -> Unit,
     onSettingsPressed: () -> Unit,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
+    shouldDisplaySettings: Boolean= true,
 ) {
     LazyColumn(
         state = lazyListState,
@@ -418,26 +422,28 @@ private fun AppPage(
             }
         }
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimen16dp)
-                    .padding(bottom = dimen8dp)
-                    .navigationBarsPadding(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                IconButton(
+            AnimatedVisibility(shouldDisplaySettings) {
+                Row(
                     modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.background),
-                    onClick = { onSettingsPressed.invoke() }
+                        .fillMaxWidth()
+                        .padding(horizontal = dimen16dp)
+                        .padding(bottom = dimen8dp)
+                        .navigationBarsPadding(),
+                    horizontalArrangement = Arrangement.End,
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = stringResource(R.string.settings_button),
-                        modifier = Modifier.size(dimen24dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    IconButton(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.background),
+                        onClick = { onSettingsPressed.invoke() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = stringResource(R.string.settings_button),
+                            modifier = Modifier.size(dimen24dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
@@ -469,6 +475,7 @@ private fun GroupTab(
             style = MaterialTheme.typography.headlineMedium.copy(
                 color = if (selected) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Light
             ),
         )
     }
@@ -480,8 +487,8 @@ private fun GroupTab(
 @Composable
 fun ApplicationsSheetPreview() {
     JamlTheme(
-        colorScheme = JamlColorScheme.Default,
-        isInDarkMode = isSystemInDarkTheme(),
+        colorScheme = JamlColorScheme.Nord,
+        isInDarkMode = true,//isSystemInDarkTheme(),
         isDynamicColorsEnabled = false
     ) { _ ->
         SharedTransitionLayout {
@@ -491,8 +498,9 @@ fun ApplicationsSheetPreview() {
                         applicationsList = setOf(
                             PackageInfo(packageName = "com.android.settings", label = "Settings", key = "").toLauncherEntry(),
                             PackageInfo(packageName = "com.android.vending", label = "Play Store", key = "").toLauncherEntry().copy(group = "Test"),
-                            PackageInfo(packageName = "com.google.android.apps.maps", label = "Maps", key = "").toLauncherEntry(),
-                        )
+                            PackageInfo(packageName = "com.google.android.apps.maps", label = "Maps", key = "Test").toLauncherEntry(),
+                        ),
+                        groups = listOf("Test")
                     ),
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@AnimatedContent,

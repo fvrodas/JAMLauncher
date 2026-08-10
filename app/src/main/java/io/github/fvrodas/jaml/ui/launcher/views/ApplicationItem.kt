@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -69,16 +68,20 @@ fun ApplicationItem(
     onApplicationPressed: () -> Unit
 ) {
 
-    val gradient = if (isFavorite) {
-        GRADIENT
-    } else {
-        Brush.linearGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.0f)
-            )
+    val gradient = Brush.linearGradient(
+        colors = if (isFavorite) listOf(
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.0f),
+        ) else listOf(
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.0f),
         )
-    }
+    )
+    val favoriteDropShadow = if (isFavorite) Shadow(
+        color = Color.Black.copy(alpha = 0.7f),
+        offset = Offset(2f, 3f),
+        blurRadius = 3f,
+    ) else null
 
     Row(
         modifier = Modifier
@@ -125,14 +128,12 @@ fun ApplicationItem(
             Text(
                 text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
                 style = MaterialTheme.typography.titleLarge.copy(
-                    color = if (hasNotification) {
-                        MaterialTheme.colorScheme.primary
-                    } else if (isFavorite) {
-                        Color.White
-                    } else {
-                        MaterialTheme.colorScheme.onBackground
+                    color = when {
+                        isFavorite -> Color.White
+                        hasNotification -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onBackground
                     },
-                    shadow = if (isFavorite) FAVORITE_DROP_SHADOW else null
+                    shadow = favoriteDropShadow
                 )
             )
             if (!groupLabel.isNullOrEmpty()) {
@@ -150,25 +151,24 @@ fun ApplicationItem(
                 }
             }
             if (isFavorite && hasNotification && !notificationText.isNullOrEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Badge(
+                    modifier = Modifier.padding(top = dimen4dp),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
                 ) {
                     if (iconBitmap != null || iconVector != null) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "",
-                            tint = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
                             modifier = Modifier
                                 .size(dimen16dp),
                         )
                     }
                     Text(
-                        text = notificationText ?: "",
+                        text = notificationText,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(DEFAULT_ALPHA),
-                        )
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
@@ -177,19 +177,6 @@ fun ApplicationItem(
 }
 
 internal const val DEFAULT_ALPHA = 0.9f
-
-internal val FAVORITE_DROP_SHADOW: Shadow = Shadow(
-    Color.Black.copy(.9f),
-    Offset(2f, 3f),
-    3f
-)
-
-internal val GRADIENT = Brush.linearGradient(
-    colors = listOf(
-        Color.Black.copy(alpha = 0.7f),
-        Color.Black.copy(alpha = 0.1f)
-    )
-)
 
 @Preview(showBackground = true)
 @Composable

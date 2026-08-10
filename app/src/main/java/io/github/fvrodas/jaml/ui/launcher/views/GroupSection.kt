@@ -45,7 +45,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Popup
@@ -115,7 +114,7 @@ fun GroupSection(
         Text(
             text = apps.size.toString(),
             style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.38f),
             ),
         )
     }
@@ -129,7 +128,7 @@ fun GroupSection(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
                     .pointerInput(Unit) {
                         detectTapGestures { showContextMenu = false }
                     },
@@ -147,7 +146,7 @@ fun GroupSection(
                         Text(
                             text = group,
                             style = MaterialTheme.typography.headlineMedium.copy(
-                                color = MaterialTheme.colorScheme.onBackground,
+                                color = MaterialTheme.colorScheme.onSurface,
                             ),
                             modifier = Modifier.padding(bottom = dimen12dp),
                         )
@@ -202,7 +201,7 @@ fun GroupSection(
                 modifier = Modifier
                     .width(dimen1dp)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                    .background(MaterialTheme.colorScheme.outlineVariant),
             )
             // Apps indented to align with the group name (gap = 48dp − 28dp − 1dp ≈ 20dp)
             Column(
