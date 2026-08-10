@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,6 +47,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.views.extensions.applyIf
@@ -134,14 +136,18 @@ fun ApplicationItem(
                 )
             )
             if (!groupLabel.isNullOrEmpty()) {
-                Text(
-                    text = groupLabel,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    ),
-                )
+                Badge(
+                    modifier = Modifier.padding(top = dimen4dp),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                ) {
+                    Text(
+                        text = groupLabel,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
             }
             if (isFavorite && hasNotification && !notificationText.isNullOrEmpty()) {
                 Row(
