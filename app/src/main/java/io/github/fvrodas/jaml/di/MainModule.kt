@@ -23,15 +23,13 @@ val appModule = module {
         HomeViewModel(
             get(),
             get(),
-            get(),
-            get(),
             get()
         )
     }
     viewModel {
         SettingsViewModel(
             get(),
-             get()
+            get()
         )
     }
 }

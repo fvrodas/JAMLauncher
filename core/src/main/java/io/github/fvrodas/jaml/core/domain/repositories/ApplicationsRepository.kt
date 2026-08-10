@@ -1,7 +1,6 @@
 package io.github.fvrodas.jaml.core.domain.repositories
 
 import android.graphics.Color
-import io.github.fvrodas.jaml.core.data.repositories.MAX_SHORTCUTS_TO_DISPLAY
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 
 interface ApplicationsRepository {
@@ -17,4 +16,8 @@ interface ApplicationsRepository {
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
     )
+
+    companion object {
+        const val MAX_SHORTCUTS_TO_DISPLAY = 5
+    }
 }

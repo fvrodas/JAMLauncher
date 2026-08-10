@@ -4,8 +4,8 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.R
+import io.github.fvrodas.jaml.core.api.CoreLauncherApi
 import io.github.fvrodas.jaml.core.domain.entities.IconConfig
-import io.github.fvrodas.jaml.core.domain.usecases.ClearIconsAndReloadUseCase
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val prefs: SharedPreferences,
-    private val clearIconsAndReloadUseCase: ClearIconsAndReloadUseCase
+    private val coreLauncherApi: CoreLauncherApi
 ) : ViewModel() {
 
     private val _launcherPreferences = MutableStateFlow(
@@ -66,7 +66,7 @@ class SettingsViewModel(
 
     fun clearIconsAndReload(iconConfig: IconConfig) {
         viewModelScope.launch {
-            clearIconsAndReloadUseCase(iconConfig)
+            coreLauncherApi.clearIconAndReload(iconConfig)
         }
     }
 }

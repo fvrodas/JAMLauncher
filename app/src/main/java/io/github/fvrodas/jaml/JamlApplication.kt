@@ -2,7 +2,7 @@ package io.github.fvrodas.jaml
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
-import io.github.fvrodas.jaml.core.coreModule
+import io.github.fvrodas.jaml.core.di.coreModule
 import io.github.fvrodas.jaml.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger

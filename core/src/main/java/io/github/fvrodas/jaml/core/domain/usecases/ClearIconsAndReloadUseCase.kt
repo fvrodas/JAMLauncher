@@ -4,7 +4,7 @@ import io.github.fvrodas.jaml.core.common.usecases.UseCase
 import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 
-class ClearIconsAndReloadUseCase(
+internal class ClearIconsAndReloadUseCase(
     private val repository: ApplicationsRepository
 ) : UseCase<Unit, IconConfig>() {
     override suspend fun invoke(params: IconConfig) {

@@ -3,7 +3,6 @@ package io.github.fvrodas.jaml.core.data.repositories
 import android.app.Application
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.graphics.Color
 import android.os.Build
 import android.os.Process
 import androidx.annotation.RequiresApi
@@ -14,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 
-class ConcreteApplicationsRepository(
+internal class ConcreteApplicationsRepository(
     application: Application
 ) : ApplicationsRepository {
 
@@ -110,5 +109,3 @@ class ConcreteApplicationsRepository(
         }
     }
 }
-
-const val MAX_SHORTCUTS_TO_DISPLAY = 5

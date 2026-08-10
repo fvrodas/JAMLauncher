@@ -7,10 +7,8 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fvrodas.jaml.AppConfig
+import io.github.fvrodas.jaml.core.api.CoreLauncherApi
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
-import io.github.fvrodas.jaml.core.domain.usecases.GetApplicationsListUseCase
-import io.github.fvrodas.jaml.core.domain.usecases.GetShortcutsListForApplicationUseCase
-import io.github.fvrodas.jaml.core.domain.usecases.LaunchApplicationShortcutUseCase
 import io.github.fvrodas.jaml.ui.common.extensions.replaceEntry
 import io.github.fvrodas.jaml.ui.common.extensions.simplify
 import io.github.fvrodas.jaml.ui.common.extensions.updateAppEntry
@@ -27,9 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class HomeViewModel(
-    private val getApplicationsListUseCase: GetApplicationsListUseCase,
-    private val getShortcutsListForApplicationUseCase: GetShortcutsListForApplicationUseCase,
-    private val launchApplicationShortcutUseCase: LaunchApplicationShortcutUseCase,
+    private val coreLauncherApi: CoreLauncherApi,
     private val appConfig: AppConfig,
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
@@ -65,7 +61,10 @@ class HomeViewModel(
         return groupNames to groupedApps
     }
 
-    private fun saveGroupsToPrefs(groupNames: List<String>, groupedApps: Map<String, List<String>>) {
+    private fun saveGroupsToPrefs(
+        groupNames: List<String>,
+        groupedApps: Map<String, List<String>>
+    ) {
         sharedPreferences.edit().apply {
             putString(LauncherPreferences.GROUPS_LIST, Json.encodeToString(groupNames))
             putString(LauncherPreferences.GROUPED_APPS, Json.encodeToString(groupedApps))
@@ -108,19 +107,24 @@ class HomeViewModel(
     fun retrieveApplicationsList() {
         viewModelScope.launch {
             try {
-                val result = getApplicationsListUseCase(null)
+                val result = coreLauncherApi.getApplicationsList()
                     .filter { it.packageName != appConfig.packageName }
                 applicationsListCache = result.map { it.toLauncherEntry() }.toSet()
 
                 sharedPreferences.getString(LauncherPreferences.PINNED_APPS, null)?.let {
                     val pinnedMap = Json.decodeFromString<List<Pair<String, Long>>>(it).toMap()
                     applicationsListCache = applicationsListCache.map { e ->
-                        pinnedMap[e.packageInfo.packageName]?.let { order -> e.moveToHomeScreen(order) } ?: e
+                        pinnedMap[e.packageInfo.packageName]?.let { order ->
+                            e.moveToHomeScreen(
+                                order
+                            )
+                        } ?: e
                     }.toSet()
                 }
 
                 val (groupNames, groupedApps) = loadGroupsFromPrefs()
-                val groupLookup = groupedApps.flatMap { (gName, pkgs) -> pkgs.map { it to gName } }.toMap()
+                val groupLookup =
+                    groupedApps.flatMap { (gName, pkgs) -> pkgs.map { it to gName } }.toMap()
                 applicationsListCache = applicationsListCache.map { e ->
                     groupLookup[e.packageInfo.packageName]?.let { e.moveToGroup(it) } ?: e
                 }.toSet()
@@ -230,10 +234,11 @@ class HomeViewModel(
             val packageName = entry.packageInfo.packageName
             val updatedApps = groupedApps.entries.associate { (k, v) ->
                 k to if (k == groupName) (v + packageName).distinct()
-                      else v.filter { it != packageName }
+                else v.filter { it != packageName }
             }
             applicationsListCache.find { it.packageInfo.packageName == packageName }?.let {
-                applicationsListCache = applicationsListCache.replaceEntry(it.moveToGroup(groupName))
+                applicationsListCache =
+                    applicationsListCache.replaceEntry(it.moveToGroup(groupName))
             }
             savePinnedApps()
             saveGroupsToPrefs(groupNames, updatedApps)
@@ -273,7 +278,8 @@ class HomeViewModel(
                             message
                         )
                     )
-                    applicationsListCache = applicationsListCache.updateAppEntry(packageName, message)
+                    applicationsListCache =
+                        applicationsListCache.updateAppEntry(packageName, message)
                 }
             } catch (_: Exception) {
                 _applicationsState.value = ApplicationSheetState()
@@ -289,7 +295,7 @@ class HomeViewModel(
                 applicationsListCache.first { it.packageInfo.packageName == packageInfo.packageName }
             try {
                 val shortcuts =
-                    getShortcutsListForApplicationUseCase(packageInfo.packageName).toSet()
+                    coreLauncherApi.getShortcutsListForApplication(packageInfo.packageName).toSet()
                 _shortcutList.value = Pair(applicationInfo, shortcuts)
             } catch (_: Exception) {
                 _shortcutList.value = Pair(applicationInfo, emptySet())
@@ -300,7 +306,7 @@ class HomeViewModel(
     @RequiresApi(Build.VERSION_CODES.N_MR1)
     fun startShortcut(shortcut: PackageInfo.ShortcutInfo) {
         viewModelScope.launch {
-            launchApplicationShortcutUseCase.invoke(shortcut)
+            coreLauncherApi.launchApplicationShortcut(shortcut)
         }
     }
 }

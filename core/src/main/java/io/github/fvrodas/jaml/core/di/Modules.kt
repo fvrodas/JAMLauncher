@@ -1,6 +1,8 @@
-package io.github.fvrodas.jaml.core
+package io.github.fvrodas.jaml.core.di
 
 import androidx.annotation.Keep
+import io.github.fvrodas.jaml.core.api.CoreLauncher
+import io.github.fvrodas.jaml.core.api.CoreLauncherApi
 import io.github.fvrodas.jaml.core.data.repositories.ConcreteApplicationsRepository
 import io.github.fvrodas.jaml.core.domain.repositories.ApplicationsRepository
 import io.github.fvrodas.jaml.core.domain.usecases.ClearIconsAndReloadUseCase
@@ -16,4 +18,5 @@ val coreModule = module {
     factory { GetShortcutsListForApplicationUseCase(get()) }
     factory { LaunchApplicationShortcutUseCase(get()) }
     factory { ClearIconsAndReloadUseCase(get()) }
+    single<CoreLauncherApi> { CoreLauncher(get(), get(), get(), get()) }
 }
