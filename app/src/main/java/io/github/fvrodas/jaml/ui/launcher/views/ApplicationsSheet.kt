@@ -211,12 +211,12 @@ fun ApplicationsSheet(
                         .focusable(interactionSource = mutableInteractionSource)
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxWidth()
-                        .padding(bottom = dimen8dp)
                         .padding(horizontal = dimen16dp),
                 )
 
                 if (usePager) {
                     PrimaryScrollableTabRow(
+                        modifier = Modifier.padding(vertical = dimen8dp),
                         selectedTabIndex = pagerState.currentPage,
                         containerColor = MaterialTheme.colorScheme.background,
                         contentColor = MaterialTheme.colorScheme.primary,
@@ -372,7 +372,7 @@ private fun AppPage(
 ) {
     LazyColumn(
         state = lazyListState,
-        modifier = Modifier.padding(horizontal = dimen8dp).fillMaxSize(),
+        modifier = Modifier.padding(horizontal = dimen16dp).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(dimen8dp),
     ) {
         items(apps, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}" }) { item ->

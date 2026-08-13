@@ -23,7 +23,7 @@ fun SettingItem(title: String, description: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = dimen8dp, vertical = dimen8dp)
+            modifier = Modifier.padding(vertical = dimen8dp)
         ) {
             Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onBackground

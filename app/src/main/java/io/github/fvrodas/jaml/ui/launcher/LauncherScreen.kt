@@ -36,7 +36,6 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -218,8 +217,8 @@ fun LauncherScreen(
                 ) {
                     Surface(
                         modifier = Modifier
-                            .padding(horizontal = dimen32dp, vertical = dimen16dp)
-                            .clip(RoundedCornerShape(dimen16dp)),
+                            .padding(horizontal = dimen32dp, vertical = dimen16dp),
+                        shape = RoundedCornerShape(dimen16dp),
                         color = MaterialTheme.colorScheme.surface,
                         tonalElevation = dimen8dp
                     ) {
@@ -280,8 +279,8 @@ fun LauncherScreen(
                 ) {
                     Surface(
                         modifier = Modifier
-                            .padding(horizontal = dimen32dp, vertical = dimen16dp)
-                            .clip(RoundedCornerShape(dimen16dp)),
+                            .padding(horizontal = dimen32dp, vertical = dimen16dp),
+                        shape = RoundedCornerShape(dimen16dp),
                         color = MaterialTheme.colorScheme.surface,
                         tonalElevation = dimen8dp
                     ) {

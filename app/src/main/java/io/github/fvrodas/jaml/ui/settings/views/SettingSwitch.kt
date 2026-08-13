@@ -41,7 +41,7 @@ fun SettingSwitch(
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = dimen8dp, vertical = dimen8dp)
+                .padding(vertical = dimen8dp)
                 .weight(1f)
         ) {
             Text(
@@ -76,6 +76,10 @@ fun SettingSwitch(
                 }
             }
         }
-        Switch(checked = value, onCheckedChange = onToggle)
+        Switch(
+            modifier = Modifier.padding(start = dimen16dp),
+            checked = value,
+            onCheckedChange = onToggle
+        )
     }
 }

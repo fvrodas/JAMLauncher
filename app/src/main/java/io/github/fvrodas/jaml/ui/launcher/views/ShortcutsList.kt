@@ -113,8 +113,7 @@ fun ShortcutsList(
                 )
                 Text(
                     modifier = Modifier
-                        .padding(end = dimen16dp)
-                        .padding(vertical = dimen16dp),
+                        .padding(top = dimen16dp, bottom = dimen16dp, end = dimen16dp),
                     text = notification,
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
