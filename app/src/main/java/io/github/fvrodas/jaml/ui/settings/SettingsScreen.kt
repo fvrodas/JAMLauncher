@@ -96,13 +96,13 @@ fun SettingsScreen(
         shouldUseThemedIcons,
         selectedPinnedAlignment,
     ) {
-        if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
+        val themeChanged = launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
             launcherPreferences.launcherColorScheme != selectedColorScheme ||
-            launcherPreferences.launcherTheme != selectedLauncherTheme ||
-            launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons ||
-            launcherPreferences.shouldUseThemedIcons != shouldUseThemedIcons ||
-            launcherPreferences.pinnedAlignment != selectedPinnedAlignment
-        ) {
+            launcherPreferences.launcherTheme != selectedLauncherTheme
+        val iconsChanged = launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons ||
+            launcherPreferences.shouldUseThemedIcons != shouldUseThemedIcons
+        val alignmentChanged = launcherPreferences.pinnedAlignment != selectedPinnedAlignment
+        if (themeChanged || iconsChanged || alignmentChanged) {
             saveSettings(
                 LauncherPreferences(
                     launcherTheme = selectedLauncherTheme,

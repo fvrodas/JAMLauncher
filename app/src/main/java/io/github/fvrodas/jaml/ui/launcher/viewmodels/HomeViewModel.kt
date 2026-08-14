@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
+@Suppress("TooManyFunctions")
 class HomeViewModel(
     private val coreLauncherApi: CoreLauncherApi,
     private val appConfig: AppConfig,
