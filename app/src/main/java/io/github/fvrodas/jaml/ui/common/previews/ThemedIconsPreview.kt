@@ -35,6 +35,9 @@ import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
 
 private data class IconCase(@DrawableRes val resId: Int, val label: String)
 
+private const val ICON_BITMAP_SIZE = 108
+private const val LABEL_COL_WEIGHT = 1.5f
+
 private val LIGHT_BG = android.graphics.Color.WHITE
 private val LIGHT_FG = android.graphics.Color.BLACK
 private val DARK_BG = android.graphics.Color.parseColor("#141313")
@@ -46,19 +49,19 @@ private fun IconCaseRow(case: IconCase) {
     val context = LocalContext.current
     val drawable = remember(case.resId) { ContextCompat.getDrawable(context, case.resId)!! }
 
-    val original = remember(case.resId) { drawable.toBitmap(108, 108) }
+    val original = remember(case.resId) { drawable.toBitmap(ICON_BITMAP_SIZE, ICON_BITMAP_SIZE) }
     val light = remember(case.resId) {
         with(BitmapUtils) {
             drawable.forceAdaptiveIconIfNeeded()
                 .toThemedIcon(LIGHT_BG, LIGHT_FG)
-                .toBitmap(108, 108)
+                .toBitmap(ICON_BITMAP_SIZE, ICON_BITMAP_SIZE)
         }
     }
     val dark = remember(case.resId) {
         with(BitmapUtils) {
             drawable.forceAdaptiveIconIfNeeded()
                 .toThemedIcon(DARK_BG, DARK_FG)
-                .toBitmap(108, 108)
+                .toBitmap(ICON_BITMAP_SIZE, ICON_BITMAP_SIZE)
         }
     }
 
@@ -70,7 +73,7 @@ private fun IconCaseRow(case: IconCase) {
     ) {
         Text(
             text = case.label,
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(LABEL_COL_WEIGHT),
             style = MaterialTheme.typography.labelSmall,
         )
         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -82,7 +85,7 @@ private fun IconCaseRow(case: IconCase) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .background(Color(0xFF141313))
+                .background(Color(DARK_BG))
                 .padding(4.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -94,7 +97,7 @@ private fun IconCaseRow(case: IconCase) {
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Preview(showBackground = true, widthDp = 380, apiLevel = 33, name = "Themed Icons")
 @Composable
-private fun ThemedIconsPreview() {
+fun ThemedIconsPreview() {
     JamlTheme(
         colorScheme = JamlColorScheme.Default,
         isDynamicColorsEnabled = false,
@@ -105,10 +108,25 @@ private fun ThemedIconsPreview() {
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(modifier = Modifier.fillMaxWidth()) {
-                Text("", modifier = Modifier.weight(1.5f))
-                Text("Original", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall)
-                Text("Light", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall)
-                Text("Dark", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.labelSmall)
+                Text("", modifier = Modifier.weight(LABEL_COL_WEIGHT))
+                Text(
+                    "Original",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Text(
+                    "Light",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Text(
+                    "Dark",
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
             Divider()
             IconCaseRow(IconCase(R.drawable.ic_preview_adaptive_with_monochrome, "Adaptive\n+ Monochrome"))

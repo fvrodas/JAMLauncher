@@ -73,7 +73,8 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
 
             val navHostController = rememberNavController()
 
-            val preferencesState: LauncherPreferences by settingsViewModel.launcherPreferences.collectAsStateWithLifecycle()
+            val preferencesState: LauncherPreferences
+                by settingsViewModel.launcherPreferences.collectAsStateWithLifecycle()
 
             var launcherPreferences: LauncherPreferences by retain {
                 mutableStateOf(preferencesState)
@@ -93,7 +94,11 @@ class MainActivity : androidx.activity.ComponentActivity(), LauncherActions, Set
                 isDynamicColorsEnabled = launcherPreferences.isDynamicColorEnabled
             ) { colors ->
 
-                LaunchedEffect(preferencesState.shouldUseThemedIcons, colors.primaryContainer.toArgb(), colors.onPrimaryContainer.toArgb()) {
+                LaunchedEffect(
+                    preferencesState.shouldUseThemedIcons,
+                    colors.primaryContainer.toArgb(),
+                    colors.onPrimaryContainer.toArgb(),
+                ) {
                     if (preferencesState.shouldUseThemedIcons) {
                         settingsViewModel.clearIconsAndReload(
                             IconConfig(

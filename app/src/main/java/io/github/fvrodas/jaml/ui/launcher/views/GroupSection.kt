@@ -182,13 +182,13 @@ fun GroupSection(
     AnimatedVisibility(
         visible = isExpanded,
         enter = expandVertically(
-            animationSpec = tween(220),
+            animationSpec = tween(GROUP_EXPAND_ANIM_DURATION),
             expandFrom = Alignment.Top,
-        ) + fadeIn(animationSpec = tween(220)),
+        ) + fadeIn(animationSpec = tween(GROUP_EXPAND_ANIM_DURATION)),
         exit = shrinkVertically(
-            animationSpec = tween(180),
+            animationSpec = tween(GROUP_SHRINK_ANIM_DURATION),
             shrinkTowards = Alignment.Top,
-        ) + fadeOut(animationSpec = tween(180)),
+        ) + fadeOut(animationSpec = tween(GROUP_SHRINK_ANIM_DURATION)),
     ) {
         Row(
             modifier = Modifier
@@ -250,3 +250,6 @@ fun GroupSection(
         )
     }
 }
+
+private const val GROUP_EXPAND_ANIM_DURATION = 220
+private const val GROUP_SHRINK_ANIM_DURATION = 180

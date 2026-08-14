@@ -167,9 +167,6 @@ fun LauncherScreen(
                             shouldHideApplicationIcons,
                             shouldDisplayThemeIcons,
                             pinnedAlignment = pinnedAppsAlignment,
-                            toggleListVisibility = {
-                                shouldDisplayAppList = !shouldDisplayAppList
-                            },
                             onApplicationPressed = launcherActions::openApplication,
                         ) {
                             shouldDisplayAppList = it

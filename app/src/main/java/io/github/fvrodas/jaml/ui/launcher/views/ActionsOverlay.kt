@@ -127,24 +127,24 @@ fun ActionsOverlay(
                     val isSelected = index == selectedIndex
                     val iconSize: Dp by animateDpAsState(
                         targetValue = if (isSelected) dimen32dp else dimen24dp,
-                        animationSpec = tween(150),
+                        animationSpec = tween(OVERLAY_ANIM_DURATION),
                         label = "actionIconSize",
                     )
                     val itemAlpha by animateFloatAsState(
-                        targetValue = if (isSelected) 1f else 0.45f,
-                        animationSpec = tween(150),
+                        targetValue = if (isSelected) 1f else UNSELECTED_ALPHA,
+                        animationSpec = tween(OVERLAY_ANIM_DURATION),
                         label = "actionAlpha",
                     )
 
                     val textSize by animateFloatAsState(
-                        targetValue = if (isSelected) 28f else 22f,
-                        animationSpec = tween(150),
+                        targetValue = if (isSelected) TEXT_SIZE_SELECTED_SP else TEXT_SIZE_NORMAL_SP,
+                        animationSpec = tween(OVERLAY_ANIM_DURATION),
                         label = "actionTextSize"
                     )
 
                     val textWeight by animateIntAsState(
                         targetValue = if (isSelected) FontWeight.SemiBold.weight else FontWeight.Normal.weight,
-                        animationSpec = tween(150),
+                        animationSpec = tween(OVERLAY_ANIM_DURATION),
                         label = "actionTextWeight"
                     )
 
@@ -197,3 +197,8 @@ fun ActionsOverlay(
         }
     }
 }
+
+private const val OVERLAY_ANIM_DURATION = 150
+private const val UNSELECTED_ALPHA = 0.45f
+private const val TEXT_SIZE_SELECTED_SP = 28f
+private const val TEXT_SIZE_NORMAL_SP = 22f

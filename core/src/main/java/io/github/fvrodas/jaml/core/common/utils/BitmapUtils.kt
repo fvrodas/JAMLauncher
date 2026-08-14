@@ -19,6 +19,8 @@ import androidx.core.graphics.drawable.toDrawable
 
 object BitmapUtils {
     private const val INSET = 0.14f
+    private const val COLOR_CHANNEL_MAX = 255f
+    private const val COLOR_PIVOT = 128f
 
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
     private val cacheSize = maxMemory / 8
@@ -30,16 +32,17 @@ object BitmapUtils {
         themedIcons: Boolean = false,
         backgroundColor: Int = Color.WHITE,
         foregroundColor: Int = Color.BLACK,
-    ): Bitmap = iconCache["$packageName${if (themedIcons) ".themed" else ""}"] ?: if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
-            drawable.toThemedIcon(backgroundColor, foregroundColor).toBitmap()
+    ): Bitmap {
+        val cacheKey = "$packageName${if (themedIcons) ".themed" else ""}"
+        return iconCache[cacheKey] ?: (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && themedIcons) {
+                drawable.toThemedIcon(backgroundColor, foregroundColor).toBitmap()
+            } else {
+                drawable.forceAdaptiveIconIfNeeded().toBitmap()
+            }
         } else {
-            drawable.forceAdaptiveIconIfNeeded().toBitmap()
-        }
-    } else {
-        drawable.toBitmap()
-    }.also {
-        iconCache.put("$packageName${if (themedIcons) ".themed" else ""}", it)
+            drawable.toBitmap()
+        }).also { iconCache.put(cacheKey, it) }
     }
 
     fun loadIconForPackage(packageName: String, shouldDisplayThemedIcon: Boolean = false): Bitmap? =
@@ -101,21 +104,21 @@ object BitmapUtils {
     ): Drawable {
         val mutatedDrawable = this.mutate()
 
-        val r1 = Color.red(primaryColor) / 255f
-        val g1 = Color.green(primaryColor) / 255f
-        val b1 = Color.blue(primaryColor) / 255f
+        val r1 = Color.red(primaryColor) / COLOR_CHANNEL_MAX
+        val g1 = Color.green(primaryColor) / COLOR_CHANNEL_MAX
+        val b1 = Color.blue(primaryColor) / COLOR_CHANNEL_MAX
 
-        val r2 = Color.red(secondaryColor) / 255f
-        val g2 = Color.green(secondaryColor) / 255f
-        val b2 = Color.blue(secondaryColor) / 255f
+        val r2 = Color.red(secondaryColor) / COLOR_CHANNEL_MAX
+        val g2 = Color.green(secondaryColor) / COLOR_CHANNEL_MAX
+        val b2 = Color.blue(secondaryColor) / COLOR_CHANNEL_MAX
 
-        val pivot = 128f * (1f - contrast)
+        val pivot = COLOR_PIVOT * (1f - contrast)
 
         val colorMatrix = ColorMatrix(
             floatArrayOf(
-                (r2 - r1) * contrast, 0f, 0f, 0f, r1 * 255f + (r2 - r1) * pivot,
-                (g2 - g1) * contrast, 0f, 0f, 0f, g1 * 255f + (g2 - g1) * pivot,
-                (b2 - b1) * contrast, 0f, 0f, 0f, b1 * 255f + (b2 - b1) * pivot,
+                (r2 - r1) * contrast, 0f, 0f, 0f, r1 * COLOR_CHANNEL_MAX + (r2 - r1) * pivot,
+                (g2 - g1) * contrast, 0f, 0f, 0f, g1 * COLOR_CHANNEL_MAX + (g2 - g1) * pivot,
+                (b2 - b1) * contrast, 0f, 0f, 0f, b1 * COLOR_CHANNEL_MAX + (b2 - b1) * pivot,
                 0f, 0f, 0f, 1f, 0f,
             )
         )

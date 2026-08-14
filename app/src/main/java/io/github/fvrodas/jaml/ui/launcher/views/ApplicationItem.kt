@@ -81,9 +81,9 @@ fun ApplicationItem(
         )
     )
     val favoriteDropShadow = if (isFavorite) Shadow(
-        color = Color.Black.copy(alpha = 0.7f),
-        offset = Offset(2f, 3f),
-        blurRadius = 3f,
+        color = Color.Black.copy(alpha = SHADOW_ALPHA),
+        offset = Offset(SHADOW_OFFSET_X, SHADOW_OFFSET_Y),
+        blurRadius = SHADOW_BLUR_RADIUS,
     ) else null
 
     Row(
@@ -98,7 +98,7 @@ fun ApplicationItem(
                 onGloballyPositioned(coords.positionInWindow().y + coords.size.height / 2f)
             }
             .combinedClickable(
-                onLongClick = onApplicationLongPressed?.let { handler -> { handler(isFavorite) } },
+                onLongClick = longClickHandler(onApplicationLongPressed, isFavorite),
                 onClick = { onApplicationPressed.invoke() },
                 indication = ripple(color = MaterialTheme.colorScheme.primary),
                 interactionSource = remember { MutableInteractionSource() }
@@ -182,7 +182,16 @@ fun ApplicationItem(
     }
 }
 
+private fun longClickHandler(
+    handler: ((isFavorite: Boolean) -> Unit)?,
+    isFavorite: Boolean,
+): (() -> Unit)? = handler?.let { h -> { h(isFavorite) } }
+
 internal const val DEFAULT_ALPHA = 0.9f
+private const val SHADOW_ALPHA = 0.7f
+private const val SHADOW_OFFSET_X = 2f
+private const val SHADOW_OFFSET_Y = 3f
+private const val SHADOW_BLUR_RADIUS = 3f
 
 @Preview(showBackground = true)
 @Composable

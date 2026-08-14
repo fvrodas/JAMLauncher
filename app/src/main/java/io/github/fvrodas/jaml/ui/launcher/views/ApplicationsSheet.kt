@@ -159,6 +159,8 @@ fun ApplicationsSheet(
 
     val usePager = groupsList.isNotEmpty() && searchFieldValue.isEmpty()
 
+    var isListScrolledToTop by remember { mutableStateOf(true) }
+
     // ── Shortcut overlay state ─────────────────────────────────────────────────
     var isShortcutOverlayActive by remember { mutableStateOf(false) }
     var shortcutSelectedIndex by remember { mutableStateOf<Int?>(null) }
@@ -263,6 +265,10 @@ fun ApplicationsSheet(
         isGroupOverlayActive = true
     }
 
+    LaunchedEffect(pagerState.currentPage) {
+        appItemCenterYMap.clear()
+    }
+
     LaunchedEffect(focusState.value) {
         if (focusState.value) keyboardController?.show() else keyboardController?.hide()
     }
@@ -310,7 +316,9 @@ fun ApplicationsSheet(
                                     }
                                 }
                             } else if (!isShortcutOverlayActive && anyPressed) {
-                                if (change.position.y - change.previousPosition.y > DRAWER_SWIPE_DOWN_THRESHOLD) {
+                                if (isListScrolledToTop &&
+                                    change.position.y - change.previousPosition.y > DRAWER_SWIPE_DOWN_THRESHOLD
+                                ) {
                                     toggleListVisibility()
                                 }
                             }
@@ -340,7 +348,9 @@ fun ApplicationsSheet(
                         },
                         onDrag = { change, _ ->
                             change.consume()
-                            if (!isShortcutOverlayActive || shortcutItemCenterYMap.isEmpty()) return@detectDragGesturesAfterLongPress
+                            if (!isShortcutOverlayActive || shortcutItemCenterYMap.isEmpty()) {
+                                return@detectDragGesturesAfterLongPress
+                            }
                             val coords = outerBoxCoords ?: return@detectDragGesturesAfterLongPress
                             val fingerWindowY = coords.localToWindow(change.position).y
                             val nearest = shortcutItemCenterYMap.entries
@@ -462,8 +472,11 @@ fun ApplicationsSheet(
                             coroutineScope = coroutineScope,
                             shouldDisplaySettings = page == 0,
                             onItemPositioned = { packageName, centerY ->
-                                appItemCenterYMap[packageName] = centerY
+                                if (page == pagerState.currentPage) {
+                                    appItemCenterYMap[packageName] = centerY
+                                }
                             },
+                            onScrollAtTop = { isListScrolledToTop = it },
                         )
                     }
                 } else {
@@ -480,6 +493,7 @@ fun ApplicationsSheet(
                         onItemPositioned = { packageName, centerY ->
                             appItemCenterYMap[packageName] = centerY
                         },
+                        onScrollAtTop = { isListScrolledToTop = it },
                     )
                 }
             }
@@ -487,8 +501,8 @@ fun ApplicationsSheet(
             // ── Shortcut overlay ───────────────────────────────────────────────
             AnimatedVisibility(
                 visible = isShortcutOverlayActive,
-                enter = fadeIn(animationSpec = tween(150)),
-                exit = fadeOut(animationSpec = tween(150)),
+                enter = fadeIn(animationSpec = tween(OVERLAY_ANIM_DURATION)),
+                exit = fadeOut(animationSpec = tween(OVERLAY_ANIM_DURATION)),
             ) {
                 val headerIcon = remember(longPressedEntry?.packageInfo?.packageName) {
                     longPressedEntry?.let {
@@ -514,8 +528,8 @@ fun ApplicationsSheet(
             // ── Group overlay ──────────────────────────────────────────────────
             AnimatedVisibility(
                 visible = isGroupOverlayActive,
-                enter = fadeIn(animationSpec = tween(150)),
-                exit = fadeOut(animationSpec = tween(150)),
+                enter = fadeIn(animationSpec = tween(OVERLAY_ANIM_DURATION)),
+                exit = fadeOut(animationSpec = tween(OVERLAY_ANIM_DURATION)),
             ) {
                 ActionsOverlay(
                     items = groupOverlayActions,
@@ -564,7 +578,12 @@ private fun AppPage(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     shouldDisplaySettings: Boolean = true,
     onItemPositioned: (packageName: String, centerY: Float) -> Unit = { _, _ -> },
+    onScrollAtTop: (Boolean) -> Unit = {},
 ) {
+    LaunchedEffect(lazyListState.firstVisibleItemIndex, lazyListState.firstVisibleItemScrollOffset) {
+        onScrollAtTop(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
+    }
+
     LazyColumn(
         state = lazyListState,
         modifier = Modifier
@@ -675,6 +694,7 @@ private fun GroupTab(
 
 internal const val DRAWER_SWIPE_DOWN_THRESHOLD = 10f
 internal const val MAX_APP_SELECT_DISTANCE_DP = 56f
+private const val OVERLAY_ANIM_DURATION = 150
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)

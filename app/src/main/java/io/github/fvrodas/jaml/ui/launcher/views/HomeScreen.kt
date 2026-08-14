@@ -54,7 +54,6 @@ fun HomeScreen(
     shouldHideApplicationIcons: Boolean = false,
     shouldDisplayThemeIcons: Boolean = false,
     pinnedAlignment: Int = R.string.alignment_center,
-    toggleListVisibility: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
     displayAppList: (Boolean) -> Unit,
 ) {
@@ -169,8 +168,8 @@ fun HomeScreen(
 
             AnimatedVisibility(
                 visible = isOverlayActive,
-                enter = fadeIn(animationSpec = tween(150)),
-                exit = fadeOut(animationSpec = tween(150))
+                enter = fadeIn(animationSpec = tween(OVERLAY_ANIM_DURATION)),
+                exit = fadeOut(animationSpec = tween(OVERLAY_ANIM_DURATION))
             ) {
                 HomePanelOverlay(
                     pinnedApps = currentPinnedList,
@@ -189,3 +188,4 @@ fun HomeScreen(
 
 internal const val MIN_DISPLACEMENT = 10f
 internal const val MAX_SELECT_DISTANCE_DP = 56f
+private const val OVERLAY_ANIM_DURATION = 150
