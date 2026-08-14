@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -65,6 +67,7 @@ fun ApplicationItem(
     hasNotification: Boolean = false,
     isFavorite: Boolean = false,
     onApplicationLongPressed: ((isFavorite: Boolean) -> Unit)? = null,
+    onGloballyPositioned: (centerY: Float) -> Unit = {},
     onApplicationPressed: () -> Unit
 ) {
 
@@ -91,8 +94,11 @@ fun ApplicationItem(
             .applyIf(hasNotification) {
                 background(gradient)
             }
+            .onGloballyPositioned { coords ->
+                onGloballyPositioned(coords.positionInWindow().y + coords.size.height / 2f)
+            }
             .combinedClickable(
-                onLongClick = { onApplicationLongPressed?.invoke(isFavorite) },
+                onLongClick = onApplicationLongPressed?.let { handler -> { handler(isFavorite) } },
                 onClick = { onApplicationPressed.invoke() },
                 indication = ripple(color = MaterialTheme.colorScheme.primary),
                 interactionSource = remember { MutableInteractionSource() }

@@ -85,8 +85,6 @@ fun LauncherScreen(
         mutableStateOf(applicationSheetState)
     }
 
-    var shouldDisplayShortcutsList by remember { mutableStateOf(false) }
-    var shortcutListPinningMode by remember { mutableStateOf(false) }
     var shouldDisplayAppList by remember { mutableStateOf(false) }
 
     var shouldShowGroupPicker by remember { mutableStateOf(false) }
@@ -135,20 +133,26 @@ fun LauncherScreen(
                     if (targetState) {
                         with(this@SharedTransitionLayout) {
                             ApplicationsSheet(
-                                sheetState,
-                                shouldHideApplicationIcons,
-                                this@SharedTransitionLayout,
-                                this@AnimatedContent,
+                                state = sheetState,
+                                shouldHideApplicationIcons = shouldHideApplicationIcons,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedVisibilityScope = this@AnimatedContent,
+                                listOfShortcuts = listOfShortcuts,
+                                canPinApps = sheetState.canPinApps,
                                 toggleListVisibility = {
                                     shouldDisplayAppList = !shouldDisplayAppList
                                 },
-                                changeShortcutVisibility = { shouldShow, pinningMode ->
-                                    shouldDisplayShortcutsList = shouldShow
-                                    shortcutListPinningMode = pinningMode
-                                },
-                                openLauncherSettings,
+                                onSettingsPressed = openLauncherSettings,
                                 onApplicationPressed = launcherActions::openApplication,
-                                onApplicationLongPressed = retrieveShortcuts,
+                                retrieveShortcuts = retrieveShortcuts,
+                                startShortcut = openShortcut,
+                                pinAppToTop = pinToTop,
+                                onApplicationInfoPressed = launcherActions::openApplicationInfo,
+                                onAddToGroup = { entry ->
+                                    groupPickerEntry = entry
+                                    shouldShowGroupPicker = true
+                                },
+                                onRemoveFromGroup = removeAppFromGroup,
                                 performWebSearch = launcherActions::performWebSearch,
                                 onSearchApplication = { searchApplications(it) },
                                 onRenameGroup = renameGroup,
@@ -191,62 +195,6 @@ fun LauncherScreen(
                         )
                 }
             )
-        }
-
-        AnimatedVisibility(
-            shouldDisplayShortcutsList,
-            enter = slideInVertically(),
-            exit = slideOutVertically()
-        ) {
-            Popup(
-                alignment = Alignment.BottomCenter,
-                onDismissRequest = { shouldDisplayShortcutsList = false },
-                properties = PopupProperties(focusable = true)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
-                        .pointerInput(Unit) {
-                            detectTapGestures { shouldDisplayShortcutsList = false }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .padding(horizontal = dimen32dp, vertical = dimen16dp),
-                        shape = RoundedCornerShape(dimen16dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = dimen8dp
-                    ) {
-                        ShortcutsList(
-                            shortcutsList = listOfShortcuts,
-                            shouldHideApplicationIcons = shouldHideApplicationIcons,
-                            shouldLetPinApps = sheetState.canPinApps,
-                            pinningMode = shortcutListPinningMode,
-                            changeShortcutsVisibility = {
-                                shouldDisplayShortcutsList = false
-                            },
-                            startShortcut = {
-                                shouldDisplayShortcutsList = false
-                                openShortcut(it)
-                            },
-                            pinAppToTop = {
-                                shouldDisplayShortcutsList = false
-                                pinToTop(it)
-                            },
-                            onApplicationInfoPressed = launcherActions::openApplicationInfo,
-                            onAddToGroup = { entry ->
-                                groupPickerEntry = entry
-                                shouldShowGroupPicker = true
-                            },
-                            onRemoveFromGroup = { entry ->
-                                removeAppFromGroup(entry)
-                            },
-                        )
-                    }
-                }
-            }
         }
 
         AnimatedVisibility(

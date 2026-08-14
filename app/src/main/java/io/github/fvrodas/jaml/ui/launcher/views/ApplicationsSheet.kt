@@ -8,13 +8,15 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +41,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.outlined.FolderOff
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -49,7 +56,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
@@ -60,13 +66,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +86,8 @@ import androidx.compose.ui.window.PopupProperties
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
+import io.github.fvrodas.jaml.ui.common.models.LauncherEntry.Companion.DEFAULT_GROUP
 import io.github.fvrodas.jaml.ui.common.models.toLauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
@@ -89,6 +101,7 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -97,11 +110,17 @@ fun ApplicationsSheet(
     shouldHideApplicationIcons: Boolean = false,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    listOfShortcuts: Pair<LauncherEntry, Set<PackageInfo.ShortcutInfo>>?,
+    canPinApps: Boolean,
     toggleListVisibility: () -> Unit,
-    changeShortcutVisibility: (Boolean, Boolean) -> Unit,
     onSettingsPressed: () -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
-    onApplicationLongPressed: (PackageInfo) -> Unit,
+    retrieveShortcuts: (PackageInfo) -> Unit,
+    startShortcut: (PackageInfo.ShortcutInfo) -> Unit,
+    pinAppToTop: (LauncherEntry) -> Unit,
+    onApplicationInfoPressed: (PackageInfo) -> Unit,
+    onAddToGroup: (LauncherEntry) -> Unit,
+    onRemoveFromGroup: (LauncherEntry) -> Unit,
     performWebSearch: (String) -> Unit,
     onSearchApplication: (String) -> Unit,
     onRenameGroup: (String, String) -> Unit,
@@ -111,31 +130,141 @@ fun ApplicationsSheet(
     val appList = remember(state.applicationsList) { state.applicationsList.toList() }
     val groupsList = state.groups
     val groupedApps = state.groupedApplications
+    val allEntries = remember(state) {
+        (state.applicationsList + state.groupedApplications.values.flatten()).distinctBy {
+            it.packageInfo.packageName
+        }
+    }
+
+    val currentAllEntries by rememberUpdatedState(allEntries)
+    val currentRetrieveShortcuts by rememberUpdatedState(retrieveShortcuts)
+    val currentStartShortcut by rememberUpdatedState(startShortcut)
+    val currentPinAppToTop by rememberUpdatedState(pinAppToTop)
+    val currentOnApplicationInfoPressed by rememberUpdatedState(onApplicationInfoPressed)
+    val currentOnAddToGroup by rememberUpdatedState(onAddToGroup)
+    val currentOnRemoveFromGroup by rememberUpdatedState(onRemoveFromGroup)
+    val currentOnDeleteGroup by rememberUpdatedState(onDeleteGroup)
 
     val pagerState =
         rememberPagerState(pageCount = { if (groupsList.isEmpty()) 1 else groupsList.size + 1 })
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
-    var contextMenuGroup by remember { mutableStateOf<String?>(null) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var renameTargetGroup by remember { mutableStateOf<String?>(null) }
     val keyboardController = LocalSoftwareKeyboardController.current
-
     val focusRequester = remember { FocusRequester() }
     val mutableInteractionSource = remember { MutableInteractionSource() }
     val focusState = mutableInteractionSource.collectIsFocusedAsState()
 
-    var trackedDragAmount = 0f
-
     val usePager = groupsList.isNotEmpty() && searchFieldValue.isEmpty()
 
-    LaunchedEffect(focusState.value) {
-        if (focusState.value) {
-            keyboardController?.show()
-        } else {
-            keyboardController?.hide()
+    // ── Shortcut overlay state ─────────────────────────────────────────────────
+    var isShortcutOverlayActive by remember { mutableStateOf(false) }
+    var shortcutSelectedIndex by remember { mutableStateOf<Int?>(null) }
+    var longPressedEntry by remember { mutableStateOf<LauncherEntry?>(null) }
+    val appItemCenterYMap = remember { hashMapOf<String, Float>() }
+    val shortcutItemCenterYMap = remember { hashMapOf<Int, Float>() }
+    var outerBoxCoords: LayoutCoordinates? by remember { mutableStateOf(null) }
+
+    // ── Group overlay state ────────────────────────────────────────────────────
+    var isGroupOverlayActive by remember { mutableStateOf(false) }
+    var groupSelectedIndex by remember { mutableStateOf<Int?>(null) }
+    var groupOverlayActions by remember { mutableStateOf<List<OverlayAction>>(emptyList()) }
+    var groupOverlayLabel by remember { mutableStateOf<String?>(null) }
+    val groupItemCenterYMap = remember { hashMapOf<Int, Float>() }
+    val renameLabel = stringResource(R.string.group_rename)
+    val deleteLabel = stringResource(R.string.group_delete)
+
+    // Build shortcut overlay items reactively from listOfShortcuts + longPressedEntry
+    val shortcutOverlayActions = remember(listOfShortcuts, longPressedEntry, canPinApps) {
+        val entry = longPressedEntry ?: return@remember emptyList()
+        val actions = mutableListOf<OverlayAction>()
+        // App shortcuts first (async — may be empty initially)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            listOfShortcuts
+                ?.takeIf { it.first.packageInfo.packageName == entry.packageInfo.packageName }
+                ?.second
+                ?.forEach { shortcut ->
+                    actions += OverlayAction(
+                        label = shortcut.label,
+                        bitmapIcon = shortcut.icon,
+                        action = { currentStartShortcut(shortcut) },
+                    )
+                }
         }
+        // Static actions
+        val isPinned = entry.movedToHome
+        if (!isPinned && canPinApps || isPinned) {
+            actions += OverlayAction(
+                label = if (isPinned) "Unpin" else "Pin to home",
+                vectorIcon = if (isPinned) Icons.Outlined.Apps else Icons.Outlined.Home,
+                action = { currentPinAppToTop(entry) },
+            )
+        }
+        actions += OverlayAction(
+            label = "App info",
+            vectorIcon = Icons.Outlined.Info,
+            action = { currentOnApplicationInfoPressed(entry.packageInfo) },
+        )
+        val isInGroup = entry.group != null && entry.group != DEFAULT_GROUP
+        if (isInGroup) {
+            actions += OverlayAction(
+                label = "Remove from group",
+                vectorIcon = Icons.Outlined.FolderOff,
+                action = { currentOnRemoveFromGroup(entry) },
+            )
+        }
+        actions += OverlayAction(
+            label = if (isInGroup) "Move to group" else "Add to group",
+            vectorIcon = Icons.Outlined.CreateNewFolder,
+            action = { currentOnAddToGroup(entry) },
+        )
+        actions
+    }
+    val currentShortcutOverlayActions by rememberUpdatedState(shortcutOverlayActions)
+
+    fun dismissShortcutOverlay() {
+        isShortcutOverlayActive = false
+        shortcutSelectedIndex = null
+        longPressedEntry = null
+        shortcutItemCenterYMap.clear()
+    }
+
+    fun dismissGroupOverlay() {
+        isGroupOverlayActive = false
+        groupSelectedIndex = null
+        groupOverlayLabel = null
+        groupItemCenterYMap.clear()
+    }
+
+    fun showGroupOverlay(groupName: String) {
+        groupOverlayLabel = groupName
+        groupOverlayActions = listOf(
+            OverlayAction(
+                label = renameLabel,
+                vectorIcon = Icons.Default.Edit,
+                action = {
+                    renameTargetGroup = groupName
+                    showRenameDialog = true
+                    dismissGroupOverlay()
+                },
+            ),
+            OverlayAction(
+                label = deleteLabel,
+                vectorIcon = Icons.Default.Delete,
+                action = {
+                    currentOnDeleteGroup(groupName)
+                    dismissGroupOverlay()
+                    coroutineScope.launch { pagerState.scrollToPage(0) }
+                },
+            ),
+        )
+        isGroupOverlayActive = true
+    }
+
+    LaunchedEffect(focusState.value) {
+        if (focusState.value) keyboardController?.show() else keyboardController?.hide()
     }
 
     DisposableEffect(Unit) {
@@ -146,22 +275,95 @@ fun ApplicationsSheet(
     }
 
     with(sharedTransitionScope) {
-        Box {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { outerBoxCoords = it }
+                // Swipe-down + group overlay tracking (pre-pass intercept)
+                .pointerInput(Unit) {
+                    val thresholdPx = MAX_APP_SELECT_DISTANCE_DP * density
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val anyPressed = event.changes.any { it.pressed }
+                            val change = event.changes.firstOrNull() ?: continue
+
+                            if (isGroupOverlayActive) {
+                                if (anyPressed) {
+                                    val coords = outerBoxCoords
+                                    if (coords != null && groupItemCenterYMap.isNotEmpty()) {
+                                        val fingerWindowY = coords.localToWindow(change.position).y
+                                        val nearest = groupItemCenterYMap.entries
+                                            .minByOrNull { abs(fingerWindowY - it.value) }
+                                        groupSelectedIndex = if (nearest != null &&
+                                            abs(fingerWindowY - nearest.value) <= thresholdPx
+                                        ) nearest.key else null
+                                    }
+                                } else {
+                                    // Finger released: execute selected action or dismiss
+                                    val idx = groupSelectedIndex
+                                    if (idx != null) {
+                                        change.consume()
+                                        groupOverlayActions.getOrNull(idx)?.action?.invoke()
+                                    } else {
+                                        dismissGroupOverlay()
+                                    }
+                                }
+                            } else if (!isShortcutOverlayActive && anyPressed) {
+                                if (change.position.y - change.previousPosition.y > DRAWER_SWIPE_DOWN_THRESHOLD) {
+                                    toggleListVisibility()
+                                }
+                            }
+                        }
+                    }
+                }
+                // Long-press + drag for shortcut overlay
+                .pointerInput(Unit) {
+                    val thresholdPx = MAX_APP_SELECT_DISTANCE_DP * density
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { offset ->
+                            if (isGroupOverlayActive) return@detectDragGesturesAfterLongPress
+                            val coords = outerBoxCoords ?: return@detectDragGesturesAfterLongPress
+                            val startWindowY = coords.localToWindow(offset).y
+                            val nearest = appItemCenterYMap.entries
+                                .minByOrNull { abs(startWindowY - it.value) }
+                            if (nearest != null && abs(startWindowY - nearest.value) <= thresholdPx) {
+                                val entry = currentAllEntries.find {
+                                    it.packageInfo.packageName == nearest.key
+                                } ?: return@detectDragGesturesAfterLongPress
+                                longPressedEntry = entry
+                                currentRetrieveShortcuts(entry.packageInfo)
+                                shortcutItemCenterYMap.clear()
+                                isShortcutOverlayActive = true
+                                shortcutSelectedIndex = null
+                            }
+                        },
+                        onDrag = { change, _ ->
+                            change.consume()
+                            if (!isShortcutOverlayActive || shortcutItemCenterYMap.isEmpty()) return@detectDragGesturesAfterLongPress
+                            val coords = outerBoxCoords ?: return@detectDragGesturesAfterLongPress
+                            val fingerWindowY = coords.localToWindow(change.position).y
+                            val nearest = shortcutItemCenterYMap.entries
+                                .minByOrNull { abs(fingerWindowY - it.value) }
+                            shortcutSelectedIndex = if (nearest != null &&
+                                abs(fingerWindowY - nearest.value) <= thresholdPx
+                            ) nearest.key else null
+                        },
+                        onDragEnd = {
+                            shortcutSelectedIndex?.let { idx ->
+                                currentShortcutOverlayActions.getOrNull(idx)?.action?.invoke()
+                            }
+                            dismissShortcutOverlay()
+                        },
+                        onDragCancel = { dismissShortcutOverlay() },
+                    )
+                },
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(
-                            onDragStart = {},
-                            onDragEnd = {
-                                if (trackedDragAmount > 0) toggleListVisibility()
-                            }
-                        ) { _, dragAmount ->
-                            trackedDragAmount = dragAmount
-                        }
-                    },
-                verticalArrangement = Arrangement.spacedBy(dimen8dp)
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = Arrangement.spacedBy(dimen8dp),
             ) {
                 Row(
                     modifier = Modifier
@@ -175,11 +377,11 @@ fun ApplicationsSheet(
                         modifier = Modifier
                             .sharedElement(
                                 rememberSharedContentState("arrow"),
-                                animatedVisibilityScope = animatedVisibilityScope
+                                animatedVisibilityScope = animatedVisibilityScope,
                             )
                             .padding(dimen4dp)
                             .size(dimen48dp),
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = MaterialTheme.colorScheme.onBackground,
                     )
                 }
                 OutlinedTextField(
@@ -188,7 +390,7 @@ fun ApplicationsSheet(
                     maxLines = 1,
                     onValueChange = {
                         searchFieldValue = it
-                        onSearchApplication.invoke(searchFieldValue)
+                        onSearchApplication(searchFieldValue)
                     },
                     leadingIcon = {
                         Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search")
@@ -199,9 +401,9 @@ fun ApplicationsSheet(
                             contentDescription = "",
                             modifier = Modifier.clickable {
                                 searchFieldValue = ""
-                                onSearchApplication.invoke(searchFieldValue)
+                                onSearchApplication(searchFieldValue)
                                 keyboardController?.hide()
-                            }
+                            },
                         )
                     },
                     shape = RoundedCornerShape(dimen16dp),
@@ -221,19 +423,25 @@ fun ApplicationsSheet(
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         edgePadding = dimen8dp,
                         divider = {},
-                        indicator = {}
+                        indicator = {},
                     ) {
                         GroupTab(
                             text = stringResource(R.string.group_all_apps),
                             selected = pagerState.currentPage == 0,
-                            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                            onClick = {
+                                coroutineScope.launch { pagerState.animateScrollToPage(0) }
+                            },
                         )
                         groupsList.forEachIndexed { i, group ->
                             GroupTab(
                                 text = group,
                                 selected = pagerState.currentPage == i + 1,
-                                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(i + 1) } },
-                                onLongClick = { contextMenuGroup = group },
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(i + 1)
+                                    }
+                                },
+                                onLongClick = { showGroupOverlay(group) },
                             )
                         }
                     }
@@ -247,14 +455,15 @@ fun ApplicationsSheet(
                             apps = pageApps,
                             searchFieldValue = "",
                             shouldHideApplicationIcons = shouldHideApplicationIcons,
-                            onApplicationLongPressed = onApplicationLongPressed,
-                            changeShortcutVisibility = changeShortcutVisibility,
                             onApplicationPressed = onApplicationPressed,
                             toggleListVisibility = toggleListVisibility,
                             performWebSearch = performWebSearch,
                             onSettingsPressed = onSettingsPressed,
                             coroutineScope = coroutineScope,
-                            shouldDisplaySettings = page == 0
+                            shouldDisplaySettings = page == 0,
+                            onItemPositioned = { packageName, centerY ->
+                                appItemCenterYMap[packageName] = centerY
+                            },
                         )
                     }
                 } else {
@@ -263,118 +472,98 @@ fun ApplicationsSheet(
                         lazyListState = lazyListState,
                         searchFieldValue = searchFieldValue,
                         shouldHideApplicationIcons = shouldHideApplicationIcons,
-                        onApplicationLongPressed = onApplicationLongPressed,
-                        changeShortcutVisibility = changeShortcutVisibility,
                         onApplicationPressed = onApplicationPressed,
                         toggleListVisibility = toggleListVisibility,
                         performWebSearch = performWebSearch,
                         onSettingsPressed = onSettingsPressed,
                         coroutineScope = coroutineScope,
+                        onItemPositioned = { packageName, centerY ->
+                            appItemCenterYMap[packageName] = centerY
+                        },
                     )
                 }
             }
 
-            if (contextMenuGroup != null) {
-                Popup(
-                    alignment = Alignment.BottomCenter,
-                    onDismissRequest = { contextMenuGroup = null },
-                    properties = PopupProperties(focusable = true),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
-                            .pointerInput(Unit) {
-                                detectTapGestures { contextMenuGroup = null }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Surface(
-                            modifier = Modifier.padding(
-                                horizontal = dimen32dp,
-                                vertical = dimen16dp
-                            ),
-                            shape = RoundedCornerShape(dimen16dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            tonalElevation = dimen8dp,
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(
-                                    horizontal = dimen32dp,
-                                    vertical = dimen32dp
-                                )
-                            ) {
-                                Text(
-                                    text = contextMenuGroup!!,
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                    ),
-                                    modifier = Modifier.padding(bottom = dimen12dp),
-                                )
-                                Column(
-                                    modifier = Modifier.clip(RoundedCornerShape(dimen16dp)),
-                                    verticalArrangement = Arrangement.spacedBy(dimen2dp),
-                                ) {
-                                    ShortcutItem(
-                                        label = stringResource(R.string.group_rename),
-                                        bitmapIcon = null,
-                                        vectorIcon = Icons.Default.Edit,
-                                        shouldHideShortcutIcons = shouldHideApplicationIcons,
-                                    ) {
-                                        renameTargetGroup = contextMenuGroup
-                                        contextMenuGroup = null
-                                        showRenameDialog = true
-                                    }
-                                    ShortcutItem(
-                                        label = stringResource(R.string.group_delete),
-                                        bitmapIcon = null,
-                                        vectorIcon = Icons.Default.Delete,
-                                        shouldHideShortcutIcons = shouldHideApplicationIcons,
-                                    ) {
-                                        onDeleteGroup(contextMenuGroup!!)
-                                        contextMenuGroup = null
-                                        coroutineScope.launch { pagerState.scrollToPage(0) }
-                                    }
-                                }
-                            }
-                        }
+            // ── Shortcut overlay ───────────────────────────────────────────────
+            AnimatedVisibility(
+                visible = isShortcutOverlayActive,
+                enter = fadeIn(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(150)),
+            ) {
+                val headerIcon = remember(longPressedEntry?.packageInfo?.packageName) {
+                    longPressedEntry?.let {
+                        BitmapUtils.loadIconForPackage(it.packageInfo.packageName)
                     }
                 }
+                ActionsOverlay(
+                    items = shortcutOverlayActions,
+                    selectedIndex = shortcutSelectedIndex,
+                    shouldHideIcons = shouldHideApplicationIcons,
+                    headerLabel = longPressedEntry?.packageInfo?.label,
+                    headerIcon = headerIcon,
+                    onItemCenterYChanged = { index, centerY ->
+                        shortcutItemCenterYMap[index] = centerY
+                    },
+                    onItemClicked = { index ->
+                        shortcutOverlayActions.getOrNull(index)?.action?.invoke()
+                        dismissShortcutOverlay()
+                    },
+                )
             }
 
-            if (showRenameDialog && renameTargetGroup != null) {
-                GroupNameDialog(
-                    title = stringResource(R.string.group_rename_title),
-                    initialName = renameTargetGroup!!,
-                    onConfirm = { newName ->
-                        onRenameGroup(renameTargetGroup!!, newName)
-                        showRenameDialog = false
-                        renameTargetGroup = null
+            // ── Group overlay ──────────────────────────────────────────────────
+            AnimatedVisibility(
+                visible = isGroupOverlayActive,
+                enter = fadeIn(animationSpec = tween(150)),
+                exit = fadeOut(animationSpec = tween(150)),
+            ) {
+                ActionsOverlay(
+                    items = groupOverlayActions,
+                    selectedIndex = groupSelectedIndex,
+                    shouldHideIcons = shouldHideApplicationIcons,
+                    headerLabel = groupOverlayLabel,
+                    onDismiss = { dismissGroupOverlay() },
+                    onItemCenterYChanged = { index, centerY ->
+                        groupItemCenterYMap[index] = centerY
                     },
-                    onDismiss = {
-                        showRenameDialog = false
-                        renameTargetGroup = null
+                    onItemClicked = { index ->
+                        groupOverlayActions.getOrNull(index)?.action?.invoke()
                     },
                 )
             }
         }
     }
+
+    if (showRenameDialog && renameTargetGroup != null) {
+        GroupNameDialog(
+            title = stringResource(R.string.group_rename_title),
+            initialName = renameTargetGroup!!,
+            onConfirm = { newName ->
+                onRenameGroup(renameTargetGroup!!, newName)
+                showRenameDialog = false
+                renameTargetGroup = null
+            },
+            onDismiss = {
+                showRenameDialog = false
+                renameTargetGroup = null
+            },
+        )
+    }
 }
 
 @Composable
 private fun AppPage(
-    apps: List<io.github.fvrodas.jaml.ui.common.models.LauncherEntry>,
+    apps: List<LauncherEntry>,
     lazyListState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
     searchFieldValue: String,
     shouldHideApplicationIcons: Boolean,
-    onApplicationLongPressed: (PackageInfo) -> Unit,
-    changeShortcutVisibility: (Boolean, Boolean) -> Unit,
     onApplicationPressed: (PackageInfo) -> Unit,
     toggleListVisibility: () -> Unit,
     performWebSearch: (String) -> Unit,
     onSettingsPressed: () -> Unit,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     shouldDisplaySettings: Boolean = true,
+    onItemPositioned: (packageName: String, centerY: Float) -> Unit = { _, _ -> },
 ) {
     LazyColumn(
         state = lazyListState,
@@ -397,20 +586,15 @@ private fun AppPage(
                 iconBitmap = if (shouldHideApplicationIcons) null
                 else BitmapUtils.loadIconForPackage(item.packageInfo.packageName),
                 hasNotification = item.hasNotification,
-                onApplicationLongPressed = { isFavorite ->
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                        coroutineScope.launch {
-                            onApplicationLongPressed.invoke(item.packageInfo)
-                            changeShortcutVisibility(true, !isFavorite)
-                        }
-                    }
+                onGloballyPositioned = { centerY ->
+                    onItemPositioned(item.packageInfo.packageName, centerY)
                 },
                 onApplicationPressed = {
                     coroutineScope.launch {
-                        onApplicationPressed.invoke(item.packageInfo)
+                        onApplicationPressed(item.packageInfo)
                         toggleListVisibility()
                     }
-                }
+                },
             )
         }
         if (searchFieldValue.isNotEmpty()) {
@@ -425,7 +609,7 @@ private fun AppPage(
                     onApplicationPressed = {
                         performWebSearch(searchFieldValue)
                         coroutineScope.launch { toggleListVisibility() }
-                    }
+                    },
                 )
             }
         }
@@ -443,13 +627,13 @@ private fun AppPage(
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.background),
-                        onClick = { onSettingsPressed.invoke() }
+                        onClick = { onSettingsPressed() },
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = stringResource(R.string.settings_button),
                             modifier = Modifier.size(dimen24dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
                 }
@@ -483,11 +667,14 @@ private fun GroupTab(
             style = MaterialTheme.typography.headlineMedium.copy(
                 color = if (selected) MaterialTheme.colorScheme.secondary
                 else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = if (selected) FontWeight.Medium else FontWeight.Light
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Light,
             ),
         )
     }
 }
+
+internal const val DRAWER_SWIPE_DOWN_THRESHOLD = 10f
+internal const val MAX_APP_SELECT_DISTANCE_DP = 56f
 
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -496,8 +683,8 @@ private fun GroupTab(
 fun ApplicationsSheetPreview() {
     JamlTheme(
         colorScheme = JamlColorScheme.Nord,
-        isInDarkMode = true,//isSystemInDarkTheme(),
-        isDynamicColorsEnabled = false
+        isInDarkMode = true,
+        isDynamicColorsEnabled = false,
     ) { _ ->
         SharedTransitionLayout {
             AnimatedContent(targetState = true, label = "ApplicationsSheet") {
@@ -507,28 +694,29 @@ fun ApplicationsSheetPreview() {
                             PackageInfo(
                                 packageName = "com.android.settings",
                                 label = "Settings",
-                                key = ""
+                                key = "",
                             ).toLauncherEntry(),
                             PackageInfo(
                                 packageName = "com.android.vending",
                                 label = "Play Store",
-                                key = ""
+                                key = "",
                             ).toLauncherEntry().copy(group = "Test"),
-                            PackageInfo(
-                                packageName = "com.google.android.apps.maps",
-                                label = "Maps",
-                                key = "Test"
-                            ).toLauncherEntry(),
                         ),
-                        groups = listOf("Test")
+                        groups = listOf("Test"),
                     ),
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@AnimatedContent,
+                    listOfShortcuts = null,
+                    canPinApps = true,
                     toggleListVisibility = {},
-                    changeShortcutVisibility = { _, _ -> },
                     onSettingsPressed = {},
                     onApplicationPressed = {},
-                    onApplicationLongPressed = {},
+                    retrieveShortcuts = {},
+                    startShortcut = {},
+                    pinAppToTop = {},
+                    onApplicationInfoPressed = {},
+                    onAddToGroup = {},
+                    onRemoveFromGroup = {},
                     performWebSearch = {},
                     onSearchApplication = {},
                     onRenameGroup = { _, _ -> },
