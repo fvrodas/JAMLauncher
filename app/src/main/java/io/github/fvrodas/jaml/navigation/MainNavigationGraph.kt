@@ -19,6 +19,7 @@ import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
+import io.github.fvrodas.jaml.ui.settings.PinnedAppsOrderScreen
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
 import org.koin.androidx.compose.koinViewModel
 
@@ -67,6 +68,7 @@ fun HomeNavigationGraph(
                 shortcutsList,
                 launcherSettings.shouldHideApplicationIcons,
                 launcherSettings.shouldUseThemedIcons,
+                launcherSettings.pinnedAlignment,
                 searchApplications = {
                     homeViewModel.filterApplicationsList(it)
                 },
@@ -99,10 +101,25 @@ fun HomeNavigationGraph(
             SettingsScreen(
                 launcherPreferences = launcherSettings,
                 settingsActions = settingsActions,
-                saveSettings = onSettingsSaved
+                saveSettings = onSettingsSaved,
+                onPinnedOrderPressed = {
+                    navHostController.navigate(Routes.PINNED_ORDER_SCREEN)
+                },
             ) {
                 navHostController.popBackStack(route = Routes.HOME_SCREEN, inclusive = false)
             }
+        }
+
+        composable(
+            Routes.PINNED_ORDER_SCREEN,
+            enterTransition = { fadeIn() + slideInVertically(initialOffsetY = { it / 2 }) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut() }
+        ) {
+            val homeViewModel: HomeViewModel = koinViewModel()
+            PinnedAppsOrderScreen(
+                homeViewModel = homeViewModel,
+                onBackPressed = { navHostController.popBackStack() }
+            )
         }
     }
 }

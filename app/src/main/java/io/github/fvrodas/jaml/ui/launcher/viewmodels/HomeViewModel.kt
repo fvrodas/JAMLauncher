@@ -287,6 +287,20 @@ class HomeViewModel(
         }
     }
 
+    // ── Pinned app order ──────────────────────────────────────────────────────
+
+    fun reorderPinnedApps(orderedPackageNames: List<String>) {
+        viewModelScope.launch {
+            applicationsListCache = applicationsListCache.map { entry ->
+                val newIndex = orderedPackageNames.indexOf(entry.packageInfo.packageName)
+                if (newIndex >= 0 && entry.movedToHome) entry.copy(order = newIndex.toLong())
+                else entry
+            }.toSet()
+            savePinnedApps()
+            _applicationsState.value = buildState(_applicationsState.value.groups)
+        }
+    }
+
     // ── Shortcuts ─────────────────────────────────────────────────────────────
 
     fun retrieveShortcuts(packageInfo: PackageInfo) {

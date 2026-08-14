@@ -11,6 +11,7 @@ data class LauncherPreferences(
     val launcherColorScheme: Int = R.string.colorscheme_default,
     val shouldHideApplicationIcons: Boolean = false,
     val shouldUseThemedIcons: Boolean = false,
+    val pinnedAlignment: Int = R.string.alignment_center,
     val themedIconForegroundColor: Int = Color.BLACK,
     val themedIconBackgroundColor: Int = Color.WHITE
 ) {
@@ -20,6 +21,7 @@ data class LauncherPreferences(
         const val SELECTED_COLORSCHEME = "selectedtheme"
         const val SHOULD_HIDE_APPLICATION_ICONS = "shouldhideapplicationicons"
         const val SHOULD_USE_THEMED_ICONS = "shouldusethemedicons"
+        const val PINNED_ALIGNMENT = "pinnedalignment"
 
         const val THEMED_ICON_FOREGROUND_COLOR = "themediconforegroundcolor"
         const val THEMED_ICON_BACKGROUND_COLOR = "themediconbackgroundcolor"

@@ -56,6 +56,7 @@ fun SettingsScreen(
     launcherPreferences: LauncherPreferences,
     settingsActions: SettingsActions,
     saveSettings: (LauncherPreferences) -> Unit = {},
+    onPinnedOrderPressed: () -> Unit = {},
     onBackPressed: () -> Unit = {}
 ) {
     val projectUrl = stringResource(id = R.string.about_github_url)
@@ -79,34 +80,37 @@ fun SettingsScreen(
         mutableStateOf(launcherPreferences.shouldUseThemedIcons)
     }
 
-    var showThemeSelection by remember {
-        mutableStateOf(false)
+    var selectedPinnedAlignment: Int by remember {
+        mutableIntStateOf(launcherPreferences.pinnedAlignment)
     }
 
-    var showColorSchemeSelection by remember {
-        mutableStateOf(false)
-    }
+    var showThemeSelection by remember { mutableStateOf(false) }
+    var showColorSchemeSelection by remember { mutableStateOf(false) }
+    var showAlignmentSelection by remember { mutableStateOf(false) }
 
     LaunchedEffect(
         isDynamicColorEnabled,
         selectedColorScheme,
         selectedLauncherTheme,
         shouldHideApplicationIcons,
-        shouldUseThemedIcons
+        shouldUseThemedIcons,
+        selectedPinnedAlignment,
     ) {
         if (launcherPreferences.isDynamicColorEnabled != isDynamicColorEnabled ||
             launcherPreferences.launcherColorScheme != selectedColorScheme ||
             launcherPreferences.launcherTheme != selectedLauncherTheme ||
             launcherPreferences.shouldHideApplicationIcons != shouldHideApplicationIcons ||
-            launcherPreferences.shouldUseThemedIcons != shouldUseThemedIcons
+            launcherPreferences.shouldUseThemedIcons != shouldUseThemedIcons ||
+            launcherPreferences.pinnedAlignment != selectedPinnedAlignment
         ) {
             saveSettings(
                 LauncherPreferences(
-                    selectedLauncherTheme,
-                    isDynamicColorEnabled,
-                    selectedColorScheme,
-                    shouldHideApplicationIcons,
-                    shouldUseThemedIcons
+                    launcherTheme = selectedLauncherTheme,
+                    isDynamicColorEnabled = isDynamicColorEnabled,
+                    launcherColorScheme = selectedColorScheme,
+                    shouldHideApplicationIcons = shouldHideApplicationIcons,
+                    shouldUseThemedIcons = shouldUseThemedIcons,
+                    pinnedAlignment = selectedPinnedAlignment,
                 )
             )
         }
@@ -163,6 +167,12 @@ fun SettingsScreen(
             ) {
                 settingsActions.enableNotificationAccess()
             }
+            SettingItem(
+                title = stringResource(id = R.string.menu_pinned_order),
+                description = stringResource(id = R.string.summary_pinned_order)
+            ) {
+                onPinnedOrderPressed()
+            }
             Spacer(modifier = Modifier.height(dimen16dp))
             SettingsHeader(R.string.menu_appearance, Icons.Default.Palette)
             SettingItem(
@@ -195,6 +205,12 @@ fun SettingsScreen(
                 ) {
                     showColorSchemeSelection = true
                 }
+            }
+            SettingItem(
+                title = stringResource(id = R.string.menu_pinned_alignment),
+                description = stringResource(selectedPinnedAlignment)
+            ) {
+                showAlignmentSelection = true
             }
             SettingSwitch(
                 title = stringResource(id = R.string.menu_hide_app_icons),
@@ -233,6 +249,15 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                 )
+            }
+            SettingOptionsDialog(
+                showIf = showAlignmentSelection,
+                title = stringResource(id = R.string.menu_pinned_alignment),
+                options = listOf(R.string.alignment_left, R.string.alignment_center, R.string.alignment_right),
+                defaultValue = selectedPinnedAlignment,
+                onDismiss = { showAlignmentSelection = false },
+            ) { selected ->
+                selectedPinnedAlignment = selected
             }
             SettingOptionsDialog(
                 showIf = showThemeSelection,

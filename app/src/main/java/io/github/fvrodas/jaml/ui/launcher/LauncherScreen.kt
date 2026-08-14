@@ -67,6 +67,7 @@ fun LauncherScreen(
     listOfShortcuts: Pair<LauncherEntry, Set<PackageInfo.ShortcutInfo>>?,
     shouldHideApplicationIcons: Boolean = false,
     shouldDisplayThemeIcons: Boolean = false,
+    pinnedAppsAlignment: Int = io.github.fvrodas.jaml.R.string.alignment_center,
     searchApplications: (String) -> Unit = {},
     retrieveShortcuts: (PackageInfo) -> Unit = {},
     pinToTop: (LauncherEntry) -> Unit = {},
@@ -161,15 +162,11 @@ fun LauncherScreen(
                             sheetState,
                             shouldHideApplicationIcons,
                             shouldDisplayThemeIcons,
+                            pinnedAlignment = pinnedAppsAlignment,
                             toggleListVisibility = {
                                 shouldDisplayAppList = !shouldDisplayAppList
                             },
-                            changeShortcutVisibility = { shouldShow, pinningMode ->
-                                shouldDisplayShortcutsList = shouldShow
-                                shortcutListPinningMode = pinningMode
-                            },
                             onApplicationPressed = launcherActions::openApplication,
-                            onApplicationLongPressed = retrieveShortcuts,
                         ) {
                             shouldDisplayAppList = it
                         }

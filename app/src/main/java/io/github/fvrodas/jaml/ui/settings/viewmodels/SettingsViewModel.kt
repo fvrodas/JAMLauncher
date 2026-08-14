@@ -34,11 +34,12 @@ class SettingsViewModel(
 
     private fun readFromPrefs(): LauncherPreferences {
         return LauncherPreferences(
-            prefs.getInt(LauncherPreferences.LAUNCHER_THEME, R.string.theme_light),
-            prefs.getBoolean(LauncherPreferences.DYNAMIC_COLOR_ENABLED, false),
-            prefs.getInt(LauncherPreferences.SELECTED_COLORSCHEME, R.string.colorscheme_default),
-            prefs.getBoolean(LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS, false),
-            prefs.getBoolean(LauncherPreferences.SHOULD_USE_THEMED_ICONS, false)
+            launcherTheme = prefs.getInt(LauncherPreferences.LAUNCHER_THEME, R.string.theme_light),
+            isDynamicColorEnabled = prefs.getBoolean(LauncherPreferences.DYNAMIC_COLOR_ENABLED, false),
+            launcherColorScheme = prefs.getInt(LauncherPreferences.SELECTED_COLORSCHEME, R.string.colorscheme_default),
+            shouldHideApplicationIcons = prefs.getBoolean(LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS, false),
+            shouldUseThemedIcons = prefs.getBoolean(LauncherPreferences.SHOULD_USE_THEMED_ICONS, false),
+            pinnedAlignment = prefs.getInt(LauncherPreferences.PINNED_ALIGNMENT, R.string.alignment_center),
         )
     }
 
@@ -51,14 +52,9 @@ class SettingsViewModel(
             putInt(LauncherPreferences.LAUNCHER_THEME, newSettings.launcherTheme)
             putBoolean(LauncherPreferences.DYNAMIC_COLOR_ENABLED, newSettings.isDynamicColorEnabled)
             putInt(LauncherPreferences.SELECTED_COLORSCHEME, newSettings.launcherColorScheme)
-            putBoolean(
-                LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS,
-                newSettings.shouldHideApplicationIcons
-            )
-            putBoolean(
-                LauncherPreferences.SHOULD_USE_THEMED_ICONS,
-                newSettings.shouldUseThemedIcons
-            )
+            putBoolean(LauncherPreferences.SHOULD_HIDE_APPLICATION_ICONS, newSettings.shouldHideApplicationIcons)
+            putBoolean(LauncherPreferences.SHOULD_USE_THEMED_ICONS, newSettings.shouldUseThemedIcons)
+            putInt(LauncherPreferences.PINNED_ALIGNMENT, newSettings.pinnedAlignment)
             apply()
         }
         _launcherPreferences.value = newSettings
