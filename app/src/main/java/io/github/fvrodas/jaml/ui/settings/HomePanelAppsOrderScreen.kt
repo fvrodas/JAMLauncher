@@ -54,7 +54,7 @@ import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PinnedAppsOrderScreen(
+fun HomePanelAppsOrderScreen(
     homeViewModel: HomeViewModel,
     onBackPressed: () -> Unit,
 ) {
@@ -128,7 +128,7 @@ fun PinnedAppsOrderScreen(
                 verticalArrangement = Arrangement.spacedBy(dimen8dp)
             ) {
                 itemsIndexed(localPinnedApps, key = { _, e -> e.packageInfo.packageName }) { index, entry ->
-                    PinnedOrderRow(
+                    HomeItemOrderRow(
                         entry = entry,
                         canMoveUp = index > 0,
                         canMoveDown = index < localPinnedApps.lastIndex,
@@ -142,13 +142,17 @@ fun PinnedAppsOrderScreen(
 }
 
 @Composable
-private fun PinnedOrderRow(
+private fun HomeItemOrderRow(
     entry: LauncherEntry,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
 ) {
+    val icon = remember(entry.packageInfo.packageName) {
+        BitmapUtils.loadIconForPackage(entry.packageInfo.packageName)
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,7 +162,7 @@ private fun PinnedOrderRow(
             .padding(vertical = dimen8dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BitmapUtils.loadIconForPackage(entry.packageInfo.packageName)?.let { bmp ->
+        icon?.let { bmp ->
             Image(
                 bitmap = bmp.asImageBitmap(),
                 contentDescription = entry.packageInfo.label,

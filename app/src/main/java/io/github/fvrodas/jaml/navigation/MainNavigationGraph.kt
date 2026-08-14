@@ -11,7 +11,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import io.github.fvrodas.jaml.core.domain.entities.IconConfig
 import io.github.fvrodas.jaml.framework.LauncherEventBus
 import io.github.fvrodas.jaml.framework.LauncherEventListener
 import io.github.fvrodas.jaml.ui.common.interfaces.LauncherActions
@@ -19,7 +18,7 @@ import io.github.fvrodas.jaml.ui.common.interfaces.SettingsActions
 import io.github.fvrodas.jaml.ui.common.settings.LauncherPreferences
 import io.github.fvrodas.jaml.ui.launcher.LauncherScreen
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.HomeViewModel
-import io.github.fvrodas.jaml.ui.settings.PinnedAppsOrderScreen
+import io.github.fvrodas.jaml.ui.settings.HomePanelAppsOrderScreen
 import io.github.fvrodas.jaml.ui.settings.SettingsScreen
 import org.koin.androidx.compose.koinViewModel
 
@@ -116,7 +115,7 @@ fun HomeNavigationGraph(
             exitTransition = { slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut() }
         ) {
             val homeViewModel: HomeViewModel = koinViewModel()
-            PinnedAppsOrderScreen(
+            HomePanelAppsOrderScreen(
                 homeViewModel = homeViewModel,
                 onBackPressed = { navHostController.popBackStack() }
             )

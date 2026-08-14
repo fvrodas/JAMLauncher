@@ -3,7 +3,6 @@ package io.github.fvrodas.jaml.ui.launcher.views
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,23 +19,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.ui.common.models.LauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
@@ -48,10 +45,9 @@ import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 
 @Composable
-fun PinnedAppsOverlay(
+fun HomePanelOverlay(
     pinnedApps: List<LauncherEntry>,
     selectedIndex: Int?,
-    dwellProgress: Float,
     alignment: Alignment = Alignment.Center,
     shouldHideIcons: Boolean = false,
     shouldDisplayThemeIcons: Boolean = false,
@@ -89,7 +85,14 @@ fun PinnedAppsOverlay(
                     animationSpec = tween(150),
                     label = "pinnedAlpha"
                 )
-                val ringColor = MaterialTheme.colorScheme.primary
+                val icon = remember(entry.packageInfo.packageName, shouldDisplayThemeIcons) {
+                    BitmapUtils.loadIconForPackage(entry.packageInfo.packageName, shouldDisplayThemeIcons)
+                }
+                val textSize by animateFloatAsState(
+                    targetValue = if (isSelected) 28f else 22f,
+                    animationSpec = tween(150),
+                    label = "pinnedTextSize"
+                )
 
                 Box(
                     modifier = Modifier
@@ -101,13 +104,22 @@ fun PinnedAppsOverlay(
                         .alpha(itemAlpha),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (!shouldHideIcons) {
-                                BitmapUtils.loadIconForPackage(
-                                    entry.packageInfo.packageName,
-                                    shouldDisplayThemeIcons
-                                )?.let { bmp ->
+                    if (shouldHideIcons) {
+                        Text(
+                            text = entry.packageInfo.label,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = textSize.sp
+                            ),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = dimen8dp)
+                        )
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(contentAlignment = Alignment.Center) {
+                                icon?.let { bmp ->
                                     Image(
                                         bitmap = bmp.asImageBitmap(),
                                         contentDescription = entry.packageInfo.label,
@@ -119,33 +131,19 @@ fun PinnedAppsOverlay(
                                     )
                                 }
                             }
-                            if (isSelected && dwellProgress > 0f) {
-                                Canvas(modifier = Modifier.size(iconSize + 10.dp)) {
-                                    drawArc(
-                                        color = ringColor,
-                                        startAngle = -90f,
-                                        sweepAngle = 360f * dwellProgress,
-                                        useCenter = false,
-                                        style = Stroke(
-                                            width = 3.dp.toPx(),
-                                            cap = StrokeCap.Round
-                                        )
-                                    )
-                                }
+                            if (isSelected) {
+                                Spacer(modifier = Modifier.height(dimen4dp))
+                                Text(
+                                    text = entry.packageInfo.label,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = dimen8dp)
+                                )
                             }
-                        }
-                        if (isSelected) {
-                            Spacer(modifier = Modifier.height(dimen4dp))
-                            Text(
-                                text = entry.packageInfo.label,
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = dimen8dp)
-                            )
                         }
                     }
                 }

@@ -17,7 +17,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,9 +49,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -71,7 +70,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
@@ -114,7 +112,8 @@ fun ApplicationsSheet(
     val groupsList = state.groups
     val groupedApps = state.groupedApplications
 
-    val pagerState = rememberPagerState(pageCount = { if (groupsList.isEmpty()) 1 else groupsList.size + 1 })
+    val pagerState =
+        rememberPagerState(pageCount = { if (groupsList.isEmpty()) 1 else groupsList.size + 1 })
     val lazyListState = rememberLazyListState()
 
     var searchFieldValue by remember { mutableStateOf("") }
@@ -218,10 +217,11 @@ fun ApplicationsSheet(
                     PrimaryScrollableTabRow(
                         modifier = Modifier.padding(vertical = dimen8dp),
                         selectedTabIndex = pagerState.currentPage,
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.primary,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                         edgePadding = dimen8dp,
-                        divider = {}
+                        divider = {},
+                        indicator = {}
                     ) {
                         GroupTab(
                             text = stringResource(R.string.group_all_apps),
@@ -242,7 +242,7 @@ fun ApplicationsSheet(
                         modifier = Modifier.weight(1f),
                     ) { page ->
                         val pageApps = if (page == 0) appList
-                                       else groupedApps[groupsList[page - 1]] ?: emptyList()
+                        else groupedApps[groupsList[page - 1]] ?: emptyList()
                         AppPage(
                             apps = pageApps,
                             searchFieldValue = "",
@@ -290,13 +290,19 @@ fun ApplicationsSheet(
                         contentAlignment = Alignment.Center,
                     ) {
                         Surface(
-                            modifier = Modifier.padding(horizontal = dimen32dp, vertical = dimen16dp),
+                            modifier = Modifier.padding(
+                                horizontal = dimen32dp,
+                                vertical = dimen16dp
+                            ),
                             shape = RoundedCornerShape(dimen16dp),
                             color = MaterialTheme.colorScheme.surface,
                             tonalElevation = dimen8dp,
                         ) {
                             Column(
-                                modifier = Modifier.padding(horizontal = dimen32dp, vertical = dimen32dp)
+                                modifier = Modifier.padding(
+                                    horizontal = dimen32dp,
+                                    vertical = dimen32dp
+                                )
                             ) {
                                 Text(
                                     text = contextMenuGroup!!,
@@ -368,11 +374,13 @@ private fun AppPage(
     performWebSearch: (String) -> Unit,
     onSettingsPressed: () -> Unit,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    shouldDisplaySettings: Boolean= true,
+    shouldDisplaySettings: Boolean = true,
 ) {
     LazyColumn(
         state = lazyListState,
-        modifier = Modifier.padding(horizontal = dimen16dp).fillMaxSize(),
+        modifier = Modifier
+            .padding(horizontal = dimen16dp)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(dimen8dp),
     ) {
         items(apps, key = { "${it.packageInfo.packageName}+${it.packageInfo.label}" }) { item ->
@@ -387,7 +395,7 @@ private fun AppPage(
                 searchText = searchFieldValue,
                 groupLabel = groupLabel,
                 iconBitmap = if (shouldHideApplicationIcons) null
-                             else BitmapUtils.loadIconForPackage(item.packageInfo.packageName),
+                else BitmapUtils.loadIconForPackage(item.packageInfo.packageName),
                 hasNotification = item.hasNotification,
                 onApplicationLongPressed = { isFavorite ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -473,8 +481,8 @@ private fun GroupTab(
         Text(
             text = text,
             style = MaterialTheme.typography.headlineMedium.copy(
-                color = if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (selected) MaterialTheme.colorScheme.secondary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = if (selected) FontWeight.Medium else FontWeight.Light
             ),
         )
@@ -496,9 +504,21 @@ fun ApplicationsSheetPreview() {
                 ApplicationsSheet(
                     state = ApplicationSheetState(
                         applicationsList = setOf(
-                            PackageInfo(packageName = "com.android.settings", label = "Settings", key = "").toLauncherEntry(),
-                            PackageInfo(packageName = "com.android.vending", label = "Play Store", key = "").toLauncherEntry().copy(group = "Test"),
-                            PackageInfo(packageName = "com.google.android.apps.maps", label = "Maps", key = "Test").toLauncherEntry(),
+                            PackageInfo(
+                                packageName = "com.android.settings",
+                                label = "Settings",
+                                key = ""
+                            ).toLauncherEntry(),
+                            PackageInfo(
+                                packageName = "com.android.vending",
+                                label = "Play Store",
+                                key = ""
+                            ).toLauncherEntry().copy(group = "Test"),
+                            PackageInfo(
+                                packageName = "com.google.android.apps.maps",
+                                label = "Maps",
+                                key = "Test"
+                            ).toLauncherEntry(),
                         ),
                         groups = listOf("Test")
                     ),

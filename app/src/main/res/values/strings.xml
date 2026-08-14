@@ -55,10 +55,10 @@
     <string name="alignment_left">Left</string>
     <string name="alignment_center">Center</string>
     <string name="alignment_right">Right</string>
-    <string name="menu_pinned_alignment">Pinned Apps Alignment</string>
-    <string name="summary_pinned_alignment">Horizontal alignment of the home screen overlay</string>
-    <string name="menu_pinned_order">Pinned App Order</string>
-    <string name="summary_pinned_order">Customize the order of apps on the home screen</string>
-    <string name="pinned_order_title">Pinned App Order</string>
-    <string name="pinned_order_empty">No pinned apps. Pin apps from the app drawer first</string>
+    <string name="menu_pinned_alignment">Home Panel Alignment</string>
+    <string name="summary_pinned_alignment">Horizontal alignment of the home panel</string>
+    <string name="menu_pinned_order">Home Panel App Order</string>
+    <string name="summary_pinned_order">Customize the order of apps on the home panel</string>
+    <string name="pinned_order_title">Home Panel App Order</string>
+    <string name="pinned_order_empty">No apps moved to Home. Move apps to Home from the app drawer first</string>
 </resources>

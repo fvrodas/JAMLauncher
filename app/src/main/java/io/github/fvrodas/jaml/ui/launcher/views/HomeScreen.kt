@@ -25,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,12 +38,11 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen64dp
+import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
 import io.github.fvrodas.jaml.ui.launcher.viewmodels.ApplicationSheetState
-import kotlinx.coroutines.delay
 import kotlin.math.abs
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -65,6 +63,7 @@ fun HomeScreen(
     }
     val currentPinnedList by rememberUpdatedState(pinnedList)
     val currentOnApplicationPressed by rememberUpdatedState(onApplicationPressed)
+    val currentDisplayAppList by rememberUpdatedState(displayAppList)
 
     val overlayAlignment = when (pinnedAlignment) {
         R.string.alignment_left -> Alignment.CenterStart
@@ -74,33 +73,14 @@ fun HomeScreen(
 
     var isOverlayActive by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
-    var dwellProgress by remember { mutableStateOf(0f) }
 
     // Window-coordinate center Y for each item in the overlay
     val itemCenterYMap = remember { hashMapOf<Int, Float>() }
     var outerBoxCoords: LayoutCoordinates? by remember { mutableStateOf(null) }
 
-    // Dwell timer: fires app launch after DWELL_DURATION_MS of holding on an item
-    LaunchedEffect(selectedIndex, isOverlayActive) {
-        dwellProgress = 0f
-        if (selectedIndex == null || !isOverlayActive) return@LaunchedEffect
-        val capturedIndex = selectedIndex!!
-        val start = System.currentTimeMillis()
-        while (System.currentTimeMillis() - start < DWELL_DURATION_MS) {
-            dwellProgress = (System.currentTimeMillis() - start) / DWELL_DURATION_MS.toFloat()
-            delay(16L)
-        }
-        isOverlayActive = false
-        dwellProgress = 0f
-        currentPinnedList.getOrNull(capturedIndex)?.let {
-            currentOnApplicationPressed(it.packageInfo)
-        }
-    }
-
     fun dismiss() {
         isOverlayActive = false
         selectedIndex = null
-        dwellProgress = 0f
     }
 
     with(sharedTransitionLayout) {
@@ -115,20 +95,20 @@ fun HomeScreen(
                             if (!isOverlayActive && event.changes.any { it.pressed }) {
                                 val change = event.changes.first()
                                 if (change.previousPosition.y - change.position.y > MIN_DISPLACEMENT) {
-                                    displayAppList(true)
+                                    currentDisplayAppList(true)
                                 }
                             }
                         }
                     }
                 }
                 .pointerInput(Unit) {
+                    val thresholdPx = MAX_SELECT_DISTANCE_DP * density
                     detectDragGesturesAfterLongPress(
                         onDragStart = {
                             if (currentPinnedList.isNotEmpty()) {
                                 itemCenterYMap.clear()
                                 isOverlayActive = true
                                 selectedIndex = null
-                                dwellProgress = 0f
                             }
                         },
                         onDrag = { change, _ ->
@@ -137,9 +117,20 @@ fun HomeScreen(
                             val coords = outerBoxCoords ?: return@detectDragGesturesAfterLongPress
                             val fingerWindowY = coords.localToWindow(change.position).y
                             val nearest = itemCenterYMap.entries.minByOrNull { abs(fingerWindowY - it.value) }
-                            selectedIndex = nearest?.key
+                            selectedIndex = if (nearest != null && abs(fingerWindowY - nearest.value) <= thresholdPx) {
+                                nearest.key
+                            } else {
+                                null
+                            }
                         },
-                        onDragEnd = { dismiss() },
+                        onDragEnd = {
+                            selectedIndex?.let { idx ->
+                                currentPinnedList.getOrNull(idx)?.let {
+                                    currentOnApplicationPressed(it.packageInfo)
+                                }
+                            }
+                            dismiss()
+                        },
                         onDragCancel = { dismiss() }
                     )
                 }
@@ -151,7 +142,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .systemBarsPadding()
                     .navigationBarsPadding()
-                    .padding(bottom = dimen64dp),
+                    .padding(bottom = dimen8dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -181,10 +172,9 @@ fun HomeScreen(
                 enter = fadeIn(animationSpec = tween(150)),
                 exit = fadeOut(animationSpec = tween(150))
             ) {
-                PinnedAppsOverlay(
+                HomePanelOverlay(
                     pinnedApps = currentPinnedList,
                     selectedIndex = selectedIndex,
-                    dwellProgress = dwellProgress,
                     alignment = overlayAlignment,
                     shouldHideIcons = shouldHideApplicationIcons,
                     shouldDisplayThemeIcons = shouldDisplayThemeIcons,
@@ -198,4 +188,4 @@ fun HomeScreen(
 }
 
 internal const val MIN_DISPLACEMENT = 10f
-internal const val DWELL_DURATION_MS = 1000L
+internal const val MAX_SELECT_DISTANCE_DP = 56f
