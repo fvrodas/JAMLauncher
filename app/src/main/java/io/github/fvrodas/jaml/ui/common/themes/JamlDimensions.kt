@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.dp
 val dimen1dp = 1.dp
 val dimen2dp = 2.dp
 val dimen4dp = 4.dp
+val dimen6dp = 6.dp
 val dimen8dp = 8.dp
 val dimen12dp = 12.dp
 val dimen16dp = 16.dp

@@ -32,6 +32,7 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private var applicationsListCache: Set<LauncherEntry> = emptySet()
+    private val activeNotifications = mutableMapOf<String, String>()
 
     private var _applicationsState: MutableStateFlow<ApplicationSheetState> =
         MutableStateFlow(ApplicationSheetState())
@@ -129,6 +130,10 @@ class HomeViewModel(
                 applicationsListCache = applicationsListCache.map { e ->
                     groupLookup[e.packageInfo.packageName]?.let { e.moveToGroup(it) } ?: e
                 }.toSet()
+
+                activeNotifications.forEach { (pkg, msg) ->
+                    applicationsListCache = applicationsListCache.updateAppEntry(pkg, msg)
+                }
 
                 _applicationsState.value = buildState(groupNames)
             } catch (_: Exception) {
@@ -269,6 +274,11 @@ class HomeViewModel(
         viewModelScope.launch {
             try {
                 packageName?.let {
+                    if (message != null) {
+                        activeNotifications[packageName] = message
+                    } else {
+                        activeNotifications.remove(packageName)
+                    }
                     _applicationsState.value = _applicationsState.value.copy(
                         pinnedApplications = _applicationsState.value.pinnedApplications.updateAppEntry(
                             packageName,

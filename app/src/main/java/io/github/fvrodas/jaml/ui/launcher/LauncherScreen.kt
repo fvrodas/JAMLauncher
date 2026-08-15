@@ -167,6 +167,10 @@ fun LauncherScreen(
                             shouldHideApplicationIcons,
                             shouldDisplayThemeIcons,
                             pinnedAlignment = pinnedAppsAlignment,
+                            listOfShortcuts = listOfShortcuts,
+                            retrieveShortcuts = retrieveShortcuts,
+                            startShortcut = openShortcut,
+                            onPinToggle = pinToTop,
                             onApplicationPressed = launcherActions::openApplication,
                         ) {
                             shouldDisplayAppList = it

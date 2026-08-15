@@ -56,7 +56,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -70,19 +69,17 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import io.github.fvrodas.jaml.R
 import io.github.fvrodas.jaml.core.common.utils.BitmapUtils
 import io.github.fvrodas.jaml.core.domain.entities.PackageInfo
@@ -91,11 +88,8 @@ import io.github.fvrodas.jaml.ui.common.models.LauncherEntry.Companion.DEFAULT_G
 import io.github.fvrodas.jaml.ui.common.models.toLauncherEntry
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
 import io.github.fvrodas.jaml.ui.common.themes.JamlTheme
-import io.github.fvrodas.jaml.ui.common.themes.dimen12dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen16dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen24dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen2dp
-import io.github.fvrodas.jaml.ui.common.themes.dimen32dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen48dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen4dp
 import io.github.fvrodas.jaml.ui.common.themes.dimen8dp
@@ -266,6 +260,10 @@ fun ApplicationsSheet(
     }
 
     LaunchedEffect(pagerState.currentPage) {
+        appItemCenterYMap.clear()
+    }
+
+    LaunchedEffect(appList) {
         appItemCenterYMap.clear()
     }
 
@@ -580,7 +578,10 @@ private fun AppPage(
     onItemPositioned: (packageName: String, centerY: Float) -> Unit = { _, _ -> },
     onScrollAtTop: (Boolean) -> Unit = {},
 ) {
-    LaunchedEffect(lazyListState.firstVisibleItemIndex, lazyListState.firstVisibleItemScrollOffset) {
+    LaunchedEffect(
+        lazyListState.firstVisibleItemIndex,
+        lazyListState.firstVisibleItemScrollOffset
+    ) {
         onScrollAtTop(lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0)
     }
 

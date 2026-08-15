@@ -3,8 +3,10 @@ package io.github.fvrodas.jaml.ui.launcher.views
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,8 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -51,6 +59,7 @@ fun HomePanelOverlay(
     alignment: Alignment = Alignment.Center,
     shouldHideIcons: Boolean = false,
     shouldDisplayThemeIcons: Boolean = false,
+    timeoutProgress: Float = 0f,
     onItemCenterYChanged: (index: Int, centerY: Float) -> Unit,
 ) {
 
@@ -87,7 +96,10 @@ fun HomePanelOverlay(
                     label = "pinnedAlpha"
                 )
                 val icon = remember(entry.packageInfo.packageName, shouldDisplayThemeIcons) {
-                    BitmapUtils.loadIconForPackage(entry.packageInfo.packageName, shouldDisplayThemeIcons)
+                    BitmapUtils.loadIconForPackage(
+                        entry.packageInfo.packageName,
+                        shouldDisplayThemeIcons
+                    )
                 }
                 val textSize by animateFloatAsState(
                     targetValue = if (isSelected) TEXT_SIZE_SELECTED_SP else TEXT_SIZE_NORMAL_SP,
@@ -121,15 +133,55 @@ fun HomePanelOverlay(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Box(contentAlignment = Alignment.Center) {
                                 icon?.let { bmp ->
-                                    Image(
-                                        bitmap = bmp.asImageBitmap(),
-                                        contentDescription = entry.packageInfo.label,
-                                        contentScale = ContentScale.Fit,
-                                        modifier = Modifier
-                                            .size(iconSize)
-                                            .shadow(dimen2dp, CircleShape)
-                                            .clip(CircleShape)
-                                    )
+                                    if (isSelected && timeoutProgress > 0f) {
+                                        val arcColor = MaterialTheme.colorScheme.secondary
+                                        Canvas(modifier = Modifier.size(iconSize + dimen8dp)) {
+                                            val strokePx = TIMEOUT_INDICATOR_STROKE_DP * density
+                                            val inset = strokePx / 2f
+                                            drawArc(
+                                                color = arcColor,
+                                                startAngle = -90f,
+                                                sweepAngle = 360f * timeoutProgress,
+                                                useCenter = false,
+                                                topLeft = Offset(inset, inset),
+                                                size = Size(
+                                                    size.width - strokePx,
+                                                    size.height - strokePx
+                                                ),
+                                                style = Stroke(
+                                                    width = strokePx,
+                                                    cap = StrokeCap.Round
+                                                ),
+                                            )
+                                        }
+                                    }
+                                    BadgedBox(
+                                        badge = {
+                                            if (entry.hasNotification) {
+                                                val badgeSize = iconSize / 6f
+                                                Badge(
+                                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                                    modifier = Modifier
+                                                        .size(badgeSize)
+                                                        .border(
+                                                            badgeSize / 6f,
+                                                            MaterialTheme.colorScheme.surface,
+                                                            CircleShape
+                                                        ),
+                                                ) { }
+                                            }
+                                        }
+                                    ) {
+                                        Image(
+                                            bitmap = bmp.asImageBitmap(),
+                                            contentDescription = entry.packageInfo.label,
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier
+                                                .size(iconSize)
+                                                .shadow(dimen2dp, CircleShape)
+                                                .clip(CircleShape)
+                                        )
+                                    }
                                 }
                             }
                             if (isSelected) {
@@ -157,3 +209,4 @@ private const val OVERLAY_ANIM_DURATION = 150
 private const val UNSELECTED_ALPHA = 0.45f
 private const val TEXT_SIZE_SELECTED_SP = 28f
 private const val TEXT_SIZE_NORMAL_SP = 22f
+private const val TIMEOUT_INDICATOR_STROKE_DP = 3f

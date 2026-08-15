@@ -31,15 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import io.github.fvrodas.jaml.ui.common.themes.JamlColorScheme
@@ -65,26 +62,17 @@ fun ApplicationItem(
     iconBitmap: Bitmap? = null,
     iconVector: ImageVector? = null,
     hasNotification: Boolean = false,
-    isFavorite: Boolean = false,
     onApplicationLongPressed: ((isFavorite: Boolean) -> Unit)? = null,
     onGloballyPositioned: (centerY: Float) -> Unit = {},
     onApplicationPressed: () -> Unit
 ) {
 
     val gradient = Brush.linearGradient(
-        colors = if (isFavorite) listOf(
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.0f),
-        ) else listOf(
+        colors = listOf(
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.0f),
         )
     )
-    val favoriteDropShadow = if (isFavorite) Shadow(
-        color = Color.Black.copy(alpha = SHADOW_ALPHA),
-        offset = Offset(SHADOW_OFFSET_X, SHADOW_OFFSET_Y),
-        blurRadius = SHADOW_BLUR_RADIUS,
-    ) else null
 
     Row(
         modifier = Modifier
@@ -98,7 +86,7 @@ fun ApplicationItem(
                 onGloballyPositioned(coords.positionInWindow().y + coords.size.height / 2f)
             }
             .combinedClickable(
-                onLongClick = longClickHandler(onApplicationLongPressed, isFavorite),
+                onLongClick = longClickHandler(onApplicationLongPressed, false),
                 onClick = { onApplicationPressed.invoke() },
                 indication = ripple(color = MaterialTheme.colorScheme.primary),
                 interactionSource = remember { MutableInteractionSource() }
@@ -135,11 +123,9 @@ fun ApplicationItem(
                 text = label.hightlightCoincidence(searchText, MaterialTheme.colorScheme.tertiary),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = when {
-                        isFavorite -> Color.White
                         hasNotification -> MaterialTheme.colorScheme.primary
                         else -> MaterialTheme.colorScheme.onBackground
-                    },
-                    shadow = favoriteDropShadow
+                    }
                 )
             )
             if (!groupLabel.isNullOrEmpty()) {
@@ -156,7 +142,7 @@ fun ApplicationItem(
                     )
                 }
             }
-            if (isFavorite && hasNotification && !notificationText.isNullOrEmpty()) {
+            if (hasNotification && !notificationText.isNullOrEmpty()) {
                 Badge(
                     modifier = Modifier.padding(top = dimen4dp),
                     containerColor = MaterialTheme.colorScheme.secondary,
@@ -205,7 +191,6 @@ fun ApplicationItemPreview() {
             label = "Application",
             notificationText = "This is a notification",
             iconVector = null,
-            isFavorite = true,
             hasNotification = true
         ) { }
     }
